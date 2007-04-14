@@ -1,0 +1,12 @@
+/var/log/geneweb.log {
+	weekly
+	missingok
+	rotate 7
+	compress
+	notifempty
+	create 0660 geneweb geneweb
+	postrotate
+		invoke-rc.d force-reload >/dev/null
+	endscript
+}
+
