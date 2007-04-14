@@ -1,0 +1,9 @@
+/var/log/gwsetup.log {
+	weekly
+	missingok
+	rotate 7
+	compress
+	notifempty
+	create 0660 geneweb geneweb
+}
+
