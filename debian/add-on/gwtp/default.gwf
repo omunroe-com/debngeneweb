@@ -1,0 +1,188 @@
+# $Id: default.gwf,v 1.1 2005/08/30 20:54:43 bubulle Exp $
+# Parameters in "<body>" (background, color, etc)
+# Here is a palette of possibilities... test and choose one of them
+# if you want by removing the initial "#"
+# body_prop=bgcolor=#FFFFFF text=#333333 link=#006699 vlink=#999900
+# body_prop=bgcolor=#FFFFEE text=#000000 link=#006699 vlink=#990000
+# body_prop=bgcolor=#CCCCCC text=#000000 link=#0000CC vlink=#660066
+# body_prop=bgcolor=#FFFF00 text=#FF6600 link=#FF0033 vlink=#336633
+# body_prop=bgcolor=#CCCC66 text=#330000 link=#CC0000 vlink=#003300
+# body_prop=bgcolor=#FFFF99 text=#330000 link=#CC0000 vlink=#333333
+# body_prop=bgcolor=#99CCCC text=#000066 link=#0000CC vlink=#003366
+# body_prop=bgcolor=#CC99FF text=#000000 link=#FF0033 vlink=#660066
+# body_prop=bgcolor=#CCFF99 text=#666600 link=#006699 vlink=#003300
+# body_prop=bgcolor=#FFCC00 text=#330000 link=#CC0000 vlink=#660066
+# body_prop=bgcolor=#00FF33 text=#0000CC link=#FF0099 vlink=#660066
+# body_prop=bgcolor=#006699 text=#CCFFCC link=#FFFF00 vlink=#00FFFF
+# body_prop=bgcolor=#330000 text=#FF6666 link=#FFCC00 vlink=#CCFF99
+# body_prop=bgcolor=#003300 text=#CCCC66 link=#FFFFFF vlink=#FFFF00
+# body_prop=bgcolor=#333333 text=#CCCCCC link=#FF6666 vlink=#CCCC66
+# body_prop=bgcolor=#666600 text=#FFFFFF link=#FFFF00 vlink=#99CCFF
+# body_prop=bgcolor=#000000 text=#99CCFF link=#FFFF00 vlink=#CCCC66
+# body_prop=bgcolor=#333333 text=#FFFFFF link=#99CCFF vlink=#CC99FF
+# body_prop=bgcolor=#CC0000 text=#FFFFFF link=#FFFF00 vlink=#00FFFF
+# For a background pattern, e.g. foo.jpg:
+# body_prop=background="geneweb?m=IM;v=/foo.jpg"
+#   the file foo.jpg must be in the directory "images"
+#   on CGI mode, replace 'geneweb' by the name of the CGI
+
+# Highlight color
+highlight_color=#2f6400
+
+# Friend can see all dates
+# Choose a password or leave it empty
+# Form: "user_id:password" or just "password"
+friend_passwd=
+
+# Alternative way for friend entry: authorization file.
+# The file must hold lines of the form "user:password".
+# Works only in server (not cgi) mode.
+friend_passwd_file=
+
+# Wizard can see all dates and update the base
+# Choose a password or leave it empty
+# Form: "user_id:password" or just "password"
+wizard_passwd=
+
+# Alternative way for wizard entry: authorization file.
+# The file must hold lines of the form "user:password".
+wizard_passwd_file=
+
+# Wizard loosing his powers, becoming just a "friend"
+# Set it to "yes" or "no"
+wizard_just_friend=no
+
+# Number of years for private access. Dates of persons whose age < this value
+# are not displayed (except for wizards, friends and public persons).
+private_years=150
+
+# Hide the private persons names ("x" is displayed instead of their first
+# name or surname).
+hide_private_names=no
+
+# Default language
+default_lang=fr
+
+# Authorization for wizards to send images (no: cannot; yes: can)
+can_send_image=yes
+
+# Allow the usage of the request m=KILL_ANC
+can_kill_ancestors=no
+
+# Optional path for images defined by the "image" field (i.e. *not* added
+# by "send image"). Applies only for images not found in the image/base
+# directory. This value, when set, could typically start with http://...
+# or file://...
+images_path=
+
+# Global authorization file for this data base (overriding the value
+# of the option "-auth" of "gwd"). This file must hold lines of the
+# form "user:password". Works only in server (not cgi) mode.
+auth_file=
+
+# Access by key, when set to "yes", generates HTML requests with
+# "n=first+name;p=surname;oc=number" instead of (shorter) "i=integer"
+# in URLs. Useful e.g. when doing a cleanup of the data base (where the
+# integer access for persons may change) to let the service continue
+# correctly.
+access_by_key=no
+
+# Set to no if you don't want that the search by (nobility) titles be
+# proposed in the welcome pages.
+propose_titles=yes
+
+# Set to no if you don't want that the link "add a family" be added in
+# the welcome page for wizards. In "no", forbid also adding families not
+# connected to the rest.
+propose_add_family=yes
+
+# Set to no if you want the advanced request link to be displayed
+hide_advanced_request=yes
+
+# Maximum level when displaying ancestors
+max_anc_level=8
+
+# Maximum level when displaying ancestors by tree
+max_anc_tree=7
+
+# Maximum_level when displaying descendants
+max_desc_level=12
+
+# Maximum_level when displaying descendants by tree
+max_desc_tree=4
+
+# Maximum number of cousins displayed
+max_cousins=2000
+
+# Number of latest events (birth, death) displayed
+latest_event=20
+
+# Always display the children surnames even if same than father.
+# Applies in descendants page and in surname displaying page.
+# "yes" = do it; "no" = don't
+always_surname=no
+
+# History: set it to yes to save update traces in data base (in file named
+# "history" in the data base directory "base.gwb"). When such a file exists,
+# a link is displayed in the welcome page.
+# Warning: this text file grows indefinitively... you can edit it to remove
+# the old information if you want (oldest = begin of file) or you can remove
+# it when it is too large, if you prefer.
+history=no
+
+# Consider persons having titles as public, i.e. even not friends can see
+# their dates; "yes" = consider; "no" = don't consider
+public_if_titles=no
+
+# Tell that in this data base the order of places are registered inverted
+# (being more general to less general), e.g. "USA, New York" instead of
+# "New York, USA". Set it to "yes" if it is the case. Important for display
+# by places/surnames.
+places_inverted=no
+
+# Uncomment the following definition to specify that the present database has
+# been renamed:
+#renamed=newname
+
+# Templates.
+#
+# For the moment, there is a template only for:
+# 1/ the "personal page, perso.txt
+# 2/ the update person form, updind.txt
+# 3/ the update family form, updfam.txt
+# The standard template is located in the etc directory. Other templates
+# can be added in sub directories of the etc directory: e.g.
+# etc/foo/perso.txt, etc/bar/perso.txt, and so on.
+#
+# The "template" variable tells which templates are allowed for this
+# data base and gives the default template. It is a list of directories
+# separated by commas. Empty directory means "the standard template".
+# Star means "any template". The first of the list gives the default
+# template # to be used. Examples:
+#
+# template=*       any template allowed; default = standard one
+# template=foo,*   any template allowed; default = foo
+# template=foo,bar only foo and bar templates allowed
+# template=foo,    only foo and standard template allowed; default = foo
+# template=,foo    only foo and standard template allowed; default = standard
+# template=        only standard template allowed
+# template=foo     only foo template allowed
+#
+# Default is template=database-name,*
+# The template to be used can be changed by adding ";templ=foo" in the URL
+#
+#template=a,*
+
+# Customized variables.
+#
+# You can define any variable here, starting with "var_".
+#
+# They will be replaced in the displayed "notes", "sources", "comments"
+# and in the data base forum. If the variable name is "var_something",
+# it replaces all occurrences of "%vsomething;" in these texts.
+#
+# Example. if you define here:
+#   var_who=Bond, James Bond
+# and if the notes is "My name is %vwho;.", the displayed text in the notes
+# will be:
+#   My name is Bond, James Bond.

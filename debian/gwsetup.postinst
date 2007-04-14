@@ -1,0 +1,118 @@
+#! /bin/sh
+# postinst script for Gwsetup
+#
+
+set +e 
+
+# These will be used here and there below
+RCFILE=/etc/default/gwsetup
+INITFILE=/etc/init.d/gwsetup
+
+
+# We we'll need some variables defined there
+# We first define some defaults values...just in case
+USERS_GROUP=geneweb
+GENEWEBUSER=geneweb
+LOGFILE=/var/log/gwsetup.log
+
+# Default settings
+DEFAULTPORT=2316
+DEFAULTRUNMODE="Always on"
+
+
+# Reads config file (will override defaults above)
+[ -r $RCFILE ] && . $RCFILE
+
+. /usr/share/debconf/confmodule
+db_version 2.0
+
+write_rcfile() {
+   cat >$RCFILE <<EOF
+#
+# Gwsetup Configuration Data
+#
+# This file may be changed manually, or by running "dpkg-reconfigure gwsetup"
+
+# The port which the daemon listens to
+PORT="${PORT}"
+
+# The default language is not setup here. It will be Geneweb's default 
+# language
+
+# The run mode
+# Two possible values: "Always on" or "Manual"
+# You need to use quotes
+RUN_MODE="${RUN_MODE}"
+
+EOF
+}
+
+get_debconf() {
+    db_get gwsetup/port
+    PORT=$RET
+    # If not present, use default
+    if [ "$PORT" = "" ]
+    then
+	PORT=$DEFAULTPORT
+    fi
+
+
+    db_get gwsetup/run_mode
+    RUN_MODE="$RET"
+    # If not present, use default
+    if [ "$RUN_MODE" = "" ]
+    then
+	RUN_MODE="$DEFAULTRUNMODE"
+    fi
+}
+
+
+
+
+case "$1" in
+    configure)
+
+	# RCFILE has to be world-readable if we want the entry menu to work
+	[ -f $RCFILE ] && chmod g+r,a+r $RCFILE
+
+	[ -f $INITFILE ] && chmod a+rx $INITFILE
+
+	# Make sure geneweb user exists
+	if ! getent passwd ${GENEWEBUSER} >/dev/null
+	then
+	    echo "Adding $GENEWEBUSER user ... "
+	    adduser --quiet --system --home /var/lib/geneweb --no-create-home --ingroup $USERS_GROUP $GENEWEBUSER
+	fi
+	
+	# Permissions and groups changes come back
+	# to the configure stage again.
+	# Problems may remains if users previously messed up
+	# the permissions...but more huge problems will
+	# occur if this stage occurs _before_ the geneweb
+	# group creation (was bug 171570 on 4.07-3 release)
+
+	if [ ! -f $LOGFILE ]
+	then
+	    touch $LOGFILE
+	fi
+
+	# The log file is written by gwsetup running as the geneweb user
+	# Make it readable/writable by this user only
+	chown $GENEWEBUSER:$USERS_GROUP $LOGFILE
+	chmod 600 $LOGFILE
+
+	# Values are read from debconf
+	# to update variables
+	get_debconf
+	# The settings file is written
+	# Moved to postinst
+	write_rcfile
+
+	;;
+    *)
+	;;
+esac
+
+
+
+#DEBHELPER#
