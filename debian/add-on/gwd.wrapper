@@ -1,0 +1,9 @@
+#!/bin/sh
+# This is a wrapper script for starting gwd from the init script
+# It is needed for properly set up the umask the daemon runs under
+# as start-stop-daemon does not allow this
+umask 007
+$DAEMON \
+	        -hd$GENEWEBSHARE -dd$GENEWEBDOC -bd$GENEWEBDB -p$PORT \
+		-lang$LNG -log$LOGFILE $OPTIONS -daemon
+exit $?
