@@ -1,0 +1,424 @@
+#
+#    Translators, if you are not familiar with the PO format, gettext
+#    documentation is worth reading, especially sections dedicated to
+#    this format, e.g. by running:
+#         info -n '(gettext)PO Files'
+#         info -n '(gettext)Header Entry'
+#
+#    Some information specific to po-debconf are available at
+#            /usr/share/doc/po-debconf/README-trans
+#         or http://www.debian.org/intl/l10n/po-debconf/README-trans
+#
+#    Developers do not need to manually edit POT or PO files.
+#
+# Carlos Valdivia Yagüe <valyag@dat.etsit.upm.es>, 2004, 2005
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: geneweb 4.10-9\n"
+"Report-Msgid-Bugs-To: bubulle@debian.org\n"
+"POT-Creation-Date: 2006-12-01 19:37+0100\n"
+"PO-Revision-Date: 2005-11-29 11:36+0100\n"
+"Last-Translator: Carlos Valdivia Yagüe <valyag@dat.etsit.upm.es>\n"
+"Language-Team: Debian L10n Spanish <debian-l10n-spanish@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-15\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: select
+#. Default
+#. This is the default choice. Translators may put their own language here
+#. instead of the default.
+#. WARNING : you MUST use the iso_639 two-letter code of your language
+#: ../geneweb.templates.master:1001
+msgid "en[ translators, please see comment in PO files]"
+msgstr "es"
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:1002
+msgid "Geneweb default language:"
+msgstr "Idioma predeterminado de Geneweb:"
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:1002
+msgid "Geneweb can display its prompts in a number of languages."
+msgstr "Geneweb puede mostrar los mensajes en distintos idiomas."
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:1002
+msgid "Select a default language for Geneweb to use in its page rendering."
+msgstr "Elija el idioma predeterminado que usará Geneweb para mostrar páginas."
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:1002
+msgid "Other languages will still be available."
+msgstr "El resto de los idiomas permanecerá disponible."
+
+#. Type: string
+#. Description
+#: ../geneweb.templates.master:2001
+msgid "Geneweb daemon listening port:"
+msgstr "Puerto en el que escuchará Geneweb:"
+
+#. Type: string
+#. Description
+#: ../geneweb.templates.master:2001
+msgid ""
+"The port used by the geneweb daemon (gwd) for incoming connections may be "
+"configured here."
+msgstr ""
+"A continuación puede configurar el puerto de escucha del demonio de geneweb "
+"(gwd)."
+
+#. Type: string
+#. Description
+#: ../geneweb.templates.master:2001
+msgid "Choose a port number above 1023 for the port gwd will listen to."
+msgstr "Escoja un puerto por encima de 1023 para que escuche gwd."
+
+#. Type: string
+#. Description
+#: ../geneweb.templates.master:2001
+msgid "If unsure, leave the default value of 2317."
+msgstr "Si duda, deje el valor predeterminado de 2317."
+
+#. Type: select
+#. Choices
+#: ../geneweb.templates.master:3001 ../gwsetup.templates:2001
+msgid "Always on"
+msgstr "Siempre activo"
+
+#. Type: select
+#. Choices
+#: ../geneweb.templates.master:3001 ../gwsetup.templates:2001
+msgid "Manual"
+msgstr "Manual"
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:3002
+msgid "Geneweb start mode:"
+msgstr "Modo de inicio de Geneweb:"
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:3002
+msgid ""
+"The Geneweb daemon gwd can be launched automatically at startup, manually by "
+"the system administrator, or by any user when it is needed."
+msgstr ""
+"gwd, el demonio de Geneweb, puede ejecutarse automáticamente al arrancar o "
+"ser ejecutado por el administrador del sistema o por cualquier usuario "
+"cuando se necesite."
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:3002
+msgid ""
+"If you choose \"Always on\", Geneweb will be launched at the system startup."
+msgstr ""
+"Si escoge \"Siempre activo\", Geneweb se lanzará al arrancar el sistema."
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:3002
+msgid ""
+"If you want to prevent the automatic startup of Geneweb, for example if you "
+"prefer to run it as a CGI program, then choose \"Manual\"."
+msgstr ""
+"Si quiere evitar el inicio automático de Geneweb, por ejemplo porque "
+"prefiera utilizarlo como CGI, elija \"Manual\"."
+
+#. Type: note
+#. Description
+#: ../geneweb.templates.master:4001
+msgid "Old directory /var/geneweb not removed"
+msgstr "No se ha borrado el directorio /var/geneweb"
+
+#. Type: note
+#. Description
+#: ../geneweb.templates.master:4001
+msgid ""
+"Previous versions of both official and unofficial packages for Geneweb used "
+"non FHS-compliant /var/geneweb directory for storing databases."
+msgstr ""
+"Las versiones anteriores de Geneweb, tanto las oficiales como las no "
+"oficiales, usaban el directorio /var/geneweb para almacenar las bases de "
+"datos, lo que contravenía abiertamente el FHS (Filesystem Hierarchy "
+"Standard)."
+
+#. Type: note
+#. Description
+#: ../geneweb.templates.master:4001
+msgid ""
+"It has been detected that this directory was used on your system. Some files "
+"have been moved from there to /var/lib/geneweb but the geneweb installation "
+"scripts found some unexpected files in /var/geneweb."
+msgstr ""
+"Ese directorio estaba presente en su sistema. Algunos ficheros de /var/"
+"geneweb se han movido a /var/lib/geneweb, pero otros no han sido "
+"correctamente reconocidos por los scripts de instalación."
+
+#. Type: note
+#. Description
+#: ../geneweb.templates.master:4001
+msgid ""
+"Thus the directory has been left intact. It is highly recommended that you "
+"check the remaining files there and move them to /var/lib/geneweb, then "
+"remove the /var/geneweb directory."
+msgstr ""
+"Por ello, se ha dejado el directorio intacto. Se recomienda que compruebe el "
+"contenido de los ficheros restantes y muévalo a /var/lib/geneweb. Después, "
+"podrá borrar el directorio /var/geneweb."
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid "Remove Geneweb database directory on package purge?"
+msgstr ""
+"¿Borrar el directorio con las bases de datos de Geneweb al purgar el paquete?"
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid ""
+"Geneweb's databases will be stored in the database directory /var/lib/"
+"geneweb. These databases may be put there by authorized users who must be "
+"members of the \"geneweb\" group."
+msgstr ""
+"Las bases de datos de Geneweb se guardan en el directorio /var/lib/geneweb. "
+"Sólo los miembros del grupo «geneweb» tienen permiso para almacenar allí "
+"bases de datos."
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid ""
+"Please choose whether you want to remove databases automatically when "
+"purging the package (completely removing it)."
+msgstr ""
+"Por favor, elija si quiere borrar las bases de datos automáticamente cuando "
+"purgue (elimine completamente) el paquete."
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid ""
+"THIS WOULD ERASE USER-OWNED DATA. You have to be sure if you accept the "
+"purge."
+msgstr ""
+"ESTO PUEDE BORRAR TODO EL CONTENIDO DE LOS USUARIOS. Tiene que estar muy "
+"seguro si responde que sí a esta pregunta."
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid ""
+"Note that if this directory is empty at the time you purge or simply remove "
+"the package, it will always be automatically removed."
+msgstr ""
+"En caso de que borre o purge geneweb y el directorio de las bases de datos "
+"se encuentre vacío, se borrará automáticamente."
+
+#. Type: string
+#. Description
+#: ../gwsetup.templates:1001
+msgid "Gwsetup daemon listening port:"
+msgstr "Puerto en el que escuchará Gwsetup:"
+
+#. Type: string
+#. Description
+#: ../gwsetup.templates:1001
+msgid ""
+"The port used by the gwsetup daemon for incoming connections may be "
+"configured here."
+msgstr ""
+"A continuación puede configurar el puerto de escucha del demonio gwsetup."
+
+#. Type: string
+#. Description
+#: ../gwsetup.templates:1001
+msgid "Choose a port number above 1023 for the port gwsetup will listen to."
+msgstr "Escoja un puerto por encima de 1023 para que escuche gwsetup."
+
+#. Type: string
+#. Description
+#: ../gwsetup.templates:1001
+msgid "If unsure, leave the default value of 2316."
+msgstr "Si duda, deje el valor predeterminado de 2316."
+
+#. Type: select
+#. Description
+#: ../gwsetup.templates:2002
+msgid "Gwsetup start mode:"
+msgstr "Modo de inicio de Gwsetup:"
+
+#. Type: select
+#. Description
+#: ../gwsetup.templates:2002
+msgid ""
+"The Gwsetup daemon can be launched automatically at startup, manually by the "
+"system administrator, or by any user when it is needed."
+msgstr ""
+"El demonio Gwsetup puede ejecutarse automáticamente al arrancar o "
+"manualmente por el administrador del sistema o cualquier usuario cuando sea "
+"necesario."
+
+#. Type: select
+#. Description
+#: ../gwsetup.templates:2002
+msgid ""
+"If you choose \"Always on\", gwsetup will be launched at the system startup."
+msgstr ""
+"Si escoge \"Siempre activo\", gwsetup se lanzará al arrancar el sistema."
+
+#. Type: select
+#. Description
+#: ../gwsetup.templates:2002
+msgid ""
+"If you want to prevent the automatic startup of gwsetup, then choose \"Manual"
+"\"."
+msgstr "Si quiere evitar el inicio automático de gwsetup elija \"Manual\"."
+
+#~ msgid "Old setup file moved"
+#~ msgstr "Cambio de ubicación del fichero de configuración"
+
+#~ msgid ""
+#~ "Previous versions of both official and unofficial packages for Geneweb "
+#~ "used a file named /etc/geneweb/genewebrc for keeping local setup for the "
+#~ "listening port and the default language of the program."
+#~ msgstr ""
+#~ "Las versiones anteriores de Geneweb, tanto los paquetes oficiales como "
+#~ "los no oficiales, utilizaban un fichero llamado /etc/geneweb/genewebrc "
+#~ "para almacenar la configuración local sobre el puerto de escucha y el "
+#~ "idioma predeterminado del programa."
+
+#~ msgid "Debian standards suggest such file to live in /etc/default/geneweb."
+#~ msgstr ""
+#~ "Según las normas de Debian, ese fichero debe encontrarse en /etc/default/"
+#~ "geneweb."
+
+#~ msgid ""
+#~ "The configuration file has been moved and renamed to /etc/default/geneweb."
+#~ msgstr ""
+#~ "El fichero de configuración se ha movido y ahora se llama /etc/default/"
+#~ "geneweb."
+
+#~ msgid ""
+#~ "This note will only appear once except if you inadvertently re-create /"
+#~ "etc/geneweb/genewebrc."
+#~ msgstr ""
+#~ "Este aviso sólo aparecerá una vez, a no ser que vuelva a crear sin darse "
+#~ "cuenta /etc/geneweb/genewebrc."
+
+#~ msgid "Remove /etc/geneweb/lang and /etc/geneweb/etc?"
+#~ msgstr "¿Borrar /etc/geneweb/lang y /etc/geneweb/etc?"
+
+#~ msgid ""
+#~ "Former versions of the geneweb packages used /etc/geneweb/etc and /etc/"
+#~ "geneweb/lang directories for generated HTML pages default templates."
+#~ msgstr ""
+#~ "Versiones anteriores de los paquetes de geneweb guardaban las plantillas "
+#~ "para generar HTML en los directorios /etc/geneweb/etc y /etc/geneweb/lang."
+
+#~ msgid ""
+#~ "These templates are strongly dependent on the Geneweb version (for "
+#~ "instance, translations updates occur there). So, it is not a good idea to "
+#~ "customise them."
+#~ msgstr ""
+#~ "Dichas plantillas dependen fuertemente de la versión de Geneweb (por "
+#~ "ejemplo, debido a actualizaciones de las traducciones), por lo que no es "
+#~ "buena idea personalizarlas."
+
+#~ msgid ""
+#~ "These files have been moved to /usr/share/geneweb/etc and /usr/share/"
+#~ "geneweb/lang."
+#~ msgstr ""
+#~ "Estos ficheros se encuentran ahora en /usr/share/geneweb/etc y /usr/share/"
+#~ "geneweb/lang."
+
+#~ msgid ""
+#~ "If you never customised these files, they may be safely removed. Just "
+#~ "accept the removal now."
+#~ msgstr ""
+#~ "Si no ha tocado nunca estos ficheros, puede borrarlos ahora con total "
+#~ "tranquilidad."
+
+#~ msgid "You may choose to keep them \"just in case\"."
+#~ msgstr "Puede decidir guardarlas por si acaso."
+
+#~ msgid "Afrikaans (af)"
+#~ msgstr "Afrikaans (af)"
+
+#~ msgid "Bulgarian (bg)"
+#~ msgstr "Búlgaro (bg)"
+
+#~ msgid "Catalan (ca)"
+#~ msgstr "Catalán (ca)"
+
+#~ msgid "Chinese (zh)"
+#~ msgstr "Chino (zh)"
+
+#~ msgid "Czech (cs)"
+#~ msgstr "Checo (cs)"
+
+#~ msgid "Danish (da)"
+#~ msgstr "Danés (da)"
+
+#~ msgid "Dutch (nl)"
+#~ msgstr "Holandés (nl)"
+
+#~ msgid "English (en)"
+#~ msgstr "Inglés (en)"
+
+#~ msgid "Esperanto (eo)"
+#~ msgstr "Esperanto (eo)"
+
+#~ msgid "Estonian (et)"
+#~ msgstr "Estonio (et)"
+
+#~ msgid "Finnish (fi)"
+#~ msgstr "Finlandés (fi)"
+
+#~ msgid "French (fr)"
+#~ msgstr "Francés (fr)"
+
+#~ msgid "German (de)"
+#~ msgstr "Alemán (de)"
+
+#~ msgid "Hebrew (he)"
+#~ msgstr "Hebreo (he)"
+
+#~ msgid "Icelandic (is)"
+#~ msgstr "Islandés (is)"
+
+#~ msgid "Italian (it)"
+#~ msgstr "Italiano (it)"
+
+#~ msgid "Latvian (lv)"
+#~ msgstr "Letón (lv)"
+
+#~ msgid "Norwegian (no)"
+#~ msgstr "Noruego (no)"
+
+#~ msgid "Polish (pl)"
+#~ msgstr "Polaco (pl)"
+
+#~ msgid "Portuguese (pt)"
+#~ msgstr "Portugués (pt)"
+
+#~ msgid "Romanian (ro)"
+#~ msgstr "Rumano (ro)"
+
+#~ msgid "Russian (ru)"
+#~ msgstr "Ruso (ru)"
+
+#~ msgid "Spanish (es)"
+#~ msgstr "Español (es)"
+
+#~ msgid "Swedish (sv)"
+#~ msgstr "Sueco (sv)"

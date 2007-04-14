@@ -1,0 +1,274 @@
+# translation of geneweb_ar.po to Arabic
+#
+#    Translators, if you are not familiar with the PO format, gettext
+#    documentation is worth reading, especially sections dedicated to
+#    this format, e.g. by running:
+#         info -n '(gettext)PO Files'
+#         info -n '(gettext)Header Entry'
+#    Some information specific to po-debconf are available at
+#            /usr/share/doc/po-debconf/README-trans
+#         or http://www.debian.org/intl/l10n/po-debconf/README-trans#
+#    Developers do not need to manually edit POT or PO files.
+#
+# Ossama M. Khayat <okhayat@yahoo.com>, 2005, 2006.
+msgid ""
+msgstr ""
+"Project-Id-Version: geneweb_ar\n"
+"Report-Msgid-Bugs-To: bubulle@debian.org\n"
+"POT-Creation-Date: 2006-12-01 19:37+0100\n"
+"PO-Revision-Date: 2006-03-02 14:19+0300\n"
+"Last-Translator: Ossama M. Khayat <okhayat@yahoo.com>\n"
+"Language-Team: Arabic <support@arabeyes.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.11.2\n"
+
+#. Type: select
+#. Default
+#. This is the default choice. Translators may put their own language here
+#. instead of the default.
+#. WARNING : you MUST use the iso_639 two-letter code of your language
+#: ../geneweb.templates.master:1001
+msgid "en[ translators, please see comment in PO files]"
+msgstr "ar"
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:1002
+msgid "Geneweb default language:"
+msgstr "اللغة الافتراضيّة لـGeneweb:"
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:1002
+msgid "Geneweb can display its prompts in a number of languages."
+msgstr "يستطيع Geneweb عرض الملقّن بعدد من اللغات."
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:1002
+msgid "Select a default language for Geneweb to use in its page rendering."
+msgstr "اختيار لغة افتراضيّة يستخدمها Geneweb في عرض الصفحات."
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:1002
+msgid "Other languages will still be available."
+msgstr "ستبقى اللغات الأخرى متوفّرة."
+
+#. Type: string
+#. Description
+#: ../geneweb.templates.master:2001
+msgid "Geneweb daemon listening port:"
+msgstr "المنفذ الذي يستخدمه عفريت Geneweb:"
+
+#. Type: string
+#. Description
+#: ../geneweb.templates.master:2001
+msgid ""
+"The port used by the geneweb daemon (gwd) for incoming connections may be "
+"configured here."
+msgstr ""
+"يمكن تهيئة المنفذ المستخدم من قبل عفريت Geneweb أو gwd للاتصالات الواردة هنا."
+
+#. Type: string
+#. Description
+#: ../geneweb.templates.master:2001
+msgid "Choose a port number above 1023 for the port gwd will listen to."
+msgstr "اختيار رقم منفذ أكبر من 1023 لرقم المنفذ الذي سيستعمله gwd."
+
+#. Type: string
+#. Description
+#: ../geneweb.templates.master:2001
+msgid "If unsure, leave the default value of 2317."
+msgstr "إن لم تكن متأكداً، اترك القيمة الافتراضيّة 2317."
+
+#. Type: select
+#. Choices
+#: ../geneweb.templates.master:3001 ../gwsetup.templates:2001
+msgid "Always on"
+msgstr "يعمل دائماً"
+
+#. Type: select
+#. Choices
+#: ../geneweb.templates.master:3001 ../gwsetup.templates:2001
+msgid "Manual"
+msgstr "يدوي"
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:3002
+msgid "Geneweb start mode:"
+msgstr "وضع بدء Geneweb:"
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:3002
+msgid ""
+"The Geneweb daemon gwd can be launched automatically at startup, manually by "
+"the system administrator, or by any user when it is needed."
+msgstr ""
+"يمكن تشغيل عفريت Geneweb gwd عند بدء التشغيل، أو يدوياً بواسطة مدير النظام، "
+"أو بواسطة أي مستخدم عند الحاجة."
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:3002
+msgid ""
+"If you choose \"Always on\", Geneweb will be launched at the system startup."
+msgstr "ان اخترت \"يعمل دائماً\"، فسوف يتم تشغيل Geneweb عند بدء تشغيل النظام."
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:3002
+msgid ""
+"If you want to prevent the automatic startup of Geneweb, for example if you "
+"prefer to run it as a CGI program, then choose \"Manual\"."
+msgstr ""
+"إن كنت تريد منع التشغيل الآلي لـGeneweb، مثلاً إن كنت تفضل تشغيله كبرنامج "
+"CGI، فعليك اختيار \"يدوي\"."
+
+#. Type: note
+#. Description
+#: ../geneweb.templates.master:4001
+msgid "Old directory /var/geneweb not removed"
+msgstr "لم تتم إزالة الدليل السابق /var/geneweb"
+
+#. Type: note
+#. Description
+#: ../geneweb.templates.master:4001
+msgid ""
+"Previous versions of both official and unofficial packages for Geneweb used "
+"non FHS-compliant /var/geneweb directory for storing databases."
+msgstr ""
+"استخدَمت النسخ السابقة من حزم Geneweb الرسميّة والغير رسميّة الدليل /var/"
+"geneweb الغير متوافق مع معيار FHS لتخزين قواعد البيانات."
+
+#. Type: note
+#. Description
+#: ../geneweb.templates.master:4001
+msgid ""
+"It has been detected that this directory was used on your system. Some files "
+"have been moved from there to /var/lib/geneweb but the geneweb installation "
+"scripts found some unexpected files in /var/geneweb."
+msgstr ""
+"اكتُشف استخدام هذا الدليل على نظامك. تم نقل بعض الملفّات من هناك إلى /var/lib/"
+"geneweb غير أن نصوص تثبيت geneweb البرمجيّة عثرت على بعض الملفّات الغير متوقعة "
+"في /var/geneweb."
+
+#. Type: note
+#. Description
+#: ../geneweb.templates.master:4001
+msgid ""
+"Thus the directory has been left intact. It is highly recommended that you "
+"check the remaining files there and move them to /var/lib/geneweb, then "
+"remove the /var/geneweb directory."
+msgstr ""
+"لذا تُرك الدليل على ما هو عليه. من المستحسن جداً أن تتحقّق من الملفات المتبقية "
+"هناك ونقلها إلى /var/lib/geneweb، ثم إزالة الدليل /var/geneweb."
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid "Remove Geneweb database directory on package purge?"
+msgstr "هل تريد إزالة دليل قاعدة بيانات Geneweb في حالة إزالة الحزمة كليّاً؟"
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid ""
+"Geneweb's databases will be stored in the database directory /var/lib/"
+"geneweb. These databases may be put there by authorized users who must be "
+"members of the \"geneweb\" group."
+msgstr ""
+"سيتم تخزين قواعد بيانات Geneweb في الدليل /var/lib/geneweb. يمكن وضع قواعد "
+"البيانات هذه من قبل المستخدمين المخوّلين والذين يجب أن يكونو أعضاء في مجموعة "
+"\"geneweb\"."
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid ""
+"Please choose whether you want to remove databases automatically when "
+"purging the package (completely removing it)."
+msgstr ""
+"الرجاء اختيار ما إذا كنت تريد إزالة قواعد البيانات آلياً عند إزالة الحزمة "
+"كليّاً (إزالتها بالكامل)."
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid ""
+"THIS WOULD ERASE USER-OWNED DATA. You have to be sure if you accept the "
+"purge."
+msgstr ""
+"يقوم هذا بمسح البيانات المملوكة للمستخدمين. يجب أن تكون متأكّداً إن قبلت "
+"الإزالة الكليّة."
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid ""
+"Note that if this directory is empty at the time you purge or simply remove "
+"the package, it will always be automatically removed."
+msgstr ""
+"لاحظ أنه إن كان هذا الدليل فارغاً عند الإزالة الكليّة أو إزالة الحزمة، فستتم "
+"إزالته تلقائيّاً دائماً."
+
+#. Type: string
+#. Description
+#: ../gwsetup.templates:1001
+msgid "Gwsetup daemon listening port:"
+msgstr "المنفذ الذي يستخدمه عفريت Geneweb:"
+
+#. Type: string
+#. Description
+#: ../gwsetup.templates:1001
+msgid ""
+"The port used by the gwsetup daemon for incoming connections may be "
+"configured here."
+msgstr "يمكن تهيئة المنفذ المستخدم من قبل عفريت gwsetup للاتصالات الواردة هنا."
+
+#. Type: string
+#. Description
+#: ../gwsetup.templates:1001
+msgid "Choose a port number above 1023 for the port gwsetup will listen to."
+msgstr "اختيار رقم منفذ أكبر من 1023 لرقم المنفذ الذي سيستعمله gwsetup."
+
+#. Type: string
+#. Description
+#: ../gwsetup.templates:1001
+msgid "If unsure, leave the default value of 2316."
+msgstr "إن لم تكن متأكداً، اترك القيمة الافتراضيّة 2316."
+
+#. Type: select
+#. Description
+#: ../gwsetup.templates:2002
+msgid "Gwsetup start mode:"
+msgstr "وضع بدء Gwsetup:"
+
+#. Type: select
+#. Description
+#: ../gwsetup.templates:2002
+msgid ""
+"The Gwsetup daemon can be launched automatically at startup, manually by the "
+"system administrator, or by any user when it is needed."
+msgstr ""
+"يمكن تشغيل عفريت Gwsetup عند بدء التشغيل، أو يدوياً بواسطة مدير النظام، أو "
+"بواسطة أي مستخدم عند الحاجة."
+
+#. Type: select
+#. Description
+#: ../gwsetup.templates:2002
+msgid ""
+"If you choose \"Always on\", gwsetup will be launched at the system startup."
+msgstr "ان اخترت \"يعمل دائماً\"، فسوف يتم تشغيل gwsetup عند بدء تشغيل النظام."
+
+#. Type: select
+#. Description
+#: ../gwsetup.templates:2002
+msgid ""
+"If you want to prevent the automatic startup of gwsetup, then choose \"Manual"
+"\"."
+msgstr "إن كنت تريد منع التشغيل الآلي لـgwsetup،  فعليكب اختيار \"يدوي\"."

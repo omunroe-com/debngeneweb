@@ -1,0 +1,349 @@
+#
+#    Translators, if you are not familiar with the PO format, gettext
+#    documentation is worth reading, especially sections dedicated to
+#    this format, e.g. by running:
+#         info -n '(gettext)PO Files'
+#         info -n '(gettext)Header Entry'
+#
+#    Some information specific to po-debconf are available at
+#            /usr/share/doc/po-debconf/README-trans
+#         or http://www.debian.org/intl/l10n/po-debconf/README-trans
+#
+#    Developers do not need to manually edit POT or PO files.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: geneweb 4.10-10\n"
+"Report-Msgid-Bugs-To: bubulle@debian.org\n"
+"POT-Creation-Date: 2006-12-01 19:37+0100\n"
+"PO-Revision-Date: 2005-11-28 23:57+0100\n"
+"Last-Translator: Daniel Nylander <po@danielnylander.se>\n"
+"Language-Team: Swedish <sv@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Poedit-Language: swe\n"
+"X-Poedit-Country: swe\n"
+
+#. Type: select
+#. Default
+#. This is the default choice. Translators may put their own language here
+#. instead of the default.
+#. WARNING : you MUST use the iso_639 two-letter code of your language
+#: ../geneweb.templates.master:1001
+msgid "en[ translators, please see comment in PO files]"
+msgstr "sv"
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:1002
+msgid "Geneweb default language:"
+msgstr "Förvalt språk i Geneweb:"
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:1002
+msgid "Geneweb can display its prompts in a number of languages."
+msgstr "Geneweb kan visa sina frågor på ett antal olika språk."
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:1002
+msgid "Select a default language for Geneweb to use in its page rendering."
+msgstr ""
+"Välj ett förvalt språk för Geneweb att använda på sina genererade sidor."
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:1002
+msgid "Other languages will still be available."
+msgstr "Andra språk kommer fortfarande vara tillgängliga."
+
+#. Type: string
+#. Description
+#: ../geneweb.templates.master:2001
+msgid "Geneweb daemon listening port:"
+msgstr "Lyssningsport för Geneweb-demonen:"
+
+#. Type: string
+#. Description
+#: ../geneweb.templates.master:2001
+msgid ""
+"The port used by the geneweb daemon (gwd) for incoming connections may be "
+"configured here."
+msgstr ""
+"Porten som används av geneweb-demonen (gwd) för inkommande anslutningen kan "
+"konfigureras här."
+
+#. Type: string
+#. Description
+#: ../geneweb.templates.master:2001
+msgid "Choose a port number above 1023 for the port gwd will listen to."
+msgstr "Välj ett portnummer över 1023 för porten som gwd ska lyssna på."
+
+#. Type: string
+#. Description
+#: ../geneweb.templates.master:2001
+msgid "If unsure, leave the default value of 2317."
+msgstr "Om du är osäker, lämna kvar det förvalda värdet 2317."
+
+#. Type: select
+#. Choices
+#: ../geneweb.templates.master:3001 ../gwsetup.templates:2001
+msgid "Always on"
+msgstr "Alltid på"
+
+#. Type: select
+#. Choices
+#: ../geneweb.templates.master:3001 ../gwsetup.templates:2001
+msgid "Manual"
+msgstr "Manuell"
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:3002
+msgid "Geneweb start mode:"
+msgstr "Genewebs startläge:"
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:3002
+msgid ""
+"The Geneweb daemon gwd can be launched automatically at startup, manually by "
+"the system administrator, or by any user when it is needed."
+msgstr ""
+"Genewebs demon (gwd) kan startas automatiskt vid systemets uppstart, "
+"manuellt av systemadministratören eller av någon användare när det behövs."
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:3002
+msgid ""
+"If you choose \"Always on\", Geneweb will be launched at the system startup."
+msgstr ""
+"Om du väljer \"Alltid på\" kommer Geneweb att startas vid systemets uppstart."
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:3002
+msgid ""
+"If you want to prevent the automatic startup of Geneweb, for example if you "
+"prefer to run it as a CGI program, then choose \"Manual\"."
+msgstr ""
+"Om du vill förhindra den automatiskt uppstarten av Geneweb, till exempel om "
+"du föredrar att köra den som ett CGI-program, välj då \"Manuell\"."
+
+#. Type: note
+#. Description
+#: ../geneweb.templates.master:4001
+msgid "Old directory /var/geneweb not removed"
+msgstr "Gamla mappen /var/geneweb inte borttagen"
+
+#. Type: note
+#. Description
+#: ../geneweb.templates.master:4001
+msgid ""
+"Previous versions of both official and unofficial packages for Geneweb used "
+"non FHS-compliant /var/geneweb directory for storing databases."
+msgstr ""
+"Tidigare versioner av båda officiella och icke-officiella paket för Geneweb "
+"använde ett icke FHS-godkänd mapp, /var/geneweb för att lagra databaserna."
+
+#. Type: note
+#. Description
+#: ../geneweb.templates.master:4001
+msgid ""
+"It has been detected that this directory was used on your system. Some files "
+"have been moved from there to /var/lib/geneweb but the geneweb installation "
+"scripts found some unexpected files in /var/geneweb."
+msgstr ""
+"Det upptäcktes att denna mapp tidigare har använts på ditt system. Några "
+"filer har blivit flyttade därifrån till /var/lib/geneweb men genewebs "
+"installationsskript hittade några oväntade filer i /var/geneweb."
+
+#. Type: note
+#. Description
+#: ../geneweb.templates.master:4001
+msgid ""
+"Thus the directory has been left intact. It is highly recommended that you "
+"check the remaining files there and move them to /var/lib/geneweb, then "
+"remove the /var/geneweb directory."
+msgstr ""
+"Även om mappen har lämnats kvar intakt är det högst rekommenderat att du "
+"kontrollerar de återstående filerna där och flyttar dom till /var/lib/"
+"geneweb, ta sedan bort mappen /var/geneweb."
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid "Remove Geneweb database directory on package purge?"
+msgstr "Ta bort Genewebs databasmapp vid avinstallation av paketet?"
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid ""
+"Geneweb's databases will be stored in the database directory /var/lib/"
+"geneweb. These databases may be put there by authorized users who must be "
+"members of the \"geneweb\" group."
+msgstr ""
+"Genewebs databaser kommer att lagras i databasmappen /var/lib/geneweb. Dessa "
+"databaser kan läggas där av auktoriserade användare som måste vara medlemmar "
+"av gruppen \"geneweb\"."
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid ""
+"Please choose whether you want to remove databases automatically when "
+"purging the package (completely removing it)."
+msgstr ""
+"Vänligen välj om du vill ta bort databaser automatiskt vid rensning av "
+"paketet (ta bort det totalt)."
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid ""
+"THIS WOULD ERASE USER-OWNED DATA. You have to be sure if you accept the "
+"purge."
+msgstr ""
+"DETTA KOMMER ATT TA BORT ANVÄNDARNAS DATA. Du måste vara säker om du "
+"accepterar rensningen."
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid ""
+"Note that if this directory is empty at the time you purge or simply remove "
+"the package, it will always be automatically removed."
+msgstr ""
+"Notera att om denna mapp är tom då du rensar ut paketet eller helt enkelt "
+"tar bort paketet kommer den alltid att tas bort automatiskt."
+
+#. Type: string
+#. Description
+#: ../gwsetup.templates:1001
+msgid "Gwsetup daemon listening port:"
+msgstr "Lyssningsport för demonen gwsetup:"
+
+#. Type: string
+#. Description
+#: ../gwsetup.templates:1001
+msgid ""
+"The port used by the gwsetup daemon for incoming connections may be "
+"configured here."
+msgstr ""
+"Porten som används av demonen gwsetup för inkommande anslutningar kan "
+"konfigureras här."
+
+#. Type: string
+#. Description
+#: ../gwsetup.templates:1001
+msgid "Choose a port number above 1023 for the port gwsetup will listen to."
+msgstr "Välj ett portnummer över 1023 för porten som gwsetup ska lyssna på."
+
+#. Type: string
+#. Description
+#: ../gwsetup.templates:1001
+msgid "If unsure, leave the default value of 2316."
+msgstr "Om du är osäker, lämna kvar det förvalda värdet 2316."
+
+#. Type: select
+#. Description
+#: ../gwsetup.templates:2002
+msgid "Gwsetup start mode:"
+msgstr "Gwsetups startläge:"
+
+#. Type: select
+#. Description
+#: ../gwsetup.templates:2002
+msgid ""
+"The Gwsetup daemon can be launched automatically at startup, manually by the "
+"system administrator, or by any user when it is needed."
+msgstr ""
+"Demonen gwsetup kan startas automatiskt vid systemets uppstart, manuellt av "
+"systemadministratören eller av någon användare när det behövs."
+
+#. Type: select
+#. Description
+#: ../gwsetup.templates:2002
+msgid ""
+"If you choose \"Always on\", gwsetup will be launched at the system startup."
+msgstr ""
+"Om du väljer \"Alltid på\" kommer gwsetup att startas vid systemets uppstart."
+
+#. Type: select
+#. Description
+#: ../gwsetup.templates:2002
+msgid ""
+"If you want to prevent the automatic startup of gwsetup, then choose \"Manual"
+"\"."
+msgstr ""
+"Om du vill förhindra den automatiskt uppstarten av gwsetup, välj då \"Manuell"
+"\"."
+
+#~ msgid "Old setup file moved"
+#~ msgstr "Gammal konfigurationsfil flyttad"
+
+#~ msgid ""
+#~ "Previous versions of both official and unofficial packages for Geneweb "
+#~ "used a file named /etc/geneweb/genewebrc for keeping local setup for the "
+#~ "listening port and the default language of the program."
+#~ msgstr ""
+#~ "Tidigare versioner av både offciella och icke-officiella paket för "
+#~ "Geneweb använde en fil kallad /etc/geneweb/genewebrc för att hålla lokal "
+#~ "konfiguration för lyssningsporten och det förvalda språket för programmet."
+
+#~ msgid "Debian standards suggest such file to live in /etc/default/geneweb."
+#~ msgstr ""
+#~ "Debians standarder föreslår att en sådan fil ska leva i /etc/default/"
+#~ "geneweb."
+
+#~ msgid ""
+#~ "The configuration file has been moved and renamed to /etc/default/geneweb."
+#~ msgstr ""
+#~ "Konfigurationsfilen har flyttats och byt namn till /etc/default/geneweb."
+
+#~ msgid ""
+#~ "This note will only appear once except if you inadvertently re-create /"
+#~ "etc/geneweb/genewebrc."
+#~ msgstr ""
+#~ "Denna notering kommer bara visas en gång förutom om du av misstag "
+#~ "återskapar /etc/geneweb/genewebrc."
+
+#~ msgid "Remove /etc/geneweb/lang and /etc/geneweb/etc?"
+#~ msgstr "Ta bort /etc/geneweb/lang och /etc/geneweb/etc?"
+
+#~ msgid ""
+#~ "Former versions of the geneweb packages used /etc/geneweb/etc and /etc/"
+#~ "geneweb/lang directories for generated HTML pages default templates."
+#~ msgstr ""
+#~ "Tidigare versioner av geneweb-paketen använde mapparna /etc/geneweb/etc "
+#~ "och /etc/geneweb/lang för standard genererade HTML-mallar."
+
+#~ msgid ""
+#~ "These templates are strongly dependent on the Geneweb version (for "
+#~ "instance, translations updates occur there). So, it is not a good idea to "
+#~ "customise them."
+#~ msgstr ""
+#~ "Dessa mallar är mycket beroende av Geneweb-versionen (till exempel, "
+#~ "uppdatering av översättningen sker där). Därför är det inte en bra idé "
+#~ "att modifiera dom."
+
+#~ msgid ""
+#~ "These files have been moved to /usr/share/geneweb/etc and /usr/share/"
+#~ "geneweb/lang."
+#~ msgstr ""
+#~ "Dessa filer har blivit flyttade till /usr/share/geneweb/etc och /usr/"
+#~ "share/geneweb/lang."
+
+#~ msgid ""
+#~ "If you never customised these files, they may be safely removed. Just "
+#~ "accept the removal now."
+#~ msgstr ""
+#~ "Om du aldrig modiferat dessa filer kan de med säkerhet tas bort. Bara att "
+#~ "acceptera borttagningen nu."
+
+#~ msgid "You may choose to keep them \"just in case\"."
+#~ msgstr "Du kan välja att behålla dom \"i fall att..\"."

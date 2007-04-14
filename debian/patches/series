@@ -1,0 +1,20 @@
+000_Makefile
+001_dag2html.1
+002_de-translation
+#Useless for 5.00
+#003_gwd.ml-writelog
+004_gwd.ml-readauth
+#Useless for 5.00
+#005_memory-leak-301378
+#Useless for 5.00
+#006_consang.1
+#Useless for 5.00
+#007_gwd.1
+#Useless for 5.00
+#008_gwc.1
+#Useless for 5.00
+#009_compile_with_ocaml-3.09
+010_gwsetup-fhs
+#Useless for 5.00
+#011_gwsetup-man
+012_gwc.1-syntax
