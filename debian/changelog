@@ -1,3 +1,10 @@
+geneweb (4.10-27) UNRELEASED; urgency=low
+
+  * Debconf translations:
+    - Galician added. Closes: #419864
+
+ -- Christian Perrier <bubulle@debian.org>  Wed, 18 Apr 2007 20:13:43 +0200
+
 geneweb (4.10-26) unstable; urgency=low
 
   * Debconf translations:
