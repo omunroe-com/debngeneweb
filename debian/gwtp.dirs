@@ -1,0 +1,4 @@
+usr/lib/geneweb
+usr/lib/cgi-bin/gwtp
+etc/geneweb/gwtp
+var/run/gwtp

@@ -1,0 +1,270 @@
+#!/usr/bin/make -f
+# MAde with the aid of dh_make, by Craig Small
+# Sample debian/rules that uses debhelper. GNU copyright 1997 by Joey Hess.
+# Some lines taken from debmake, by Cristoph Lameter.
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+PACKAGE=geneweb
+WAY=$(shell if [ -f "/usr/bin/ocamlc.opt" ]; then echo "opt";		\
+	else echo "out";						\
+	fi)
+
+# This code for backportability
+# See http://lists.debian.org/debian-i18n/2003/debian-i18n-200307/msg00026.html
+# for details
+# Thanks Colin Watson
+ifeq (,$(wildcard /usr/bin/po2debconf))
+PO2DEBCONF := no
+MINDEBCONFVER := 0.5
+else
+PO2DEBCONF := yes
+MINDEBCONFVER := 1.2.0
+endif
+
+# Use dpatch for patches
+PATCHLIST	 = $(notdir $(basename $(wildcard debian/patches/*.dpatch)))
+include /usr/share/dpatch/dpatch.make
+
+
+configure:
+
+configure-stamp:	patch
+	dh_testdir
+	touch configure-stamp
+
+
+build: configure-stamp build-stamp
+build-stamp:
+	dh_testdir
+	bash -n debian/geneweb.postinst
+	bash -n debian/geneweb.postrm
+	bash -n debian/geneweb.preinst
+	bash -n debian/geneweb.prerm
+	bash -n debian/geneweb.init
+	dh_installdirs -A
+
+	# Move the proper makefile into place	
+	cp -f `pwd`/tools/Makefile.inc.$(WAY) `pwd`/tools/Makefile.inc
+
+	$(MAKE) $(WAY)
+
+	$(MAKE) distrib
+	touch build-stamp
+
+clean:	clean-patched unpatch
+
+clean-patched:	
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp install-stamp configure-stamp
+	rm -rf debian/iso-codes
+	rm -rf debian/pobuild
+	rm -f debian/geneweb.templates.tmp
+	rm -f debian/geneweb.templates
+ifeq ($(PO2DEBCONF),yes)
+	# Hack for woody compatibility. This makes sure that the
+	# debian/templates file shipped in the source package doesn't
+	# specify encodings, which woody's debconf can't handle. If building
+	# on a system with po-debconf installed (conveniently debhelper (>=
+	# 4.1.16) depends on it), the binary-arch target will generate a
+	# better version for sarge.
+	echo 1 > debian/po/output
+	po2debconf debian/geneweb.templates.woody > debian/geneweb.templates
+		rm -f debian/po/output
+endif	
+
+	# Add here commands to clean up after the build process.
+	-$(MAKE) clean
+	dh_clean
+
+install: install-stamp
+install-stamp: build-stamp
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs
+
+	# Add here commands to install the package into debian/tmp.
+	cp -aR `pwd`/distribution/gw/* `pwd`/debian/tmp/usr/lib/geneweb
+
+	# Now some cleaning of default installation
+
+	# License is already in /usr/share/doc/geneweb
+	rm `pwd`/debian/tmp/usr/lib/geneweb/LICENSE.txt
+
+	# We forget gwsetup as geneweb runs as a dameon
+	# gwsetup is a toy for Windows users..:-)
+	rm `pwd`/debian/tmp/usr/lib/geneweb/gwsetup
+
+	# commands that need to be accessed at the command line
+	mv `pwd`/debian/tmp/usr/lib/geneweb/consang \
+		`pwd`/debian/tmp/usr/bin
+	mv `pwd`/debian/tmp/usr/lib/geneweb/ged2gwb \
+		`pwd`/debian/tmp/usr/bin
+	mv `pwd`/debian/tmp/usr/lib/geneweb/gwb2ged \
+		`pwd`/debian/tmp/usr/bin
+	mv `pwd`/debian/tmp/usr/lib/geneweb/gwc \
+		`pwd`/debian/tmp/usr/bin
+	mv `pwd`/debian/tmp/usr/lib/geneweb/gwd \
+		`pwd`/debian/tmp/usr/bin
+	mv `pwd`/debian/tmp/usr/lib/geneweb/gwu \
+		`pwd`/debian/tmp/usr/bin
+
+	# GWSETUP related files are useles
+	# as gwsetup may not be used as such
+	rm -rf `pwd`/debian/tmp/usr/lib/geneweb/setup
+
+	# Doc files go to the appropriate directory
+	cp -r `pwd`/debian/tmp/usr/lib/geneweb/doc \
+		`pwd`/debian/tmp/usr/share/doc/geneweb
+	rm -rf `pwd`/debian/tmp/usr/lib/geneweb/doc
+	mv `pwd`/debian/tmp/usr/lib/geneweb/CHANGES.txt \
+	        `pwd`/debian/tmp/usr/share/doc/geneweb/changelog
+	# LISEZMOI.txt is french-only
+	# and is not really adapted to the geneweb Debian package
+	# It could misguide users, so let's forget about it
+#	mv `pwd`/debian/tmp/usr/lib/geneweb/LISEZMOI.txt \
+#	        `pwd`/debian/tmp/usr/share/doc/geneweb
+	mv `pwd`/debian/tmp/usr/lib/geneweb/README.txt \
+	        `pwd`/debian/tmp/usr/share/doc/geneweb
+
+	# These are example files
+	rm `pwd`/debian/tmp/usr/lib/geneweb/a.gwf 
+	rm `pwd`/debian/tmp/usr/lib/geneweb/only.txt
+
+	# Useless doc files
+	rm `pwd`/debian/tmp/usr/lib/geneweb/INSTALL.htm
+
+	# Useless and conflicting man page (already in dag2html)
+	rm `pwd`/debian/tmp/usr/share/man/man1/dag2html.1.gz || true
+	rm `pwd`/debian/tmp/usr/share/man/man1/dag2html.1 || true
+
+	# Files in "lang" directory 
+	cp -r `pwd`/debian/tmp/usr/lib/geneweb/lang/* \
+	        `pwd`/debian/tmp/usr/share/geneweb/lang
+	rm -rf `pwd`/debian/tmp/usr/lib/geneweb/lang
+
+	# Files in "etc" directory 
+	cp -r `pwd`/debian/tmp/usr/lib/geneweb/etc/* \
+		`pwd`/debian/tmp/usr/share/geneweb/etc
+	rm -rf `pwd`/debian/tmp/usr/lib/geneweb/etc
+
+	# Files in "images" directory
+	cp -r `pwd`/debian/tmp/usr/lib/geneweb/images/* \
+		`pwd`/debian/tmp/usr/share/geneweb/images
+	rm -rf `pwd`/debian/tmp/usr/lib/geneweb/images
+
+	# Lintian overrides file
+	cp `pwd`/debian/geneweb.lintian-overrides `pwd`/debian/tmp/usr/share/lintian/overrides/geneweb
+
+	# Icon for menus
+	cp `pwd`/debian/geneweb.xpm `pwd`/debian/tmp/usr/share/pixmaps/geneweb.xpm
+
+	# The gwd wrapper script
+	cp `pwd`/debian/add-on/gwd.wrapper `pwd`/debian/tmp/usr/lib/geneweb/gwd.wrapper
+	chmod 755 `pwd`/debian/tmp/usr/lib/geneweb/gwd.wrapper
+
+	# A useless dir
+	rmdir `pwd`/debian/tmp/usr/lib/geneweb/old
+
+	# GWTP handling
+	# The README file is a doc file
+	# commented out when splitting the package
+	#mv `pwd`/debian/tmp/usr/lib/geneweb/gwtp_tmp/README \
+	#        `pwd`/debian/tmp/usr/share/doc/geneweb/README.gwtp
+	rm `pwd`/debian/tmp/usr/lib/geneweb/gwtp_tmp/README
+
+	# The files under lang are configuration files
+	cp -r `pwd`/debian/tmp/usr/lib/geneweb/gwtp_tmp/lang \
+	        `pwd`/debian/gwtp/etc/geneweb/gwtp
+	rm -rf `pwd`/debian/tmp/usr/lib/geneweb/gwtp_tmp/lang 
+	# The gwtp program
+	mv `pwd`/debian/tmp/usr/lib/geneweb/gwtp_tmp/gwtp \
+	        `pwd`/debian/gwtp/usr/lib/geneweb
+	# This directory is now useless
+	rmdir `pwd`/debian/tmp/usr/lib/geneweb/gwtp_tmp
+	# The CGI script
+	cp `pwd`/debian/add-on/gwtp.cgi `pwd`/debian/gwtp/usr/lib/cgi-bin/gwtp
+	chmod 755 `pwd`/debian/gwtp/usr/lib/cgi-bin/gwtp/gwtp.cgi
+	# A default gwf file
+	cp `pwd`/debian/add-on/gwtp-default.gwf `pwd`/debian/gwtp/etc/geneweb/gwtp/default.gwf
+	# A default passwd file for gwtp
+	cp `pwd`/debian/add-on/gwtp.passwd `pwd`/debian/gwtp/etc/geneweb/gwtp/passwd
+
+# Build architecture-independent files here.
+# Pass -i to all debhelper commands in this target to reduce clutter.
+binary-indep: DH_OPTIONS=-i
+binary-indep: build install
+
+# Build architecture-dependent files here.
+# Pass -a to all debhelper commands in this target to reduce clutter.
+binary-arch: DH_OPTIONS=-a
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installdebconf
+	dh_installdocs
+	dh_installmenu
+#	dh_installemacsen
+	dh_installinit
+	dh_installcron
+	# dh_installexamples is not available in Debian Potato...
+	# Idea stolen to samba packages, thanks Eloy
+	if [ -x /usr/bin/dh_installexamples ]; then \
+		dh_installexamples; \
+	fi
+
+	# dh_installlogrotate is not available in Debian Potato...
+	# Idea stolen to samba packages, thanks Eloy
+	if [ -x /usr/bin/dh_installlogrotate ] ; then \
+		dh_installlogrotate; \
+	else \
+		mkdir -p debian/tmp/etc/logrotate.d; \
+		cp debian/geneweb.logrotate debian/tmp/etc/logrotate.d/geneweb; \
+		mkdir -p debian/gwtp/etc/logrotate.d; \
+		cp debian/gwtp.logrotate debian/gwtp/etc/logrotate.d/gwtp; \
+	fi
+	# dh_installman for woody, dh_installmanpages for potato
+	if [ -x /usr/bin/dh_installman ] ; then \
+		dh_installman; \
+	fi
+	# gwtp does not have any manpage
+	if [ -x /usr/bin/dh_installmanpages ] ; then \
+		dh_installmanpages -pgeneweb; \
+	fi
+
+	# For woody compatibility
+ifeq ($(PO2DEBCONF),yes)
+		# Grab ISO 639 language code translations
+		chmod u+x debian/get-iso-codes
+		debian/get-iso-codes
+		# Build templates
+		chmod u+x debian/mktemplates.sarge
+		chmod u+x debian/po2debconf
+		chmod u+x debian/intltool-merge
+		debian/mktemplates.sarge
+endif
+
+	dh_installdebconf
+	dh_installchangelogs
+	dh_strip
+	dh_compress
+	dh_fixperms
+	# Use of the dh-buildinfo package: see http://people.debian.org/~dirson/buildinfo/
+	dh_buildinfo
+	dh_installdeb
+	dh_shlibdeps
+
+	# For woody compatibility
+	dh_gencontrol -- -V'debconf-depends=debconf (>= $(MINDEBCONFVER))'
+
+	dh_md5sums
+	dh_builddeb
+
+source diff:                                                                  
+	@echo >&2 'source and diff are obsolete - use dpkg-source -b'; false
+
+binary: binary-indep binary-arch
+.PHONY: build clean binary-indep binary-arch binary install patch unpatch

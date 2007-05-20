@@ -1,0 +1,118 @@
+#! /bin/sh -e
+## 000_Makefile.dpatch by  <bubulle@debian.org>
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Tim Dijkstra patch for proper handling of autocomments
+
+if [ $# -lt 1 ]; then
+    echo "`basename $0`: script expects -patch|-unpatch as argument" >&2
+    exit 1
+fi
+
+[ -f debian/patches/00patch-opts ] && . debian/patches/00patch-opts
+patch_opts="${patch_opts:--f --no-backup-if-mismatch} ${2:+-d $2}"
+
+case "$1" in
+    -patch) patch -p1 ${patch_opts} < $0;;
+    -unpatch) patch -R -p1 ${patch_opts} < $0;;
+    *)
+        echo "`basename $0`: script expects -patch|-unpatch as argument" >&2
+        exit 1;;
+esac
+
+exit 0
+
+@DPATCH@
+
+diff -Nru --exclude=CVS geneweb-4.09+cvs20040827.old/tools/Makefile.inc.opt geneweb-4.09+cvs20040827/tools/Makefile.inc.opt
+--- geneweb-4.09+cvs20040827.old/tools/Makefile.inc.opt	1970-01-01 01:00:00.000000000 +0100
++++ geneweb-4.09+cvs20040827/tools/Makefile.inc.opt	2004-11-13 14:27:16.000000000 +0100
+@@ -0,0 +1,42 @@
++# $Id: 000_Makefile.dpatch,v 1.1 2004/11/13 18:40:20 bubulle Exp $
++
++TOP=..
++CAMLP4_COMM=TOP=$(TOP) $(TOP)/tools/camlp4_comm.sh pa_ifdef.cmo
++CAMLP4F=-DUNIX
++CAMLP4D=`camlp4 -where`
++LIBUNIX=-cclib -lunix
++OCAMLC=ocamlc.opt -warn-error A
++OCAMLOPT=ocamlopt.opt -warn-error A
++OCAMLI=
++OCAMLD=
++STRIP=strip
++RM=/bin/rm -f
++EXE=
++STATIC=-ccopt -static
++STATIC=
++
++all::
++opt::
++
++clean::
++	$(RM) *.out *.opt *.cm[oixa] *.cmxa *.pp[oi] *.o *.a *.obj *.lib *.lck *.bak *~ .#*
++
++.SUFFIXES: .ml .cmo .mli .cmi .cmx
++
++.mli.cmi:
++	@if test `basename $<` != $<; then echo "Bad directory for $<"; exit 1; fi
++	@$(CAMLP4_COMM) $(CAMLP4F) $< -o $*.ppi
++	$(OCAMLC) $(OCAMLI) -I $(CAMLP4D) -c -intf $*.ppi
++	$(RM) $*.ppi
++
++.ml.cmo:
++	@if test `basename $<` != $<; then echo "Bad directory for $<"; exit 1; fi
++	@$(CAMLP4_COMM) $(CAMLP4F) $< -o $*.ppo
++	$(OCAMLC) $(OCAMLI) $(OCAMLD) -I $(CAMLP4D) -c -impl $*.ppo
++	$(RM) $*.ppo
++
++.ml.cmx:
++	@if test `basename $<` != $<; then echo "Bad directory for $<"; exit 1; fi
++	@$(CAMLP4_COMM) $(CAMLP4F) $< -o $*.ppo
++	$(OCAMLOPT) $(OCAMLI) -I $(CAMLP4D) -c -impl $*.ppo
++	$(RM) $*.ppo
+diff -Nru --exclude=CVS geneweb-4.09+cvs20040827.old/tools/Makefile.inc.out geneweb-4.09+cvs20040827/tools/Makefile.inc.out
+--- geneweb-4.09+cvs20040827.old/tools/Makefile.inc.out	1970-01-01 01:00:00.000000000 +0100
++++ geneweb-4.09+cvs20040827/tools/Makefile.inc.out	2004-11-13 14:27:16.000000000 +0100
+@@ -0,0 +1,42 @@
++# $Id: 000_Makefile.dpatch,v 1.1 2004/11/13 18:40:20 bubulle Exp $
++
++TOP=..
++CAMLP4_COMM=TOP=$(TOP) $(TOP)/tools/camlp4_comm.sh pa_ifdef.cmo
++CAMLP4F=-DUNIX
++CAMLP4D=`camlp4 -where`
++LIBUNIX=-cclib -lunix
++OCAMLC=ocamlc -warn-error A
++OCAMLOPT=ocamlopt -warn-error A
++OCAMLI=
++OCAMLD=
++STRIP=strip
++RM=/bin/rm -f
++EXE=
++STATIC=-ccopt -static
++STATIC=
++
++all::
++opt::
++
++clean::
++	$(RM) *.out *.opt *.cm[oixa] *.cmxa *.pp[oi] *.o *.a *.obj *.lib *.lck *.bak *~ .#*
++
++.SUFFIXES: .ml .cmo .mli .cmi .cmx
++
++.mli.cmi:
++	@if test `basename $<` != $<; then echo "Bad directory for $<"; exit 1; fi
++	@$(CAMLP4_COMM) $(CAMLP4F) $< -o $*.ppi
++	$(OCAMLC) $(OCAMLI) -I $(CAMLP4D) -c -intf $*.ppi
++	$(RM) $*.ppi
++
++.ml.cmo:
++	@if test `basename $<` != $<; then echo "Bad directory for $<"; exit 1; fi
++	@$(CAMLP4_COMM) $(CAMLP4F) $< -o $*.ppo
++	$(OCAMLC) $(OCAMLI) $(OCAMLD) -I $(CAMLP4D) -c -impl $*.ppo
++	$(RM) $*.ppo
++
++.ml.cmx:
++	@if test `basename $<` != $<; then echo "Bad directory for $<"; exit 1; fi
++	@$(CAMLP4_COMM) $(CAMLP4F) $< -o $*.ppo
++	$(OCAMLOPT) $(OCAMLI) -I $(CAMLP4D) -c -impl $*.ppo
++	$(RM) $*.ppo

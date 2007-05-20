@@ -1,0 +1,181 @@
+#!/bin/sh
+#
+# /etc/init.d/geneweb
+#
+### BEGIN INIT INFO
+# Provides:          geneweb
+# Required-Start:    $syslog $remote_fs
+# Should-Start:      $time $portmap
+# Required-Stop:     $syslog $remote_fs
+# Should-Stop:       $time $portmap
+# Default-Start:     3 5
+# Default-Stop:      0 1 2 6
+# Short-Description: Geneweb daemon for genealogy databases services
+# Description:       The geneweb daemon serves genealogy databases
+#	Geneweb is a genealogy software with a web interface.
+#	This daemon allows serving genealogy databases over the network
+### END INIT INFO
+
+# Source LSB init functions
+# This provides start_daemon, killproc, pidofproc,
+# log_success_msg, log_failure_msg and log_warning_msg.
+. /lib/lsb/init-functions
+
+# Do not change the values below
+GENEWEBSHARE=/usr/share/geneweb
+GENEWEBDOC=/usr/share/doc/geneweb/doc
+GENEWEBDB=/var/lib/geneweb
+GENEWEBUSER=geneweb
+DAEMON=/usr/bin/gwd
+WRAPPER=/usr/lib/geneweb/gwd.wrapper
+NAME=geneweb
+LOGFILE=/var/log/$NAME.log
+
+# Defaults
+# The port which the daemon listens to
+PORT=2317
+# The default language
+LANG=en
+# Run Mode : if anything else than "daemon", no daemon will be
+# launched automatically
+RUN_MODE="Always on"
+# Additionnal options
+OPTIONS=""
+
+# Reads config file (will override defaults above)
+[ -r /etc/default/geneweb ] && . /etc/default/geneweb
+
+# Export variables so that they may be used by the wrapper script
+export LANG PORT LOGFILE NAME DAEMON GENEWEBDB GENEWEBDOC GENEWEBSHARE OPTIONS
+
+# Those LSB defined exit status codes shall be used (except for status)
+# 0     sucess
+# 1	generic or unspecified error (current practice)
+# 2	invalid or excess argument(s)
+# 3	unimplemented feature (for example, "reload")
+# 4	user had insufficient privilege
+# 5	program is not installed
+# 6	program is not configured
+# 7    	program is not running
+# 8-199 reserved (8-99 LSB, 100-149 distribution, 150-199 application)
+# 
+# Note that those situation shall also be regarded as success:
+# * restarting a service (instead of reloading it)
+#   with the "force-reload" argument
+# * running "start" on a service already running
+# * running "stop" on a service already stopped or not running
+# * running "restart" on a service already stopped or not running
+# * running "try-restart" on a service already stopped or not running
+#
+
+case "$1" in
+    start)
+	# Start service with startproc which shall return the
+        # LSB exit status
+	start_daemon "$DAEMON" "$OPTIONS"
+	STATUS=$?
+	if [ "$STATUS" = 0]
+	then
+            log_success_msg "Starting FOO"
+        else
+  	    log_failure_msg "Starting FOO"
+        fi
+	exit $STATUS
+	;;
+    stop)
+	echo -n "Shutting down FOO "
+	# Stop the service with killproc which shall return the
+        # LSB exit status
+	killproc "$DAEMON"
+	STATUS=$?
+	if [ "$STATUS" = 0 ]
+	then
+	    log_success_msg "Shutting down FOO"
+	    exit 0
+        else
+	    log_failure_msg "Shutting down FOO"
+        fi
+	exit $STATUS
+	;;
+    try-restart)
+	# Do a restart only if the service is running
+	# try-restart has been added to the LSB in 1.9
+	# RedHat's similar command is called condrestart.
+	$0 status > /dev/null
+	STATUS=$?
+	if [ "$STATUS" = 0 ]
+	then
+	    $0 restart
+	else
+	    log_success_msg "Try-Restarting FOO: not running"
+	fi
+	exit 0 # not running is also regarded as success
+	;;
+    restart)
+	# Restart service (if running) or start service
+	$0 stop
+	$0 start
+	;;
+    force-reload)
+	# Reload the configuartion. Usually a SIGHUP is used for this
+	# If it doesn't support his signal, restart it (only if running)
+
+        # Supports signalling
+	killproc -HUP "$DAEMON"
+	SIGNAL=$?
+	if [ "$SIGNAL" = 0 ]
+	then
+	    log_success_msg "Reloading FOO"
+	else
+	    log_failure_msg "Reloading FOO"
+	fi
+	exit $STATUS
+
+	# Otherwise
+	#$0 try-restart
+	;;
+    reload)
+	# Reload configuration file, but don't restart if it is not supported
+
+	# If it supports signaling:
+	killproc -HUP "$DAEMON"
+	SIGNAL=$?
+	if [ "$SIGNAL" = 0 ]
+	then
+	    log_success_msg "Reloading FOO"
+	else
+	    log_failure_msg "Reloading FOO"
+	fi
+	exit $STATUS
+	
+	# Otherwise
+	# exit 3
+	;;
+    status)
+	# Use pidofproc to check the status of the service,
+	# pidofproc returns the exit status code of 0 when it the process is
+	# running.
+
+	# LSB defined exit status codes for status:
+	# 0	program is running or service is OK
+	# 1	program is dead and /var/run pid file exists
+	# 2	program is dead and /var/lock lock file exists
+	# 3	program is not running
+	# 4	program or service status is unknown
+	# 5-199	reserved (5-99 LSB, 100-149 distribution, 150-199 applications)
+	
+	checkproc "$DAEMON" > /dev/null
+	STATUS=$?
+	if [ "$SIGNAL" = 0 ]
+	then
+	    log_success_msg "Checking FOO"
+	else
+	    log_warning_msg "Checking FOO: Not running"
+	fi
+	exit $STATUS
+	;;
+    *)
+	echo "Usage: $0 {start|stop|status|try-restart|restart|force-reload|reload}"
+	exit 1
+	;;
+esac

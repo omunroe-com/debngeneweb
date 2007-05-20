@@ -1,0 +1,11 @@
+Document: geneweb
+Title: Geneweb Manual
+Author: Daniel de Rauglaudre
+Abstract: This package contains the reference documentation
+ for the Geneweb Genealogical Software
+Section: Apps/Tools
+
+Format: HTML
+Index: /usr/share/doc/geneweb/doc/index.htm
+Files: /usr/share/doc/geneweb/doc/*.htm
+

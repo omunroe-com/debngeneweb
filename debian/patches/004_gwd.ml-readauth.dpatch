@@ -1,0 +1,46 @@
+#! /bin/sh -e
+## 004_gwd.ml-readauth.dpatch by Christian Perrier
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Allow reading the auth file outside "secure" directories
+
+if [ $# -lt 1 ]; then
+    echo "`basename $0`: script expects -patch|-unpatch as argument" >&2
+    exit 1
+fi
+
+[ -f debian/patches/00patch-opts ] && . debian/patches/00patch-opts
+patch_opts="${patch_opts:--f --no-backup-if-mismatch} ${2:+-d $2}"
+
+case "$1" in
+    -patch) patch -p1 ${patch_opts} < $0;;
+    -unpatch) patch -R -p1 ${patch_opts} < $0;;
+    *)
+        echo "`basename $0`: script expects -patch|-unpatch as argument" >&2
+        exit 1;;
+esac
+
+exit 0
+
+@DPATCH@
+
+--- geneweb-4.10.ori/src/gwd.ml	2004-12-30 07:54:27.000000000 +0100
++++ geneweb-4.10/src/gwd.ml	2004-12-30 07:55:24.000000000 +0100
+@@ -466,7 +466,7 @@
+   if auth_file = "" then None
+   else
+     let auth_file = Util.base_path [] auth_file in
+-    match try Some (Secure.open_in auth_file) with [ Sys_error _ -> None ] with
++    match try Some (open_in auth_file) with [ Sys_error _ -> None ] with
+     [ Some ic ->
+         try
+           let rec loop () =
+@@ -1031,7 +1031,7 @@
+     let auth = Wserver.extract_param "authorization: " '\r' request in
+     if auth <> "" then
+       match
+-        try Some (Secure.open_in auth_file) with [ Sys_error _ -> None ]
++        try Some (open_in auth_file) with [ Sys_error _ -> None ]
+       with
+       [ Some ic ->
+           let auth =

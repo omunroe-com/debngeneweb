@@ -1,0 +1,953 @@
+Template: geneweb/lang
+Type: select
+Choices: Afrikaans (af), Bulgarian (bg), Catalan (ca), Chinese (zh), Czech (cs), Danish (da), Dutch (nl), English (en), Esperanto (eo), Estonian (et), Finnish (fi), French (fr), German (de), Hebrew (he), Icelandic (is), Italian (it), Latvian (lv), Norwegian (no), Polish (pl), Portuguese (pt), Romanian (ro), Russian (ru), Spanish (es), Swedish (sv)
+Default: English (en)
+Description: Geneweb default language:
+ Geneweb can display its prompts in a number of languages.
+ .
+ Select a default language for Geneweb to use in its page rendering.
+ .
+ Other languages will still be available.
+Description-ar: Ø§Ù„Ù„ØºØ© Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠÙ‘Ø© Ù„Ù€Geneweb:
+ ÙŠØ³ØªØ·ÙŠØ¹ Geneweb Ø¹Ø±Ø¶ Ø§Ù„Ù…Ù„Ù‚Ù‘Ù† Ø¨Ø¹Ø¯Ø¯ Ù…Ù† Ø§Ù„Ù„ØºØ§Øª.
+ .
+ Ø§Ø®ØªÙŠØ§Ø± Ù„ØºØ© Ø§ÙØªØ±Ø§Ø¶ÙŠÙ‘Ø© ÙŠØ³ØªØ®Ø¯Ù…Ù‡Ø§ Geneweb ÙÙŠ
+ Ø¹Ø±Ø¶ Ø§Ù„ØµÙØ­Ø§Øª.
+ .
+ Ø³ØªØ¨Ù‚Ù‰ Ø§Ù„Ù„ØºØ§Øª Ø§Ù„Ø£Ø®Ø±Ù‰ Ù…ØªÙˆÙÙ‘Ø±Ø©.
+Description-ca: Llengua per defecte de Geneweb:
+ Geneweb pot mostrar els seus diàlegs en diferents llengües.
+ .
+ Seleccioneu una llengua per defecte que Geneweb utilitzarà en les
+ creacions de pàgines.
+ .
+ Les altres llengües encara estaran disponibles.
+Description-cs: Standardní jazyk Genewebu:
+ Geneweb umí zobrazit své hlá¹ky v rùznıch jazycích.
+ .
+ Vyberte hlavní jazyk, ve kterém se mají zobrazovat stránky Genewebu.
+ .
+ Ostatní jazyky budou stále dostupné.
+Description-da: Standardsprog i Geneweb:
+ Geneweb kan vise sine dialoger på en række forskellige sprog.
+ .
+ Vælg et standardsprog som Geneweb vil bruge ved visning af sine sider.
+ .
+ Der vil dog fortsat være mulighed at skifte sprog.
+Description-de: Geneweb Standart Sprache:
+ Geneweb kann Meldungen in verschiedenen Sprache anzeigen.
+ .
+ Bitte wählen Sie die Standart Sprache aus in der Geneweb die Seiten
+ erstellen soll.
+ .
+ Andere Sprachen bleiben weiterhin verfügbar.
+Description-el: Ğñïåğéëåãìİíç ãëşóóá Geneweb:
+ Ôï Geneweb ìğïñåß íá åìöáíßæåé ôéò ğñïåéäïğïéŞóåéò ôïõ óå ğïëëİò ãëşóóåò.
+ .
+ Åğéëİîôå ôç ãëşóóá ğñïåğéëïãŞò ğïõ èá ÷ñçóéìïğïéåß ôï Geneweb óôç óåëßäá.
+ .
+ Äéáôßèåôáé êáé óå Üëëåò ãëşóóåò.
+Description-es: Idioma predeterminado de Geneweb:
+ Geneweb puede mostrar los mensajes en distintos idiomas.
+ .
+ Elija el idioma predeterminado que usará Geneweb para mostrar páginas.
+ .
+ Por supuesto, el resto de los idiomas permanecerá disponible.
+Description-eu: Geneweb-en lehenetsiriko hizkuntza:
+ Geneweb-ek galderak hizkuntza ezberdinetan egin ditzake.
+ .
+ Orri hau bihutzean erabiliko den lehenetsiriko hizkuntza.
+ .
+ Beste zenbait hizkuntza erabilgarri izango dira.
+Description-fi: Geneweb-käyttöliittymän oletuskieli:
+ Geneweb-ohjelman käyttöliittymän kieli voidaan valita useista
+ mahdollisista.
+ .
+ Valitse kieli, jota sivuilla käytetään oletuksena.
+ .
+ Muutkin kielet ovat yhä käytettävissä.
+Description-fr: Langue par défaut pour Geneweb :
+ Geneweb peut afficher ses messages dans plusieurs langues.
+ .
+ Sélectionnez une langue qui sera utilisée par défaut par Geneweb pour
+ l'affichage.
+ .
+ Les autres langues resteront toutefois disponibles.
+Description-he: ùôú áøéøú äîçãì òáåø Geneweb:
+ ì-Geneweb éù éëåìú òáåãä áîñôø ùôåú:
+ .
+ áçø àú äùôä ùúäéä áùéîåù ëáøéøú îçãì áòú ùéîåù áîçåìì äãôéí ùì Geneweb .
+ .
+ ùôåú àçøåú òãééï éäéå æîéğåú ìàçø äáçéøä.
+Description-it: Lingua predefinita per Geneweb:
+ Geneweb può visualizzare i messaggi in numerose lingue.
+ .
+ Selezionate una lingua principale per le pagine generate da Geneweb.
+ .
+ Le altre lingue resteranno comunque disponibili.
+Description-ja: Geneweb ¤Î¥Ç¥Õ¥©¥ë¥È¤Î¸À¸ì:
+ Geneweb ¤Ï¤¤¤í¤¤¤í¤Ê¸À¸ì¤Ç¥×¥í¥ó¥×¥È¤òÉ½¼¨¤Ç¤­¤Ş¤¹¡£
+ .
+ ¥Ú¡¼¥¸ÉÁ²è¤Ë»È¤¦ Geneweb ¤Î¥Ç¥Õ¥©¥ë¥È¤Î¸À¸ì¤òÁª¤ó¤Ç¤¯¤À¤µ¤¤¡£
+ .
+ ¤½¤ÎÂ¾¤Î¸À¸ì¤â°ÍÁ³¤È¤·¤ÆÍøÍÑ²ÄÇ½¤Ç¤¹¡£
+Description-nl: Geneweb standaardtaal:
+ Geneweb kan zijn vragen in verschillende talen weergeven.
+ .
+ Gelieve de, door Geneweb, standaard bij paginaweergave te gebruiken taal
+ te selecteren
+ .
+ Andere talen blijven beschikbaar
+Description-pl: Domy¶lny jêzyk Geneweb:
+ Geneweb mo¿e rozmawiaæ w wielu jêzykach.
+ .
+ Wybierz domy¶lny jêzyk, jakiego ma u¿ywaæ Geneweb na generowanych przez
+ niego stronach.
+ .
+ Inne jêzyki nadal bêd± dostêpne.
+Description-pt: Idioma padrão do geneweb:
+ O Geneweb pode mostrar as mensagens em vários idiomas diferentes.
+ .
+ Seleccione o idioma padrão a ser usado pelo Geneweb ao gerar as suas
+ páginas.
+ .
+ Os outros idiomas continuarão disponíveis.
+Description-pt_BR: Idioma padrão do Geneweb :
+ O Geneweb pode exibir suas mensagens em diferentes idiomas.
+ .
+ Selecione o idioma padrão a ser usado pelo Geneweb em suas renderizações
+ de páginas.
+ .
+ Outros idiomas ainda continuarão disponíveis.
+
+Template: geneweb/port
+Type: string
+Default: 2317
+Description: Geneweb daemon listening port:
+ The port used by the geneweb daemon (gwd) for incoming connections may be configured here.
+ .
+ Choose a port number above 1023 for the port gwd will listen to.
+ .
+ If unsure, leave the default value of 2317.
+Description-ar: Ø§Ù„Ù…Ù†ÙØ° Ø§Ù„Ø°ÙŠ ÙŠØ³ØªØ®Ø¯Ù…Ù‡ Ø¹ÙØ±ÙŠØª Geneweb:
+ ÙŠÙ…ÙƒÙ† ØªÙ‡ÙŠØ¦Ø© Ø§Ù„Ù…Ù†ÙØ° Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… Ù…Ù† Ù‚Ø¨Ù„ Ø¹ÙØ±ÙŠØª
+ Geneweb Ø£Ùˆ gwd Ù„Ù„Ø§ØªØµØ§Ù„Ø§Øª Ø§Ù„ÙˆØ§Ø±Ø¯Ø© Ù‡Ù†Ø§.
+ .
+ Ø§Ø®ØªÙŠØ§Ø± Ø±Ù‚Ù… Ù…Ù†ÙØ° Ø£ÙƒØ¨Ø± Ù…Ù† 1023 Ù„Ø±Ù‚Ù… Ø§Ù„Ù…Ù†ÙØ°
+ Ø§Ù„Ø°ÙŠ Ø³ÙŠØ³ØªØ¹Ù…Ù„Ù‡ gwd.
+ .
+ Ø¥Ù† Ù„Ù… ØªÙƒÙ† Ù…ØªØ£ÙƒØ¯Ø§Ù‹ØŒ Ø§ØªØ±Ùƒ Ø§Ù„Ù‚ÙŠÙ…Ø©
+ Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠÙ‘Ø© 2317.
+Description-ca: Port on escolta el dimoni de geneweb:
+ Ací es pot configurar el port on escolta el dimoni de geneweb (gwd) les
+ connexions entrants.
+ .
+ Trieu un número de port per damunt de 1023 en el que escolte gwd.
+ .
+ Si no esteu segur, deixeu el valor per omisió de 2317.
+Description-cs: Geneweb bude naslouchat na portu:
+ Zde mù¾ete nastavit port, na kterém bude Geneweb (gwd) naslouchat
+ pøíchozím spojením.
+ .
+ Vyberte port vìt¹í ne¾ 1023, na kterém bude gwd naslouchat.
+ .
+ Pokud si nejste jisti, ponechte standardní hodnotu 2317.
+Description-da: Port som Geneweb-dæmonen lytter til
+ Porten til indgående forbindelser, som Geneweb-dæmonen (gwd) lytter til,
+ kan sættes op her.
+ .
+ Vælg et portnummer over 1023 til den port som gwd skal lytte til.
+ .
+ Hvis du er i tvivl, så lad standardnummeret være 2317.
+Description-de: Geneweb Dämon Listening (engl.: lauschen) Port:
+ Der Port auf dem der Geneweb Dämon lauschen soll kann hier konfiguriert
+ werden.
+ .
+ Wählen Sie eine Port Nummer über 1023 für den Port auf dem gwd lauschen
+ soll.
+ .
+ Wenn Sie sich unsicher sind belassen Sie den Standart Wert von 2317.
+Description-el: Èıñá áêñüáóçò ôïõ äáßìïíá Geneweb:
+ H èıñá ôïõ äáßìïíá geneweb (gwd) ãéá åéóåñ÷üìåíåò óõíäİóåéò ìğïñåß íá
+ ñõèìéóôåß åäş.
+ .
+ Åğéëİîôå İíá áñéèìü èıñáò ìåãáëıôåñï áğü 1023 ãéá íá áêïıåé ç èıñá gwd.
+ .
+ Áí äåí åßóôå óßãïõñïò, áöŞóôå ôçí ğñïåğéëåãìİíç ôéìŞ 2317.
+Description-es: Puerto en el que escuchará Geneweb:
+ A continuación puede configurar el puerto de escucha del demonio de
+ geneweb (gwd).
+ .
+ Escoja un puerto por encima de 1023 para que escuche gwd.
+ .
+ Si duda, deje el valor predeterminado de 2317.
+Description-eu: Geneweb deabruak entzungo duen ataka:
+ Kanpoko konexioetarako geneweb-ek erabiliko duen ataka hemen ezarri behar
+ da.
+ .
+ Aukeratu 1023 baino gorako ataka bat gwd-ek entzun dezan.
+ .
+ Ez ziur egon ezkero utzi lehenetsitariko 2317 balioa.
+Description-fi: Geneweb-palveluprosessin käyttämä porttinumero:
+ Portti, jota geneweb-palveluprosessi (gwd) käyttää sisääntuleviin
+ yhteyksiin voidaan asettaa tässä.
+ .
+ Valitse sen portin numero, mitä gwd kuuntelee (yli 1023).
+ .
+ Jos olet epävarma, käytä oletusarvoa 2317.
+Description-fr: Port d'écoute du démon de Geneweb :
+ Le port utilisé par le démon de geneweb (gwd) pour les connexions
+ entrantes peut être configuré ici.
+ .
+ Choisissez un numéro de port supérieur à 1023 pour le port où gwd
+ écoutera.
+ .
+ Si vous avez des doutes, laissez la valeur par défaut de 2317.
+Description-he: ùòø äàæğä òáåø Geneweb daemon:
+ ğéúï ìùğåú àú ùòø ääàæğä ùì geneweb daemon (gwd) òì-éãé äâãøúå ëàï.
+ .
+ áçø îñôø ùòø îòì 1023 ìäàæğä òì-éãé gwd.
+ .
+ áî÷øä ùàéğê áèåç, äùàø àú òøê áøéøú äîçãì 2317 ëôé ùäåà.
+Description-it: Il demone geneweb ascolta la porta:
+ Qui è possibile configurare la porta che il demone geneweb (gwd) deve
+ ascoltare.
+ .
+ Scegliete un numero maggiore di 1023 per la porta ascoltata da gwd.
+ .
+ Nel dubbio lasciate il valore predefinito 2317.
+Description-ja: Geneweb ¥Ç¡¼¥â¥ó¤¬¥ê¥¹¥ó¤¹¤ë¥İ¡¼¥È:
+ geneweb ¥Ç¡¼¥â¥ó (gwd)
+ ¤¬ÆşÎÏ¥³¥Í¥¯¥·¥ç¥ó¤Ë»È¤¦¥İ¡¼¥È¤ò¡¢¤³¤³¤ÇÀßÄê¤Ç¤­¤Ş¤¹¡£
+ .
+ gwd ¤¬¥ê¥¹¥ó¤¹¤ë¤¿¤á¤Î 1023 ¤è¤ê¾å¤Î¥İ¡¼¥ÈÈÖ¹æ¤òÁª¤ó¤Ç¤¯¤À¤µ¤¤¡£
+ .
+ ¤è¤¯¤ï¤«¤é¤Ê¤±¤ì¤Ğ¡¢¥Ç¥Õ¥©¥ë¥ÈÃÍ¤Î 2317 ¤Î¤Ş¤Ş¤Ë¤·¤Æ¤ª¤¤¤Æ¤¯¤À¤µ¤¤¡£
+Description-nl: Genewebdaemon luisterende poort:
+ Hier kunt u de poort die, door de genewebdaemon (gwd), voor inkomende
+ verbindingen gebruikt wordt instellen.
+ .
+ Het poortnummer van de poort waarop gwd luistert dient hoger te zijn dan
+ 1023.
+ .
+ Indien u onzeker bent, kunt u best de defaultwaarde 2317 laten staan.
+Description-pl: Port nas³uchiwania deamona geneweb:
+ Mo¿esz skonfigurowaæ port, na którym bêdzie nas³uchiwa³ daemon geneweb
+ (gwd).
+ .
+ Wybierz port dla gwd o numerze wy¿szym od 1023.
+ .
+ Je¶li nie jeste¶ pewien, zostaw domy¶ln± warto¶æ 2317.
+Description-pt: Porta de escuta do servidor Geneweb:
+ A porta de escuta do servidor geneweb (gwd) para ligações de entrada pode
+ ser configurada aqui.
+ .
+ Escolha uma porta acima de 1023 para ser usada pelo servidor gwd
+ .
+ Em caso de dúvidas, mantenha o valor padrão 2317
+Description-pt_BR: Porta de escuta do daemon Geneweb :
+ A porta de escuta do daemon geneweb (gwd) para conexões de entrada pode
+ ser configurada aqui.
+ .
+ Escolha um número de porta acima de 1023 para ser usado pela porta de
+ escuta do gwd, o daemon geneweb.
+ .
+ Em caso de dúvidas, mantenha o valor padrão de 2317.
+
+Template: geneweb/run_mode
+Type: select
+Choices: Always on, Manual
+Choices-ar: ÙŠØ¹Ù…Ù„ Ø¯Ø§Ø¦Ù…Ø§Ù‹, ÙŠØ¯ÙˆÙŠ
+Choices-ca: Sempre iniciat, Manual
+Choices-cs: V¾dy zapnutı, Ruèní
+Choices-da: Altid aktiv, Manuel
+Choices-de: Immer an, Manuell
+Choices-el: Óõíİ÷åéá áíïéêôü, ×åéñïêßíçôá
+Choices-es: Siempre activo, Manual
+Choices-eu: Beti abiarazirik, Eskuz
+Choices-fr: Toujours actif, Démarrage manuel
+Choices-he: úîéã ôòéì, áàåôï éãğé
+Choices-it: Sempre attivo, Manuale
+Choices-ja: ¾ï¤Ë, ¼êÆ°
+Choices-nl: Altijd aan, Handmatig
+Choices-pl: Zawsze w³±czaj, Rêcznie
+Choices-pt: Sempre ligado, Manual
+Choices-pt_BR: Sempre ligado, Manual
+Default: Always on
+Default-ar: ÙŠØ¹Ù…Ù„ Ø¯Ø§Ø¦Ù…Ø§Ù‹
+Default-ca: Sempre iniciat
+Default-cs: V¾dy zapnutı
+Default-da: Altid aktiv
+Default-de: Immer an
+Default-el: Óõíİ÷åéá áíïéêôü
+Default-es: Siempre activo
+Default-eu: Beti abiarazirik
+Default-fr: Toujours actif
+Default-he: úîéã ôòéì
+Default-it: Sempre attivo
+Default-ja: ¾ï¤Ë
+Default-nl: Altijd aan
+Default-pl: Zawsze w³±czaj
+Default-pt: Sempre ligado
+Default-pt_BR: Sempre ligado
+Description: Geneweb start mode:
+ The Geneweb daemon gwd can be launched automatically at startup,
+ manually by the system administrator, or by any user when it is needed.
+ .
+ If you choose "Always on", Geneweb will be launched at the system startup.
+ .
+ If you want to prevent the automatic startup of Geneweb, for
+ example if you prefer to run it as a CGI program, then choose "Manual".
+Description-ar: ÙˆØ¶Ø¹ Ø¨Ø¯Ø¡ Geneweb:
+ ÙŠÙ…ÙƒÙ† ØªØ´ØºÙŠÙ„ Ø¹ÙØ±ÙŠØª Geneweb gwd Ø¹Ù†Ø¯ Ø¨Ø¯Ø¡ Ø§Ù„ØªØ´ØºÙŠÙ„ØŒ
+ Ø£Ùˆ ÙŠØ¯ÙˆÙŠØ§Ù‹ Ø¨ÙˆØ§Ø³Ø·Ø© Ù…Ø¯ÙŠØ± Ø§Ù„Ù†Ø¸Ø§Ù…ØŒ Ø£Ùˆ Ø¨ÙˆØ§Ø³Ø·Ø©
+ Ø£ÙŠ Ù…Ø³ØªØ®Ø¯Ù… Ø¹Ù†Ø¯ Ø§Ù„Ø­Ø§Ø¬Ø©.
+ .
+ Ø§Ù† Ø§Ø®ØªØ±Øª "ÙŠØ¹Ù…Ù„ Ø¯Ø§Ø¦Ù…Ø§Ù‹"ØŒ ÙØ³ÙˆÙ ÙŠØªÙ… ØªØ´ØºÙŠÙ„
+ Geneweb Ø¹Ù†Ø¯ Ø¨Ø¯Ø¡ ØªØ´ØºÙŠÙ„ Ø§Ù„Ù†Ø¸Ø§Ù….
+ .
+ Ø¥Ù† ÙƒÙ†Øª ØªØ±ÙŠØ¯ Ù…Ù†Ø¹ Ø§Ù„ØªØ´ØºÙŠÙ„ Ø§Ù„Ø¢Ù„ÙŠ Ù„Ù€GenewebØŒ
+ Ù…Ø«Ù„Ø§Ù‹ Ø¥Ù† ÙƒÙ†Øª ØªÙØ¶Ù„ ØªØ´ØºÙŠÙ„Ù‡ ÙƒØ¨Ø±Ù†Ø§Ù…Ø¬ CGIØŒ
+ ÙØ¹Ù„ÙŠÙƒ Ø§Ø®ØªÙŠØ§Ø± "ÙŠØ¯ÙˆÙŠ".
+Description-ca: Mode d'inici de Geneweb:
+ El dimoni de Geneweb «gwd» es pot executar automàticament a l'inici,
+ manualment pel administrador del sistema o qualsevol usuari quan es
+ necessita.
+ .
+ Si seleccioneu «Sempre iniciat», Geneweb s'executarà quan s'inicia el
+ sistema.
+ .
+ Si voleu previndre l'inici automàtic de Geneweb, perque per exemple
+ preferiu executar-lo com un programa CGI, seleccioneu «Manual».
+Description-cs: Zpùsob startu Genewebu:
+ Démon gwd mù¾e bıt spu¹tìn automaticky pøi startu, nebo ruènì podle
+ potøeby.
+ .
+ Pokud zvolíte "V¾dy zapnutı", Geneweb se bude spou¹tìt pøi startu systému.
+ .
+ Pokud chcete pøedejít automatickému startu Genewebu, napøíklad pokud jej
+ chcete spouètìt jako CGI, pak vyberte "Ruèní".
+Description-da: Genewebs opstartsmåde:
+ Der er mulighed for at starte Geneweb-dæmonen, gwd, under selve opstarten.
+ Systemadministratoren, eller enhver anden bruger, kan også starte den
+ manuelt efter behov.
+ .
+ Hvis "Altid aktiv" vælges, vil Geneweb blive startet ved opstart af
+ systemet.
+ .
+ Hvis du vil forhindre at Geneweb bliver startet automatisk, fordi du
+ f.eks. foretrækker at bruge den som CGI-program, så vælg "Manuel".
+Description-de: Geneweb Start Modus:
+ Der Geneweb Dämon gwd kann automatisch beim Startvorgang, manuell vom
+ System Administrator oder bei Bedarf von einem Benutzer gestartet werden.
+ .
+ Wenn Sie "Immer an" auswählen wird Geneweb bei jedem Starvorgang
+ gestartet.
+ .
+ Wenn Sie den automatischen Startvorgang von Geneweb verhindern möchten,
+ z.B. weil Sie es vorziehen das Programm als CGI laufen zu lassen, dann
+ wählen Sie bitte "Manuell".
+Description-el: Ôñüğïò åêêßíçóçò Geneweb:
+ Ï äáßìïíáò gwd ôïõ Geneweb ìğïñåß íá îåêéíŞóåé áõôüìáôá êáôÜ ôçí åêêßíçóç,
+ ÷åéñïêßíçôá áğü ôï äéá÷åéñéóôŞ ôïõ óõóôŞìáôïò Ş áğü ïğïéïäŞğïôå ÷ñŞóôç
+ üôáí ÷ñåéáóôåß.
+ .
+ Áí åğéëİîåôå " Óõíİ÷åéá áíïéêôü", ôï Geneweb èá îåêéíŞóåé áõôüìáôá êáôÜ
+ ôçí åêêßíçóç ôïõ óõóôŞìáôïò.
+ .
+ Áí èİëåôå íá åìğïäßóåôå ôçí áõôüìáôç åêêßíçóç ôïõ Geneweb, áí ğ.÷.
+ ğñïôéìÜôå íá ôï ôñİîåôå ùò ğñüãñáììá CGI, ôüôå åğéëİîôå "×åéñïêßíçôá".
+Description-es: Modo de inicio de Geneweb:
+ gwd, el demonio de Geneweb, puede ejecutarse automáticamente al arrancar o
+ ser ejecutado por el administrador del sistema o por cualquier usuario
+ cuando se necesite.
+ .
+ Si escoge "Siempre activo", Geneweb se lanzará al arrancar el sistema.
+ .
+ Si quiere evitar el inicio automático de Geneweb, por ejemplo porque
+ prefiera utilizarlo como CGI, elija "Manual".
+Description-eu: Geneweb abiarazteko modua:
+ Geneweb deabrua (gwd) sistema abiaraztean automatikoki, sistema
+ kudeatzaileak eskuz edo edozein erabiltzailek behar duenean abiarazi
+ daiteke.
+ .
+ "Beti abiarazirik" aukeratu ezkero, Geneweb sistema abiaraztean abiaraziko
+ da.
+ .
+ Adibiez CGI programa erara erabili nahi ezkero ez baduzu Geneweb sistema
+ abiaraztean automatikoki abiaraztea "Eskuz" aukeratu.
+Description-fr: Mode de démarrage de Geneweb :
+ Le démon gwd de Geneweb peut être lancé automatiquement au démarrage du
+ système, manuellement par l'administrateur du système ou par tout
+ utilisateur quand il en a besoin.
+ .
+ Si vous choisissez « Toujours actif », Geneweb sera lancé au démarrage du
+ système.
+ .
+ Si vous préférez éviter le démarrage automatique de Geneweb, par exemple
+ si vous préférez l'utiliser par le biais d'un programme CGI, choisissez
+ alors « Démarrage manuel ».
+Description-he: îöá äúçìúé ùì Geneweb:
+ äùøåú Geneweb daemon gwd ğéúï ìäôòìä áàåôï àåèåîèé òí òìééú äîòøëú, àå
+ áàåôï éãğé òì-éãé îğäì äîòøëú àå òì-éãé îùúîù ëìùäå ìôé äöåøê.
+ .
+ àí úáçø áàôùøåú "úîéã ôòéì" , Geneweb éåøõ áòú äôòìú äîòøëú.
+ .
+ àí áøöåğê ìîğåò àú äôòìú Geneweb  áàåôï àåèîèé, ìîùì, àí àúä îòãéó ìäøéöå
+ ëúåëğéú CGI, áçø áàôùøåú "éãğé".
+Description-it: Modo avvio Geneweb:
+ Il demone di Geneweb gwd può esser lanciato automaticamente all'avvio,
+ manualmente dall'amministratore o da qualunque utente quando servisse.
+ .
+ Se scegliete "Sempre attivo", Geneweb sarà lanciato all'avvio del sistema.
+ .
+ Se volete evitare l'avvio automatico di Geneweb, per esempio se preferite
+ eseguirlo come programma CGI, scegliete "Manuale".
+Description-ja: Geneweb ¤Î³«»Ï¥â¡¼¥É:
+ Geneweb ¥Ç¡¼¥â¥ó gwd
+ ¤Ï¡¢¥¹¥¿¡¼¥È¥¢¥Ã¥×»ş¤Ë¼«Æ°Åª¤ËÎ©¤Á¾å¤²¤ë¤³¤È¤â¤Ç¤­¤Ş¤¹¤·¡¢¥·¥¹¥Æ¥à´ÉÍı¼Ô¤¢¤ë¤¤¤Ï¤½¤ì¤òÉ¬Í×¤È¤¹¤ë¤¢¤é¤æ¤ë¥æ¡¼¥¶¤Ë¤è¤Ã¤Æ¼êÆ°¤ÇÎ©¤Á¾å¤²¤ë¤³¤È¤â¤Ç¤­¤Ş¤¹¡£
+ .
+ "¾ï¤Ë" ¤òÁª¤Ö¤È¡¢Geneweb ¤Ï¥·¥¹¥Æ¥à¤Î¥¹¥¿¡¼¥È¥¢¥Ã¥×»ş¤ËÎ©¤Á¾å¤¬¤ê¤Ş¤¹¡£
+ .
+ ¤¿¤È¤¨¤Ğ CGI ¥×¥í¥°¥é¥à¤È¤·¤Æ¼Â¹Ô¤·¤¿¤¤¤È¤¤¤¦¤è¤¦¤Ë¡¢Geneweb
+ ¤Î¼«Æ°¥¹¥¿¡¼¥È¥¢¥Ã¥×¤ò¤·¤¿¤¯¤Ê¤¤¤Î¤Ç¤¢¤ì¤Ğ¡¢"¼êÆ°" ¤òÁª¤Ó¤Ş¤¹¡£
+Description-nl: Geneweb startmodus:
+ De genewebdaemon gwd kan automatisch gestart worden bij het opstarten, of
+ handmatig door de systeembeheerder, of een gebruiker wanneer nodig.
+ .
+ Als u 'Altijd aan' kiest zal Geneweb opgestart worden tijdens de
+ systeemstart.
+ .
+ Als u automatisch opstarten van Geneweb wilt voorkomen, omdat u
+ bijvoorbeeld verkiest om het als een CGI-programma te draaien, dient u
+ 'handmatig' te kiezen.
+Description-pl: Rodzaj uruchamiania Geneweb:
+ Demon Geneweb, gwd, mo¿e byæ uruchamiany automatycznie przy starcie
+ systemu, rêcznie przez administratora lub przez u¿ytkownika wtedy, gdy
+ jest on potrzebny.
+ .
+ Je¶li wybierzesz "Zawsze w³±czaj", Geneweb bêdzie uruchamiany podczas
+ uruchamiania systemu.
+ .
+ Je¶li chcesz zapobiec automatycznemu uruchamianiu Geneweb, przyk³adowo
+ chc±c uruchamiaæ go jako program CGI, wybierz "Rêcznie".
+Description-pt: Modo de inicialização do Geneweb:
+ O servidor Geneweb gwd pode ser executado automaticamente no início ou
+ manualmente pelo administrador do sistema ou qualquer utilizador, quando
+ necessário.
+ .
+ Se escolher "Sempre ligado", o Geneweb será executado na inicialização do
+ sistema.
+ .
+ Se pretender impedir a execução automática do Geneweb, por exemplo se
+ prefere executá-lo como um programa CGI, então escolha "Manual".
+Description-pt_BR: Modo de início do Geneweb :
+ O daemon Geneweb gwd pode ser executado automaticamente na inicialização,
+ manualmente pelo administrador do sistema ou por qualquer usuário quando
+ necessário.
+ .
+ Caso você selecione "Sempre ligado" o Geneweb será iniciado na
+ inicialização do sistema.
+ .
+ Caso você queira evitar a inicialização automática do Geneweb (por
+ exemplo, caso você preira executá-lo como um programa CGI) escolha
+ "Manual".
+
+Template: geneweb/remainingdir
+Type: note
+Description: Old directory /var/geneweb not removed
+ Previous versions of both official and unofficial packages for Geneweb
+ used non FHS-compliant /var/geneweb directory for storing databases.
+ .
+ It has been detected that this directory was used on your system. Some
+ files have been moved from there to /var/lib/geneweb but the geneweb 
+ installation scripts found some unexpected files in /var/geneweb.
+ .
+ Thus the directory has been left intact. It is highly recommended that you
+ check the remaining files there and move them to /var/lib/geneweb, then 
+ remove the /var/geneweb directory.
+
+Template: geneweb/oldrcfile
+Type: note
+Description: Old setup file moved
+ Previous versions of both official and unofficial packages for Geneweb
+ used a file named /etc/geneweb/genewebrc for keeping local setup for the
+ listening port and the default language of the program.
+ .
+ Debian standards suggest such file to live in /etc/default/geneweb.
+ .
+ The configuration file has been moved and renamed to /etc/default/geneweb.
+ .
+ This note will only appear once except if you inadvertently re-create
+ /etc/geneweb/genewebrc.
+Description-ar: ØªÙ… Ù†Ù‚Ù„ Ù…Ù„Ù Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯ Ø§Ù„Ø³Ø§Ø¨Ù‚
+ Ø§Ø³ØªØ®Ø¯ÙÙ…Øª Ø§Ù„Ù†Ø³Ø® Ø§Ù„Ø³Ø§Ø¨Ù‚Ø© Ù…Ù† Ø­Ø²Ù… Geneweb
+ Ø§Ù„Ø±Ø³Ù…ÙŠÙ‘Ø© ÙˆØ§Ù„ØºÙŠØ± Ø±Ø³Ù…ÙŠÙ‘Ø© Ù…Ù„ÙØ§Ù‹ Ø¨Ø§Ø³Ù…
+ /etc/geneweb/genewebrc Ù„Ø­ÙØ¸ Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯ Ø§Ù„Ù…Ø­Ù„ÙŠ Ù„Ù„Ù…Ù†ÙØ°
+ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù… ÙˆØ§Ù„Ù„ØºØ© Ø§Ù„Ø§ÙØªØ±Ø§Ø¶ÙŠÙ‘Ø© Ù„Ù„Ø¨Ø±Ù†Ø§Ù…Ø¬.
+ .
+ ØªÙ‚ØªØ±Ø­ Ù…Ø¹Ø§ÙŠÙŠØ± Ø¯ÙŠØ¨ÙŠØ§Ù† Ø¥Ø¨Ù‚Ø§Ø¡ Ù…Ù„Ù ÙƒÙ‡Ø°Ø§ ÙÙŠ
+ /etc/default/geneweb.
+ .
+ ØªÙ… Ù†Ù‚Ù„ Ø§Ù„Ù…Ù„Ù ÙˆØªØºÙŠÙŠØ± Ø§Ø³Ù…Ù‡ Ø¥Ù„Ù‰ /etc/default/geneweb.
+ .
+ Ø³ØªØ¸Ù‡Ø± Ù‡Ø°Ù‡ Ø§Ù„Ù…Ù„Ø§Ø­Ø¸Ø© Ù…Ø±Ø© ÙˆØ§Ø­Ø¯Ø© Ø¥Ù„Ø§ Ø¥Ù† Ù‚Ù…Øª
+ Ø¨Ø¥Ù†Ø´Ø§Ø¡ /etc/geneweb/genewebrc Ø¹Ù† ØºÙŠØ± Ù‚ØµØ¯ Ù…Ù† Ø¬Ø¯ÙŠØ¯.
+Description-ca: S'ha mogut l'antic fitxer de configuració
+ Versions anteriors dels paquets oficials i no oficials de Geneweb usaven
+ un directori /var/geneweb, no conformant amb la FHS, per a desar les bases
+ de dades.
+ .
+ Els estàndards de Debian suggereixen que aquest fitxer estiga en
+ /etc/defaults/geneweb.
+ .
+ El fitxer de configuració s'ha mogut i reanomenat a /etc/default/geneweb.
+ .
+ Aquesta nota només apareixerà una vegada a no ser que recreeu sense voler
+ /etc/geneweb/genewebrc.
+Description-cs: Staré nastavení pøesunuto
+ Pøedchozí verze Genewebu pou¾ívaly pro ulo¾ení lokálního nastavení (port a
+ standardní jazyk) soubor /etc/geneweb/genewebrc.
+ .
+ Standardy Debianu doporuèují umístit takovı soubor do
+ /etc/default/geneweb.
+ .
+ Konfiguraèní soubor byl pøesunut a pøejmenován na /etc/default/geneweb.
+ .
+ Tato poznámka se objeví pouze jednou. (Pokud ov¹em znovu omylem
+ /etc/geneweb/genewebrc nevytvoøíte.)
+Description-da: Gammel opsætningsfil flyttet.
+ Tidligere versioner af såvel officielle som uofficielle pakker af Geneweb
+ brugte opsætningsfilen /etc/geneweb/genewebrc der indeholdt oplysninger om
+ porten der lyttes til og hvilket standardsprog der anvendes i
+ brugerfladen.
+ .
+ Ifølge Debian-standarden bør denne fil ligge i /etc/default/geneweb.
+ .
+ Opsætningsfilen er blevet flyttet og omdøbt til /etc/default/geneweb.
+ .
+ Denne notits vil kun blive vist én gang, medmindre du af en eller anden
+ grund genskaber /etc/geneweb/genewebrc.
+Description-de: Alte Setup Dateien wurden verschoben.
+ Vorherige Versionen, sowohl die der Offiziellen als auch die der
+ Inoffiziellen Pakete von Geneweb, benutzten eine Datei namens
+ /etc/geneweb/genewebrc um das Lokale Setup für die Port-Nr. und die
+ Standart Sprache des Programms zu speichern.
+ .
+ Der Debian Standart schlägt jedoch vor, dass solche Dateien in
+ /etc/default/geneweb abgelegt werden.
+ .
+ Die Konfigurationsdatei wurde verschoben und umbenannt zu
+ /etc/default/geneweb.
+ .
+ Dieser Hinweis erscheint nur einmal, es sei denn, Sie haben unbeabsichtigt
+ die Datei /etc/geneweb/genewebrc neu erstellt.
+Description-el: Ôï ğáëéü áñ÷åßï åãêáôÜóôáóçò ìåôáêéíŞèçêå
+ Ïé ğñïçãïıìåíåò åêäüóåéò åğéóŞìùí êáé áíåğéóŞìùí ğáêİôùí ãéá ôï Geneweb
+ ÷ñçóéìïğïéïıóáí İíá áñ÷åßï ìå ôï üíïìá etc/geneweb/genewebrc ãéá íá
+ äéáôçñçèåß ç ôïğéêŞ åãêáôÜóôáóç ôçò èıñáò áêñüáóçò êáé ç ãëşóóá
+ ğñïåğéëïãŞò ôïõ ğñïãñÜììáôïò.
+ .
+ Ôá ğñüôõğá Debian ğñïôåßíïõí ôİôïéïõ ôığïõ áñ÷åßï íá âñßóêåôáé óôï
+ /etc/default/geneweb.
+ .
+ Ôï áñ÷åßï ñıèìéóçò ìåôáöİñèçêå êáé ìåôïíïìÜóôçêå óå /etc/default/geneweb.
+ .
+ ÁõôŞ ç óçìåßùóç èá åìöáíéóôåß ìüíï ìßá öïñÜ åêôüò áí åğáíáäçìéïõñãŞóåôå
+ áêïıóéá ôï /etc/geneweb/genewebrc.
+Description-es: Cambio de ubicación del fichero de configuración
+ Las versiones anteriores de Geneweb, tanto los paquetes oficiales como los
+ no oficiales, utilizaban un fichero llamado /etc/geneweb/genewebrc para
+ almacenar la configuración local sobre el puerto de escucha y el idioma
+ predeterminado del programa.
+ .
+ Según las normas de Debian, ese fichero debe encontrarse en
+ /etc/default/geneweb.
+ .
+ El fichero de configuración se ha movido y ahora se llama
+ /etc/default/geneweb.
+ .
+ Este aviso sólo aparecerá una vez, a no ser que vuelva a crear sin darse
+ cuenta /etc/geneweb/genewebrc.
+Description-eu: Konfigruazio fitxategi zaharrak mugiturik
+ Aurreko geneweb bersioek ,bai ofizialak bai ez-ofizialek
+ /etc/geneweb/genewebrc izneko fitxategi bat zuten entzungo den ataka eta
+ hizkuntzari buruzko ezarpen lokalak gordetzeko.
+ .
+ Debian estandarrek fitxategi hori /etc/default/geneweb -en egotea
+ gomendatzen dute.
+ .
+ Konfigurazio fitxategia /etc/default/geneweb -era aldatu eta berrizendatu
+ da.
+ .
+ Ohar hau bein bakarrik bistaraziko da nahi gabe /etc/geneweb/genewebrc
+ birsortu ezkero.
+Description-fi: Vanha asetustiedosto siirretty
+ Aikaisemmat sekä viralliset että epäviralliset Geneweb-paketit käyttivät
+ tiedostoa /etc/geneweb/genewebrc paikallisten portti- ja
+ oletuskieliasetusten tallettamiseen.
+ .
+ Debian-standardien mukaan sellaisen tiedoston pitää olla
+ /etc/default/geneweb.
+ .
+ Asetustiedosto on nyt siirretty ja uudelleennimetty: /etc/default/geneweb.
+ .
+ Tämä huomautus annetaan vain tämän kerran ellet vahingossa luo uudelleen
+ tiedostoa /etc/geneweb/genewebrc.
+Description-fr: Déplacement d'un ancien fichier de configuration
+ Les versions antérieures officielles ou non du paquet Geneweb utilisaient
+ un fichier /etc/geneweb/genewebrc pour préserver les régalges du port
+ d'écoute et de la langue par défaut du programme.
+ .
+ Les standards Debian suggèrent de placer un tel fichier dans /etc/default
+ sous le nom geneweb.
+ .
+ Le fichier de configuration a été déplacé et renommé en
+ /etc/default/geneweb.
+ .
+ Cette note d'information ne s'affichera plus sauf si vous recréez le
+ fichier /etc/geneweb/genewebrc par inadvertance.
+Description-he: äåòáøå ÷áöé äâãøåú éùğéí
+ âøñàåú ÷åãîåú ùì Geneweb, øéùîéåú åëï ìà øéùîéåú, áéöòå ùéîåù á÷åáõ úçú
+ äùí /etc/geneweb/genewebrc ìùîéøú äâãøåú î÷åîéåú ùì ùòø äàæğä åùôú äúåëğä.
+ .
+ äú÷ï ùì ãáéàï îöéò ù÷áöéí àìå éùîøå úçú äğúéá /etc/default/geneweb.
+ .
+ ÷åáõ ääâãøåú äåòáø åùîå ùåğä ì- /etc/default/geneweb.
+ .
+ äåãòä æå úåôéò ôòí àçú áìáã àìà áòú éöéøä îçãù ùì /etc/geneweb/genewebrc.
+Description-it: Spostato il vecchio file di cofigurazione
+ Le precedenti versioni, ufficiali e non, del pacchetto Geneweb usavano un
+ file di nome /etc/geneweb/genewebrc per la configurazione della porta di
+ ascolto e della lingua predefinita.
+ .
+ Lo standard Debian suggerisce che tale file stia in /etc/default/geneweb.
+ .
+ Il file di configurazione è stato spostato e rinominato
+ /etc/default/geneweb.
+ .
+ Questa nota apparirà una sola volta, a meno che non ricreiate
+ inavvertitamente /etc/geneweb/genewebrc.
+Description-ja: ¸Å¤¤¥»¥Ã¥È¥¢¥Ã¥×¥Õ¥¡¥¤¥ë¤¬°ÜÆ°¤µ¤ì¤Ş¤·¤¿
+ Geneweb
+ ¤Î¸ø¼°¤ª¤è¤ÓÈó¸ø¼°¤Î¥Ñ¥Ã¥±¡¼¥¸¤ÎÎ¾Êı¤Ç¡¢°ÊÁ°¤Î¥Ğ¡¼¥¸¥ç¥ó¤Ï¡¢¥ê¥¹¥ó¤¹¤ë¥İ¡¼¥È¤ä¥×¥í¥°¥é¥à¤Î¥Ç¥Õ¥©¥ë¥È¤Î¸À¸ì¤È¤¤¤Ã¤¿¥í¡¼¥«¥ë¤Î¥»¥Ã¥È¥¢¥Ã¥×¤òÊİ»ı¤¹¤ë¤Î¤Ë
+ /etc/geneweb/genewebrc ¤È¤¤¤¦Ì¾Á°¤Î¥Õ¥¡¥¤¥ë¤ò»È¤Ã¤Æ¤¤¤Ş¤·¤¿¡£
+ .
+ Debian ¤ÎÉ¸½à¤Ç¤Ï¡¢¤³¤Î¤è¤¦¤Ê¥Õ¥¡¥¤¥ë¤Ï /etc/default/geneweb
+ ¤ËÃÖ¤¯¤³¤È¤¬Äó°Æ¤µ¤ì¤Æ¤¤¤Ş¤¹¡£
+ .
+ ÀßÄê¥Õ¥¡¥¤¥ë¤Ï /etc/default/geneweb ¤È¤·¤Æ°ÜÆ°¤ÈÌ¾Á°¤ÎÊÑ¹¹¤¬¹Ô¤ï¤ì¤Ş¤·¤¿¡£
+ .
+ ¤³¤ÎÀâÌÀ¤Ï¡¢¸í¤Ã¤Æ /etc/geneweb/genewebrc ¤òºÆºîÀ®¤·¤Ê¤¤¸Â¤ê¡¢1
+ ÅÙ¤·¤«¸½¤ì¤Ê¤¤¤Ï¤º¤Ç¤¹¡£
+Description-nl: Oude instellingsbestand is verplaatst
+ Eerdere versies van zowel officiële als officiëuze genewebpakketten
+ maakten gebruik van het bestand /etc/geneweb/genewebrc om de lokale
+ instellingen voor de luisterende poort en de standaard taal te bewaren.
+ .
+ Debian-standaarden vragen dat zo'n bestanden in /etc/default/geneweb
+ geplaatst worden.
+ .
+ Het configuratiebestand is bijgevolg verplaatst en hernoemd naar
+ /etc/default/geneweb.
+ .
+ Deze opmerking zal slects éénmaal verschijnen, tenzij u onbedoeld
+ /etc/geneweb/genewebrc opnieuw aanmaakt.
+Description-pl: Stary plik ustawieñ przeniesiony
+ Poprzednie wersje zarówno oficjalnych jak i nieoficjalnych pakietów
+ Geneweb do przechowywania lokalnej konfiguracji portu i domy¶lnego jêzyka
+ programu korzysta³y z pliku /etc/geneweb/geneweb.
+ .
+ Standardy Debiana zalecaj±, by ten plik umie¶ciæ w /etc/default/geneweb.
+ .
+ Plik konfiguracyjny zosta³ przeniesiony wraz ze zmian± nazwy na
+ /etc/default/geneweb.
+ .
+ Ten komunikat pojawi siê tylko raz, chyba ¿e przypadkowo ponownie
+ utworzysz plik /etc/geneweb/genewebrc.
+Description-pt: O ficheiro de configuração antigo foi movido
+ As versões anteriores do pacote oficial e do pacote não oficial do Geneweb
+ usavam o ficheiro /etc/geneweb/genewebrc para manter a configuração local
+ para a porta de escuta e o idioma padrão do programa.
+ .
+ Os padrões Debian sugerem que este ficheiro fique em /etc/default/geneweb.
+ .
+ O ficheiro de configuração foi movido e renomeado para
+ /etc/default/geneweb.
+ .
+ Esta nota aparecerá apenas uma vez excepto no caso de inadvertidamente
+ recriar o ficheiro /etc/geneweb/genewebrc.
+Description-pt_BR: Antigo arquivo de configuração movido
+ Versões anteriores do pacote oficial e do pacote não oficial do Geneweb
+ usavam o arquivo /etc/geneweb/genewebrc para manter a configuração local
+ para a porta de escuta e o idioma padrão do programa.
+ .
+ Os padrões Debian sugerem que este arquivo fique em /etc/default/geneweb.
+ .
+ O arquivo de configuração foi movido e renomeado para
+ /etc/default/geneweb.
+ .
+ Esta nota aparecerá somente uma vez exceto caso você inadvertidamente
+ recriar o arquivo /etc/geneweb/genewebrc.
+
+Template: geneweb/remove_databases
+Type: boolean
+Default: false
+Description: Remove Geneweb database directory on package purge?
+ Geneweb's databases will be stored in the database directory /var/lib/geneweb.
+ These databases may be put there by authorized users who must be members of
+ the "geneweb" group.
+ .
+ Please choose whether you want to remove databases automatically when
+ purging the package (completely removing it).
+ .
+ THIS WOULD ERASE USER-OWNED DATA. You have to be sure if you accept the
+ purge.
+ .
+ Note that if this directory is empty at the time you purge or simply
+ remove the package, it will always be automatically removed.
+Description-ar: Ù‡Ù„ ØªØ±ÙŠØ¯ Ø¥Ø²Ø§Ù„Ø© Ø¯Ù„ÙŠÙ„ Ù‚Ø§Ø¹Ø¯Ø© Ø¨ÙŠØ§Ù†Ø§Øª Geneweb ÙÙŠ Ø­Ø§Ù„Ø© Ø¥Ø²Ø§Ù„Ø© Ø§Ù„Ø­Ø²Ù…Ø© ÙƒÙ„ÙŠÙ‘Ø§Ù‹ØŸ
+ Ø³ÙŠØªÙ… ØªØ®Ø²ÙŠÙ† Ù‚ÙˆØ§Ø¹Ø¯ Ø¨ÙŠØ§Ù†Ø§Øª Geneweb ÙÙŠ Ø§Ù„Ø¯Ù„ÙŠÙ„
+ /var/lib/geneweb. ÙŠÙ…ÙƒÙ† ÙˆØ¶Ø¹ Ù‚ÙˆØ§Ø¹Ø¯ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ù‡Ø°Ù‡ Ù…Ù†
+ Ù‚Ø¨Ù„ Ø§Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ† Ø§Ù„Ù…Ø®ÙˆÙ‘Ù„ÙŠÙ† ÙˆØ§Ù„Ø°ÙŠÙ† ÙŠØ¬Ø¨ Ø£Ù†
+ ÙŠÙƒÙˆÙ†Ùˆ Ø£Ø¹Ø¶Ø§Ø¡ ÙÙŠ Ù…Ø¬Ù…ÙˆØ¹Ø© "geneweb".
+ .
+ Ø§Ù„Ø±Ø¬Ø§Ø¡ Ø§Ø®ØªÙŠØ§Ø± Ù…Ø§ Ø¥Ø°Ø§ ÙƒÙ†Øª ØªØ±ÙŠØ¯ Ø¥Ø²Ø§Ù„Ø©
+ Ù‚ÙˆØ§Ø¹Ø¯ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø¢Ù„ÙŠØ§Ù‹ Ø¹Ù†Ø¯ Ø¥Ø²Ø§Ù„Ø© Ø§Ù„Ø­Ø²Ù…Ø©
+ ÙƒÙ„ÙŠÙ‘Ø§Ù‹ (Ø¥Ø²Ø§Ù„ØªÙ‡Ø§ Ø¨Ø§Ù„ÙƒØ§Ù…Ù„).
+ .
+ ÙŠÙ‚ÙˆÙ… Ù‡Ø°Ø§ Ø¨Ù…Ø³Ø­ Ø§Ù„Ø¨ÙŠØ§Ù†Ø§Øª Ø§Ù„Ù…Ù…Ù„ÙˆÙƒØ©
+ Ù„Ù„Ù…Ø³ØªØ®Ø¯Ù…ÙŠÙ†. ÙŠØ¬Ø¨ Ø£Ù† ØªÙƒÙˆÙ† Ù…ØªØ£ÙƒÙ‘Ø¯Ø§Ù‹ Ø¥Ù† Ù‚Ø¨Ù„Øª
+ Ø§Ù„Ø¥Ø²Ø§Ù„Ø© Ø§Ù„ÙƒÙ„ÙŠÙ‘Ø©.
+ .
+ Ù„Ø§Ø­Ø¸ Ø£Ù†Ù‡ Ø¥Ù† ÙƒØ§Ù† Ù‡Ø°Ø§ Ø§Ù„Ø¯Ù„ÙŠÙ„ ÙØ§Ø±ØºØ§Ù‹ Ø¹Ù†Ø¯
+ Ø§Ù„Ø¥Ø²Ø§Ù„Ø© Ø§Ù„ÙƒÙ„ÙŠÙ‘Ø© Ø£Ùˆ Ø¥Ø²Ø§Ù„Ø© Ø§Ù„Ø­Ø²Ù…Ø©ØŒ ÙØ³ØªØªÙ…
+ Ø¥Ø²Ø§Ù„ØªÙ‡ ØªÙ„Ù‚Ø§Ø¦ÙŠÙ‘Ø§Ù‹ Ø¯Ø§Ø¦Ù…Ø§Ù‹.
+Description-ca: S'hauria d'eliminar el directori de bases de dades de Geneweb si es purga el paquet?
+ Les bases de dades de Geneweb s'emmagatzemaran en el directori de bases de
+ dades /var/lib/geneweb. Aquestes bases de dades les poden ficar usuaris
+ autoritzats que han de ser membres del grup «geneweb».
+ .
+ Si us plau, decidiu si voleu eliminar les bases de dades automàticament
+ quan es purgue el paquet (eliminant-lo completament).
+ .
+ AÇÒ ESBORRARIA DADES D'USUARIS. Teniu que estar segur abans de acceptar
+ açò.
+ .
+ Teniu en compte que si aquest directori està buit quan purgueu o només
+ lleveu el paquet, sempre s'eliminarà automàticament.
+Description-cs: Odstranit databázi Genewebu pøi odstranìní balíku?
+ Databáze Genewebu budou ulo¾eny v adresáøi /var/lib/geneweb. Tyto databáze
+ sem mohou umístit autorizovaní u¾ivatelé ze skupiny "geneweb".
+ .
+ Vyberte, zda chcete pøi kompletním odstranìní balíku (purge) automaticky
+ odstranit i databáze.
+ .
+ TÍMTO BYSTE SMAZALI U®IVATELSKÁ DATA. Pøi odstraòování si musíte bıt
+ naprosto jisti.
+ .
+ Pokud by byl adresáø v dobì odstraòování balíku prázdnı, sma¾e se v¾dy.
+Description-da: Skal Genewebs databasekatalog slettes ved udrensning af geneweb-pakken?
+ De databaser som bruges af Geneweb vil blive placeret i kataloget
+ /var/lib/geneweb. Databaserne placeres der af autoriserede brugere som
+ skal være medlemmer af "geneweb"-gruppen.
+ .
+ Vælg venligst om du ønsker databaserne fjernet automatisk under udrensning
+ af pakken (fuldstændig fjernelse).
+ .
+ DETTE VIL SLETTE BRUGERES PRIVATE DATA. Du skal være sikker på at du
+ ønsker dette før du svarer ja i næste skærmbillede.
+ .
+ Bemærk at såfremt dette katalog er tomt når udrensningen sker, herunder
+ også ved almindelig sletning af pakken, så vil det altid blive fjernet
+ automatisk.
+Description-de: Soll das Datenbank Verzeichnis beim entfernen von geneweb mit gelöscht werden?
+ Geneweb's Datenbanken werden in der Datenbank im Verzeichnis
+ /var/lib/geneweb gespeichert. Diese Datenbanken können dort von
+ Authorisierten Benutzern, Mitglieder der Gruppe "geneweb", angelegt
+ werden.
+ .
+ Bitte wählen Sie aus, ob Sie beim entfernen des Packetes (vollständiges
+ entfernen) die Datenbanken automatisch mit löschen möchten.
+ .
+ DIES LÖSCHT BENUTZEREIGENE DATEN. Sie sollten sich sicher sein, wenn Sie
+ die nächste Frage mit "Ja" beantworten.
+ .
+ Beachten Sie, falls das Verzeichnis beim entfernen des Packets leer ist,
+ wird das Verzeichnis automatisch mit entfernt.
+Description-el: Íá áöáéñåèåß ï êáôÜëïãïò âÜóåùí äåäïìİíùí Geneweb êáôÜ ôçí åêêáèÜñéóç ğáêİôïõ;
+ Ïé âÜóåéò äåäïìİíùí ôïõ Geneweb èá áğïèçêåõôïıí óôïí êáôÜëïãï âÜóåùí
+ äåäïìİíùí /var/lib/geneweb. Áõôİò ïé âÜóåéò äåäïìİíùí ìğïñïıí íá
+ ôïğïèåôçèïıí åêåß áğü áõôïìáôïğïéçìİíïõò ÷ñŞóôåò ôçò ïìÜäáò "geneweb".
+ .
+ Ğáñáêáëş åğéëİîôå áí èİëåôå Ş ü÷é ïé âÜóåéò äåäïìİíùí íá áöáéñåèïıí
+ áõôüìáôá êáôÜ ôçí åêêáèÜñéóç ôïõ ğáêİôïõ (ïëïêëçñùôéêŞ áöáßñåóç áõôïı).
+ .
+ ÁÕÔÏ ÈÁ ÄÉÁÃÑÁØÅÉ ÔÁ ÄÅÄÏÌÅÍÁ ÔÏÕ ×ÑÇÓÔÇ. Óéãïõñåõôåßôå ğñïôïı áğïäå÷èåßôå
+ ôçí åêêáèÜñéóç.
+ .
+ ËÜâåôå õğ'üøç óáò üôé áí áõôüò ï êáôÜëïãïò åßíáé Üäåéïò üôáí êÜíåôå
+ åêêáèÜñéóç Ş áğëÜ áöáéñåßôå ôï ğáêİôï, ç áöáßñåóç èá ãßíåôáé ğÜíôá
+ áõôüìáôá.
+Description-es: ¿Borrar el directorio con las bases de datos de Geneweb al purgar el paquete?
+ Las bases de datos de Geneweb se guardan en el directorio
+ /var/lib/geneweb. Sólo los miembros del grupo «geneweb» tienen permiso
+ para almacenar allí bases de datos.
+ .
+ Por favor, elija si quiere borrar las bases de datos automáticamente
+ cuando purgue (elimine completamente) el paquete.
+ .
+ ESTO PUEDE BORRAR TODO EL CONTENIDO DE LOS USUARIOS. Tiene que estar muy
+ seguro si responde que sí a esta pregunta.
+ .
+ En caso de que borre o purge geneweb y el directorio de las bases de datos
+ se encuentre vacío, se borrará automáticamente.
+Description-eu: Paketea garbitzerakoan (purge) Geneweb databasea ezabatu?
+ Geneweb databaseak /var/lib/geneweb database direktorioan gordeko dira.
+ Database hauek baimean dutn eta "geneweb" taldeko partaide den batek hemen
+ ipini behar ditu.
+ .
+ Mesedez aukeratu paketea garbitzerakoan databaseak automatikoki (eta
+ guztiz) ezabatzea nahi duzun.
+ .
+ HONEK ERABILTZAILEEN DATUAK EZABATUKO DITU. Guztiz ziur egon beharko
+ zinateke ezabatzea onarzteko.
+ .
+ Kontutan izan paketea ezabatu edo garbitzean direktorio hori hutsik egon
+ ezkero ezabatua izango dela.
+Description-fi: Pitäisikö tietokanta tuhota asetusten mukana?
+ Tietokanta talletetaan hakemistoon /var/lib/geneweb.  Näitä tietokantoja
+ voivat tallettaa sinne sellaiset käyttäjät, jotka kuuluvat
+ käyttöoikeusryhmään "geneweb".
+ .
+ Valitse tuhotaanko tietokannat samalla, kun muu geneweb-paketti poistetaan
+ täydellisesti asetuksineen (purge).
+ .
+ TÄMÄ POISTAA KÄYTTÄJIEN OMISTAMIA TIETOJA.  Jos hyväksyt poiston, sinun on
+ oltava varma siitä.
+ .
+ Huomaa, että jos hakemisto on tyhjä silloin, kun geneweb-paketti
+ poistetaan, hakemisto poistetaan aina automaattisesti.
+Description-fr: Effacer le répertoire des bases de Geneweb à la purge du paquet ?
+ Les bases de données de Geneweb seront conservées dans /var/lib/geneweb.
+ Ces bases seront placées à cet endroit par les utilisateurs autorisés qui
+ doivent être membres du groupe « geneweb ».
+ .
+ Veuillez décider si vous souhaitez effacer automatiquement ces bases de
+ données lors de la purge du paquet (la purge est l'effacement complet d'un
+ paquet).
+ .
+ CELA REVIENT À L'EFFACEMENT DE DONNÉES D'UTILISATEURS. Vous devez être sûr
+ de vous si vous acceptez cette purge.
+ .
+ Veuillez noter que si ce répertoire est vide au moment de la purge ou de
+ l'effacement simple du paquet, il sera de toute manière automatiquement
+ effacé.
+Description-he: äàí ìäñéø àú áñéñ äğúåğéí ùì Geneweb áòú äñøú äçáéìä?
+ áñéñ äğúåğéí ùì Geneweb éàåçñï áğúéá /var/lib/geneweb. áñéñé ğúåğéí àìå
+ ğéúğéí ìäùîä áğúéá æä òì-éãé îùúîùéí îåøùéí àùø ùééëéí ì÷áåöú "geneweb".
+ .
+ áçø äàí áøöåğê ìáöò äñøä ùì áñéñ äğúåğéí áòú äñøä îìàä ùì äçáéìä.
+ .
+ ôòåìä æå úîçå÷ îéãò ùááòìåú îùúîùéí! òìéê ìğ÷åè æäéøåú áòú äñøä îìàä.
+ .
+ ùéí ìá ùàí ñôøéä æå øé÷ä áòú äñøä îìàä ùì äçáéìä, äéà úåñø áàåôï àåèåîèé .
+Description-it: La directory dei database dev'essere eliminata durante il "purge" di Geneweb?
+ I database di geneweb verranno tenuti nella directory /var/lib/geneweb.
+ Questi database vi potranno esser messi dagli utenti autorizzati, che
+ dovranno essere membri del gruppo "geneweb".
+ .
+ Per favore, scegliete se volete eliminare o no automaticamente i database
+ alla rimozione totale (con `dpkg --purge geneweb') del pacchetto.
+ .
+ QUESTO CANCELLA I DATI DEGLI UTENTI. Dovete essere sicuri se accettate la
+ rimozione totale.
+ .
+ Notate che questa directory verrà comunque rimossa se sarà vuota al
+ momento della rimozione, totale o semplice, del pacchetto.
+Description-ja: ¥Ñ¥Ã¥±¡¼¥¸¤Î purge »ş¤Ë Geneweb ¥Ç¡¼¥¿¥Ù¡¼¥¹¥Ç¥£¥ì¥¯¥È¥ê¤òºï½ü¤·¤Ş¤¹¤«?
+ Geneweb ¤Î¥Ç¡¼¥¿¥Ù¡¼¥¹¤Ï¥Ç¡¼¥¿¥Ù¡¼¥¹¥Ç¥£¥ì¥¯¥È¥ê /var/lib/geneweb
+ ¤Ë³ÊÇ¼¤µ¤ì¤Ş¤¹¡£¤³¤ì¤é¤Î¥Ç¡¼¥¿¥Ù¡¼¥¹¤Ï¡¢"geneweb"
+ ¥°¥ë¡¼¥×¤Î¥á¥ó¥Ğ¡¼¤È¤·¤Æ¾µÇ§¤µ¤ì¤¿¥æ¡¼¥¶¤Ë¤è¤Ã¤ÆÇÛÃÖ¤µ¤ì¤Ş¤¹¡£
+ .
+ ¥Ñ¥Ã¥±¡¼¥¸¤ò purge (´°Á´¤Êºï½ü)
+ ¤¹¤ë¤È¤­¤Ë¥Ç¡¼¥¿¥Ù¡¼¥¹¤ò¼«Æ°Åª¤Ëºï½ü¤·¤¿¤¤¤«¤É¤¦¤«¤òÁª¤ó¤Ç¤¯¤À¤µ¤¤¡£
+ .
+ *¤³¤ì¤Ï¥æ¡¼¥¶½êÍ­¤Î¥Ç¡¼¥¿¤ò¾Ãµî¤·¤Ş¤¹!* purge
+ ¤ò¹Ô¤¦¤È¤­¤Ë¤ÏÉ¬¤º³ÎÇ§¤·¤Æ¤¯¤À¤µ¤¤¡£
+ .
+ ¥Ñ¥Ã¥±¡¼¥¸¤ò purge ¤Ş¤¿¤ÏÃ±¤Ë remove
+ ¤¹¤ë¤È¤­¤Ë¤³¤Î¥Ç¥£¥ì¥¯¥È¥ê¤¬¶õ¤Î¤È¤­¤Ë¤Ï¡¢¾ï¤Ë¼«Æ°Åª¤Ëºï½ü¤µ¤ì¤ë¤³¤È¤ËÃí°Õ¤·¤Æ¤¯¤À¤µ¤¤¡£
+Description-nl: Geneweb's databasemap verwijderen wanneer dit pakket opgeruimt wordt?
+ De Geneweb databases zullen opgeslagen worden in de map /var/lib/geneweb.
+ Geauthorizeerde gebruikers die lid zijn van de "geneweb"-groep kunnen de
+ datatases daar plaatsten.
+ .
+ Gelieve aan te geven of u databases automatisch wil verwijderen bij het
+ opruimen (volledig verwijderen) van het pakket.
+ .
+ DIT ZOU UW GEBRUIKER-DATA VERWIJDEREN. U dient zeker te zijn wanneer u het
+ opruimen aanvaard.
+ .
+ Merk op dat wanneer deze map leeg is op het moment van opruimen, of
+ wanneer het pakket gewoon verwijdert wordt, dit altijd automatisch
+ verwijderd wordt.
+Description-pl: Czy usun±æ katalog z baz± danych Geneweb podczas czyszczenia pakietu?
+ Bazy Geneweb bêd± przechowywane w katalogu /var/lib/geneweb. Te bazy
+ danych mog± byæ tam umieszczane przez autoryzowanych u¿ytkowników
+ nale¿±cych do grupy "geneweb".
+ .
+ Czy chcesz automatycznie mieæ usuwane bazy danych podczas czyszczenia
+ pakietu (ca³kowite usuwanie)?.
+ .
+ TO USUNIE DANE U¯YTKOWNIKÓW. Musisz mieæ pewno¶æ, ¿e tego chcesz.
+ .
+ Pamiêtaj, ¿e je¶li ten katalog jest pusty podczas czyszczenia lub zwyk³ego
+ usuwania pakietu, bêdzie on automatycznie usuwany.
+Description-pt: Remover o directório da base de dados do Geneweb durante a operação de purge de pacotes?
+ As bases de dados do Geneweb serão armazenadas em /var/lib/geneweb. Essas
+ bases de dados podem ser colocadas lá por utilizadores autorizados que
+ deverão ser membros do grupo "geneweb".
+ .
+ Por favor escolha se deseja remover as bases de dados automaticamente
+ quando fizer o purge do pacote geneweb (removendo-o completamente).
+ .
+ ISTO IRÁ APAGAR DADOS DOS UTILIZADORES. Deve ter a certeza do que vai
+ fazer antes de aceitar a remoção completa.
+ .
+ Note que no caso da directoria estar vazia aquando da operação de purge ou
+ na remoção do pacote, ela será sempre removida.
+Description-pt_BR: Remover o diretório da base de dados do Geneweb na remoção (purge) do pacote ?
+ As bases de dados do geneweb serão armazenadas em /var/lib/geneweb. Essas
+ bases de dados podem ser colocadas lá por usuários autorizados que devem
+ ser membros do grupo "geneweb".
+ .
+ Por favor escolha se você deseja remover as bases de dados automaticamente
+ quando fizer o purge do pacote geneweb (removendo-o completamente).
+ .
+ ISTO IRÁ APAGAR DADOS DE PROPRIEDADE DOS USUÁRIOS. Você deve ter certeza
+ do que faz antes de aceitar a remoção completa.
+ .
+ Note que caso esse diretório esteja vazio no momento que você remover
+ completamente ou simplesmente remover o pacote o mesmo sempre será
+ automaticamente removido.
+
+Template: geneweb/remove_etcdirs
+Type: boolean
+Default: false
+Description: Remove /etc/geneweb/lang and /etc/geneweb/etc?
+ Former versions of the geneweb packages used /etc/geneweb/etc and
+ /etc/geneweb/lang directories for generated HTML pages default
+ templates.
+ .
+ These templates are strongly dependent on the Geneweb version (for
+ instance, translations updates occur there). So, it is not a good
+ idea to customise them.
+ .
+ These files have been moved to /usr/share/geneweb/etc and 
+ /usr/share/geneweb/lang.
+ .
+ If you never customised these files, they may be safely removed. Just
+ accept the removal now.
+ .
+ You may choose to keep them "just in case".
