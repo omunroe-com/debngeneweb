@@ -1,0 +1,8 @@
+/etc/geneweb/gwtp/lang/lexicon.txt
+/etc/geneweb/gwtp/lang/conf.txt
+/etc/geneweb/gwtp/lang/recv.txt
+/etc/geneweb/gwtp/lang/send.txt
+/etc/geneweb/gwtp/lang/send_gedcom.txt
+/etc/geneweb/gwtp/default.gwf
+/etc/geneweb/gwtp/passwd
+/etc/logrotate.d/gwtp

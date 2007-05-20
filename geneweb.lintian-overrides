@@ -1,0 +1,2 @@
+geneweb: extra-license-file usr/share/doc/geneweb/doc/LICENSE.htm
+geneweb: select-with-translated-default-field

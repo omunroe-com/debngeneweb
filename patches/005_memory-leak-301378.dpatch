@@ -1,0 +1,37 @@
+#! /bin/sh -e
+## 005_memory-leak-301378.dpatch by Daniel de Rauglaudre
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Allow reading the auth file outside "secure" directories
+
+if [ $# -lt 1 ]; then
+    echo "`basename $0`: script expects -patch|-unpatch as argument" >&2
+    exit 1
+fi
+
+[ -f debian/patches/00patch-opts ] && . debian/patches/00patch-opts
+patch_opts="${patch_opts:--f --no-backup-if-mismatch} ${2:+-d $2}"
+
+case "$1" in
+    -patch) patch -p1 ${patch_opts} < $0;;
+    -unpatch) patch -R -p1 ${patch_opts} < $0;;
+    *)
+        echo "`basename $0`: script expects -patch|-unpatch as argument" >&2
+        exit 1;;
+esac
+
+exit 0
+
+@DPATCH@
+
+--- geneweb-4.10.ori/src/secure.ml	2005-03-25 18:54:35.058825988 +0100
++++ geneweb-4.10/src/secure.ml	2005-03-25 18:55:01.350774664 +0100
+@@ -13,7 +13,7 @@
+ value decompose =
+   loop [] where rec loop r s =
+     let b = Filename.basename s in
+-    if b = "" then
++    if b = "" || b = Filename.current_dir_name then
+       let d = Filename.dirname s in
+       if d = "" then r
+       else if d = s then [d :: r]

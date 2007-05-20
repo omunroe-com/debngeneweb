@@ -1,0 +1,174 @@
+#! /bin/sh
+# postinst script for GeneWeb
+#
+# see: dh_installdeb(1)
+
+set +e 
+
+SERVICES=/etc/services
+OLDRCFILE=/etc/geneweb/genewebrc
+NEWRCFILE=/etc/default/geneweb
+INITFILE=/etc/init.d/geneweb
+GENEWEBUSER=geneweb
+
+
+# We we'll need some variables defined there
+# We first define some defaults values...just in case
+GENEWEBDB=/var/lib/geneweb
+USERS_GROUP=geneweb
+LOGFILE=/var/log/geneweb.log
+# Stupid bug of former versions of the package..:-(
+# I created /var/log/geneweb instead of /var/log/geneweb.log
+if  [ -f /var/log/geneweb ]
+then
+    rm /var/log/geneweb
+fi
+
+# Default settings
+DEFAULTLANG="en"
+DEFAULTFULLLANG="English"
+DEFAULTPORT=2317
+DEFAULTRUNMODE="Always on"
+
+# Reads config file (will override defaults above)
+[ -r /etc/default/geneweb ] && . /etc/default/geneweb
+
+. /usr/share/debconf/confmodule
+db_version 2.0
+
+
+
+case "$1" in
+    configure)
+
+	chmod 0755 /usr/bin/gwd
+	chown root.root /usr/bin/gwd
+
+	# Deal with old rc file location
+	if [ -f $OLDRCFILE ]
+	then
+	    mv $OLDRCFILE $NEWRCFILE
+	fi
+
+	# NEWRCFILE has to be world-readable if we want the entry menu to work
+	chmod g+r,a+r $NEWRCFILE
+
+	chmod a+rx $INITFILE
+
+	if [ -d "/usr/share/doc/geneweb/doc/$LANG" ]; then
+		ln -sf /usr/share/doc/geneweb/doc/$LANG /usr/share/doc/geneweb/doc_choice
+	else
+		ln -sf /usr/share/doc/geneweb/doc /usr/share/doc/geneweb/doc_choice
+	fi
+
+	# Thanks to Jerome Marant <jerome.marant@IDEALX.org> (sympa package
+	# maintainer)
+	if [ ! -x `which addgroup` ]; then
+	    echo "I need addgroup(8) from the \'adduser\' package !";
+	    exit 1;
+	fi
+
+	# Make sure user group is available
+	# if ! grep -q "^${USERS_GROUP}:" /etc/group;
+	# Do this more cleanly
+	if ! getent group ${USERS_GROUP} >/dev/null
+	then
+	    echo "Adding $USERS_GROUP group ... "
+	    addgroup --quiet --force-badname $USERS_GROUP
+	fi
+	
+	if [ ! -x `which adduser` ]; then
+	    echo "I need adduser(8) from the \'adduser\' package !";
+	    exit 1;
+	fi
+
+	# Make sure geneweb user exists
+	# if ! grep -q "^${GENEWEBUSER}:" /etc/passwd;
+	# Do this more cleanly (stolen to amavisd-new...:-)
+	if ! getent passwd ${GENEWEBUSER} >/dev/null
+	then
+	    echo "Adding $GENEWEBUSER user ... "
+	    adduser --quiet --system --home /var/lib/geneweb --no-create-home --ingroup $USERS_GROUP $GENEWEBUSER
+	fi
+	
+	# Remove /usr/doc/geneweb symlink
+        if [ -d /usr/doc -a -L /usr/doc/geneweb ]; then
+          rm /usr/doc/geneweb
+        fi
+
+	# Permissions and groups changes come back
+	# to the configure stage again.
+	# Problems may remains if users previously messed up
+	# the permissions...but more huge problems will
+	# occur if this stage occurs _before_ the geneweb
+	# group creation (was bug 171570 on 4.07-3 release)
+
+	if [ ! -f $LOGFILE ]
+	then
+	    touch $LOGFILE
+	fi
+
+	# Thus all files created there will have geneweb as group
+	chown root.$USERS_GROUP $GENEWEBDB $GENEWEBDB/images $GENEWEBDB/cnt $GENEWEBDB/etc
+	# The database directory is writable by geneweb group
+	chmod ug+rwx,o-rwx $GENEWEBDB $GENEWEBDB/images $GENEWEBDB/cnt $GENEWEBDB/etc
+	# SetGID bit on the database directory owned by geneweb group
+	chmod g+s $GENEWEBDB $GENEWEBDB/images $GENEWEBDB/cnt $GENEWEBDB/etc
+
+	# The log file is written by gwd running as the geneweb user
+	# Make it readable/writable by this user only
+	chown $GENEWEBUSER.$USERS_GROUP $LOGFILE
+	chmod 600 $LOGFILE
+
+	# Fix incorrect database and images directories permissions
+	# These directories have to be group-writable
+	# as the daemon now runs with an unprivileged UID
+	#
+	# Thanks to Russell Sutherland for pointing this to me
+	# Bug: 179918
+	for base in `find $GENEWEBDB -type d -name \*.gwb`
+	do
+	    chgrp $USERS_GROUP $base
+	    chmod g+w,g+s $base
+	    # Fix files permissions. See #219779
+	    for file in `find $base -type f`
+	    do
+		chgrp $USERS_GROUP $file
+		chmod g+w $file
+	    done
+	done
+	for imagedir in `find $GENEWEBDB/images -type d`
+	do
+	    chgrp $USERS_GROUP $imagedir
+	    chmod g+w,g+s $imagedir
+	done
+
+	# Remove the useless /etc/geneweb/{lang|etc} directories
+ 	if [ -d /etc/geneweb/etc -o -d /etc/geneweb/lang ]
+	then
+	    # get value for user answer
+	    db_get geneweb/remove_etcdirs
+                
+	    # handle it!
+	    if [ "$RET" = "true" ]
+	    then
+		rm -rf /etc/geneweb/etc >/dev/null 2>&1
+		rm -rf /etc/geneweb/lang >/dev/null 2>&1
+	    fi
+	fi
+
+	# Remove the useless /etc/geneweb/images symlink
+ 	if [ -h /etc/geneweb/images ]
+	then
+	    rm /etc/geneweb/images >/dev/null 2>&1
+	fi
+
+
+	;;
+    *)
+	;;
+esac
+
+
+
+#DEBHELPER#

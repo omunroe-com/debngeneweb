@@ -1,0 +1,37 @@
+#! /bin/sh -e
+## 003_gwd.ml-writelog.dpatch by Daniel de Rauglaudre
+##
+## All lines beginning with `## DP:' are a description of the patch.
+## DP: Allow writing the log file outside "secure" directories
+
+if [ $# -lt 1 ]; then
+    echo "`basename $0`: script expects -patch|-unpatch as argument" >&2
+    exit 1
+fi
+
+[ -f debian/patches/00patch-opts ] && . debian/patches/00patch-opts
+patch_opts="${patch_opts:--f --no-backup-if-mismatch} ${2:+-d $2}"
+
+case "$1" in
+    -patch) patch -p1 ${patch_opts} < $0;;
+    -unpatch) patch -R -p1 ${patch_opts} < $0;;
+    *)
+        echo "`basename $0`: script expects -patch|-unpatch as argument" >&2
+        exit 1;;
+esac
+
+exit 0
+
+@DPATCH@
+
+--- geneweb-4.10.ori/src/gwd.ml	2004-12-30 07:54:27.000000000 +0100
++++ geneweb-4.10/src/gwd.ml	2004-12-30 07:55:24.000000000 +0100
+@@ -36,7 +36,7 @@
+ 
+ value log_oc () =
+   if log_file.val <> "" then
+-    try Secure.open_out_gen log_flags 0o644 log_file.val with
++    try open_out_gen log_flags 0o644 log_file.val with
+     [ Sys_error _ -> do { log_file.val := ""; stderr } ]
+   else stderr
+ ;

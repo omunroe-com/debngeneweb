@@ -1,0 +1,180 @@
+#! /bin/sh
+# prerm script for GeneWeb
+#
+# see: dh_installdeb(1)
+
+set -e
+
+# summary of how this script can be called:
+#        * <prerm> `remove'
+#        * <old-prerm> `upgrade' <new-version>
+#        * <new-prerm> `failed-upgrade' <old-version>
+#        * <conflictor's-prerm> `remove' `in-favour' <package> <new-version>
+#        * <deconfigured's-prerm> `deconfigure' `in-favour'
+#          <package-being-installed> <version> `removing'
+#          <conflicting-package> <version>
+# for details, see /usr/doc/packaging-manual/
+
+case "$1" in
+        failed-upgrade)
+		# Needed for correct upgrade in testing. Bug 184184.
+		touch /etc/geneweb/genewebrc
+                ;;
+        *)
+                ;;
+esac
+
+#DEBHELPER#
+
+# We need geneweb's Setup...if it exists!
+RCFILE=/etc/default/geneweb
+GENEWEBDB=/var/lib/geneweb
+[ -r $RCFILE ] && . $RCFILE
+
+error_convert ()
+{
+	echo "  WARNING!!! Something bad happened. gwu output follows :"
+	cat $TEMPLOG
+        rm $TEMPLOG >/dev/null 2>&1
+	echo " The database $base WAS NOT converted. "
+	echo " Please ask its owner to verify it as soon as possible."
+	echo " Geneweb packaged will be considered updated|removed anyway."
+	echo " "
+	echo " [Type ENTER to continue]"
+	read dummy
+	unset dummy
+}
+
+
+preserve_generaldbs ()
+{
+if [ `find $GENEWEBDB -type d -name \*.gwb|wc -l` != 0 ]
+then
+	echo Databases found in $GENEWEBDB. Exporting to *.update.gw files.
+	echo See /usr/share/doc/geneweb/README.Debian for details.
+fi
+for base in `find $GENEWEBDB -type d -name \*.gwb`
+do
+	echo -n "   - `basename $base .gwb` : "
+
+        TEMPFILE=`tempfile`
+        TEMPLOG=`tempfile`
+
+	if gwu -o $TEMPFILE $base >/dev/null 2>$TEMPLOG
+        then
+	        # If conversion went OK, try to copy the gwu file to
+		# the database directory
+	        if cp $TEMPFILE  `dirname $base`/`basename $base .gwb`.update.gw
+		then
+		    # If copy is OK
+		    rm $TEMPFILE
+		    # Set the appropriate owner (group should be geneweb)
+		    base_owner_uid=`ls -ldn $base | awk '{print $3}'`
+		    chown $base_owner_uid `dirname $base`/`basename $base .gwb`.update.gw
+		    # Preserve privacy
+		    chmod 0600 `dirname $base`/`basename $base .gwb`.update.gw
+		    echo Exported to `dirname $base`/`basename $base .gwb`.update.gw
+		else
+		    # The copy failed
+		    rm $TEMPFILE >/dev/null 2>&1
+		    echo " "
+		    error_convert
+		fi
+	else
+	        # gwu failed
+	        rm $TEMPFILE >/dev/null 2>&1
+		error_convert
+	fi		
+done
+}
+
+preserve_otherdbs ()
+{
+echo -n Looking for additionnal databases using "locate".
+noother=YES
+for base in `locate .gwb|grep -v $GENEWEBDB`
+do
+	echo " "
+        TEMPFILE=`tempfile`
+        TEMPLOG=`tempfile`
+
+	if [ -d $base ]
+	then
+		noother=NO
+		echo -n Found $base. 
+		echo -n "  Exporting."
+		if gwu -o $TEMPFILE $base >/dev/null 2>>$TEMPLOG
+		then
+	            # If conversion went OK, try to copy the gwu file to
+		    # the database directory
+	            if cp $TEMPFILE `dirname $base`/`basename $base .gwb`.update.gw
+		    then
+		        # If copy is OK
+		        rm $TEMPFILE >/dev/null 2>&1
+			echo Converted \(`dirname $base`/`basename $base .gwb`.update.gw\).
+			# Set the appropriate owner
+			base_owner_uid=`ls -ldn $base | awk '{print $3}'`
+			chown $base_owner_uid `dirname $base`/`basename $base .gwb`.update.gw
+			# Set the appropriate owner
+			base_group_gid=`ls -ldn $base | awk '{print $4}'`
+			chgrp $base_group_gid `dirname $base`/`basename $base .gwb`.update.gw
+			# Preserve privacy
+			chmod 0600 `dirname $base`/`basename $base .gwb`.update.gw
+			echo Done.
+		    else
+		        # The copy failed. 
+		        rm $TEMPFILE >/dev/null 2>&1
+			echo " "
+			error_convert
+		    fi
+		else
+		        # gwu failed
+		        rm $TEMPFILE >/dev/null 2>&1
+			echo " "
+			error_convert
+		fi				
+	fi
+done
+if [ $noother = "YES" ]
+then
+	echo "  None found."
+fi
+}
+
+# Disabled after #304405
+# This never proved to be a good idea and there are
+# potential symlink attacks here
+#case "$1" in
+#        upgrade|failed-upgrade|abort-upgrade|remove)
+#                preserve_generaldbs
+#                preserve_otherdbs
+#                ;;
+#        *)
+#                ;;
+#esac
+
+# Properly remove the ugly link created in postinst
+if [ -L /etc/geneweb/images ]
+then
+    rm /etc/geneweb/images
+fi
+
+# Remove files created by the "registering documentation" function of Geneweb
+if [ -L /usr/share/doc/geneweb/doc_choice ]
+then
+    rm /usr/share/doc/geneweb/doc_choice
+fi
+# Old bug in some package version
+if [ -L /usr/share/doc/geneweb/doc/$LANG/$LANG ]
+then
+    rm /usr/share/doc/geneweb/doc/$LANG/$LANG
+fi
+
+# OK, lintian : you won't whine anymore...:-)
+if [ \( "$1" = "upgrade" -o "$1" = "remove" \) -a -L /usr/doc/geneweb ]; then
+    rm -f /usr/doc/geneweb
+fi
+
+exit 0
+
+
