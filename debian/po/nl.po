@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: geneweb\n"
 "Report-Msgid-Bugs-To: bubulle@debian.org\n"
-"POT-Creation-Date: 2005-11-29 19:03+0100\n"
+"POT-Creation-Date: 2006-12-01 19:37+0100\n"
 "PO-Revision-Date: 2005-11-30 12:43+0100\n"
 "Last-Translator: Bart Cornelis <cobaco@linux.be>\n"
 "Language-Team: debian-l10n-dutch <debian-l10n-dutch@lists.debian.org>\n"
@@ -28,25 +28,25 @@ msgstr ""
 #. This is the default choice. Translators may put their own language here
 #. instead of the default.
 #. WARNING : you MUST use the iso_639 two-letter code of your language
-#: ../geneweb.templates.master:8
+#: ../geneweb.templates.master:1001
 msgid "en[ translators, please see comment in PO files]"
 msgstr "nl"
 
 #. Type: select
 #. Description
-#: ../geneweb.templates.master:9
+#: ../geneweb.templates.master:1002
 msgid "Geneweb default language:"
 msgstr "Geneweb standaardtaal:"
 
 #. Type: select
 #. Description
-#: ../geneweb.templates.master:9
+#: ../geneweb.templates.master:1002
 msgid "Geneweb can display its prompts in a number of languages."
 msgstr "Geneweb kan zijn vragen in verschillende talen weergeven."
 
 #. Type: select
 #. Description
-#: ../geneweb.templates.master:9
+#: ../geneweb.templates.master:1002
 msgid "Select a default language for Geneweb to use in its page rendering."
 msgstr ""
 "Gelieve de, door Geneweb, standaard bij paginaweergave te gebruiken taal te "
@@ -54,19 +54,19 @@ msgstr ""
 
 #. Type: select
 #. Description
-#: ../geneweb.templates.master:9
+#: ../geneweb.templates.master:1002
 msgid "Other languages will still be available."
 msgstr "Andere talen blijven beschikbaar"
 
 #. Type: string
 #. Description
-#: ../geneweb.templates.master:19
+#: ../geneweb.templates.master:2001
 msgid "Geneweb daemon listening port:"
 msgstr "Genewebdaemon luisterende poort:"
 
 #. Type: string
 #. Description
-#: ../geneweb.templates.master:19
+#: ../geneweb.templates.master:2001
 msgid ""
 "The port used by the geneweb daemon (gwd) for incoming connections may be "
 "configured here."
@@ -76,7 +76,7 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../geneweb.templates.master:19
+#: ../geneweb.templates.master:2001
 msgid "Choose a port number above 1023 for the port gwd will listen to."
 msgstr ""
 "Het poortnummer van de poort waarop gwd luistert dient hoger te zijn dan "
@@ -84,35 +84,31 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../geneweb.templates.master:19
+#: ../geneweb.templates.master:2001
 msgid "If unsure, leave the default value of 2317."
 msgstr "Indien u onzeker bent, kunt u best de defaultwaarde 2317 laten staan."
 
 #. Type: select
 #. Choices
-#. Type: select
-#. Default
-#: ../geneweb.templates.master:28 ../gwsetup.templates:14
-msgid "Manual"
-msgstr "Handmatig"
-
-#. Type: select
-#. Default
-#. Type: select
-#. Choices
-#: ../geneweb.templates.master:29 ../gwsetup.templates:13
+#: ../geneweb.templates.master:3001 ../gwsetup.templates:2001
 msgid "Always on"
 msgstr "Altijd aan"
 
 #. Type: select
+#. Choices
+#: ../geneweb.templates.master:3001 ../gwsetup.templates:2001
+msgid "Manual"
+msgstr "Handmatig"
+
+#. Type: select
 #. Description
-#: ../geneweb.templates.master:30
+#: ../geneweb.templates.master:3002
 msgid "Geneweb start mode:"
 msgstr "Geneweb startmodus:"
 
 #. Type: select
 #. Description
-#: ../geneweb.templates.master:30
+#: ../geneweb.templates.master:3002
 msgid ""
 "The Geneweb daemon gwd can be launched automatically at startup, manually by "
 "the system administrator, or by any user when it is needed."
@@ -122,7 +118,7 @@ msgstr ""
 
 #. Type: select
 #. Description
-#: ../geneweb.templates.master:30
+#: ../geneweb.templates.master:3002
 msgid ""
 "If you choose \"Always on\", Geneweb will be launched at the system startup."
 msgstr ""
@@ -131,7 +127,7 @@ msgstr ""
 
 #. Type: select
 #. Description
-#: ../geneweb.templates.master:30
+#: ../geneweb.templates.master:3002
 msgid ""
 "If you want to prevent the automatic startup of Geneweb, for example if you "
 "prefer to run it as a CGI program, then choose \"Manual\"."
@@ -142,13 +138,13 @@ msgstr ""
 
 #. Type: note
 #. Description
-#: ../geneweb.templates.master:41
+#: ../geneweb.templates.master:4001
 msgid "Old directory /var/geneweb not removed"
 msgstr "Oude map /var/geneweb is niet verwijderd"
 
 #. Type: note
 #. Description
-#: ../geneweb.templates.master:41
+#: ../geneweb.templates.master:4001
 msgid ""
 "Previous versions of both official and unofficial packages for Geneweb used "
 "non FHS-compliant /var/geneweb directory for storing databases."
@@ -159,7 +155,7 @@ msgstr ""
 
 #. Type: note
 #. Description
-#: ../geneweb.templates.master:41
+#: ../geneweb.templates.master:4001
 msgid ""
 "It has been detected that this directory was used on your system. Some files "
 "have been moved from there to /var/lib/geneweb but the geneweb installation "
@@ -171,7 +167,7 @@ msgstr ""
 
 #. Type: note
 #. Description
-#: ../geneweb.templates.master:41
+#: ../geneweb.templates.master:4001
 msgid ""
 "Thus the directory has been left intact. It is highly recommended that you "
 "check the remaining files there and move them to /var/lib/geneweb, then "
@@ -183,13 +179,13 @@ msgstr ""
 
 #. Type: boolean
 #. Description
-#: ../geneweb.templates.master:56
+#: ../geneweb.templates.master:5001
 msgid "Remove Geneweb database directory on package purge?"
 msgstr "Geneweb's databasemap verwijderen wanneer dit pakket opgeruimt wordt?"
 
 #. Type: boolean
 #. Description
-#: ../geneweb.templates.master:56
+#: ../geneweb.templates.master:5001
 msgid ""
 "Geneweb's databases will be stored in the database directory /var/lib/"
 "geneweb. These databases may be put there by authorized users who must be "
@@ -201,7 +197,7 @@ msgstr ""
 
 #. Type: boolean
 #. Description
-#: ../geneweb.templates.master:56
+#: ../geneweb.templates.master:5001
 msgid ""
 "Please choose whether you want to remove databases automatically when "
 "purging the package (completely removing it)."
@@ -211,7 +207,7 @@ msgstr ""
 
 #. Type: boolean
 #. Description
-#: ../geneweb.templates.master:56
+#: ../geneweb.templates.master:5001
 msgid ""
 "THIS WOULD ERASE USER-OWNED DATA. You have to be sure if you accept the "
 "purge."
@@ -221,7 +217,7 @@ msgstr ""
 
 #. Type: boolean
 #. Description
-#: ../geneweb.templates.master:56
+#: ../geneweb.templates.master:5001
 msgid ""
 "Note that if this directory is empty at the time you purge or simply remove "
 "the package, it will always be automatically removed."
@@ -231,13 +227,13 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../gwsetup.templates:4
+#: ../gwsetup.templates:1001
 msgid "Gwsetup daemon listening port:"
 msgstr "Gwsetup-daemon luisterende poort:"
 
 #. Type: string
 #. Description
-#: ../gwsetup.templates:4
+#: ../gwsetup.templates:1001
 msgid ""
 "The port used by the gwsetup daemon for incoming connections may be "
 "configured here."
@@ -247,7 +243,7 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../gwsetup.templates:4
+#: ../gwsetup.templates:1001
 msgid "Choose a port number above 1023 for the port gwsetup will listen to."
 msgstr ""
 "Het poortnummer van de poort waarop gwsetup luistert dient hoger te zijn dan "
@@ -255,19 +251,19 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../gwsetup.templates:4
+#: ../gwsetup.templates:1001
 msgid "If unsure, leave the default value of 2316."
 msgstr "Indien u onzeker bent, kunt u best de defaultwaarde 2316 laten staan."
 
 #. Type: select
 #. Description
-#: ../gwsetup.templates:15
+#: ../gwsetup.templates:2002
 msgid "Gwsetup start mode:"
 msgstr "Gwsetup startmodus:"
 
 #. Type: select
 #. Description
-#: ../gwsetup.templates:15
+#: ../gwsetup.templates:2002
 msgid ""
 "The Gwsetup daemon can be launched automatically at startup, manually by the "
 "system administrator, or by any user when it is needed."
@@ -277,7 +273,7 @@ msgstr ""
 
 #. Type: select
 #. Description
-#: ../gwsetup.templates:15
+#: ../gwsetup.templates:2002
 msgid ""
 "If you choose \"Always on\", gwsetup will be launched at the system startup."
 msgstr ""
@@ -286,7 +282,7 @@ msgstr ""
 
 #. Type: select
 #. Description
-#: ../gwsetup.templates:15
+#: ../gwsetup.templates:2002
 msgid ""
 "If you want to prevent the automatic startup of gwsetup, then choose \"Manual"
 "\"."

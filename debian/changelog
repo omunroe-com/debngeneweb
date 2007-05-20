@@ -1,3 +1,11 @@
+geneweb (5.00-3) unstable; urgency=low
+
+  * Debian packaging:
+    - bring back fixes to geneweb.postrm that were accidentally removed in
+      5.00-2
+
+ -- Christian Perrier <bubulle@debian.org>  Sun, 20 May 2007 11:14:59 +0200
+
 geneweb (5.00-2) unstable; urgency=low
 
   * First upload to unstable
