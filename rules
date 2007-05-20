@@ -1,10 +1,4 @@
 #!/usr/bin/make -f
-# MAde with the aid of dh_make, by Craig Small
-# Sample debian/rules that uses debhelper. GNU copyright 1997 by Joey Hess.
-# Some lines taken from debmake, by Cristoph Lameter.
-
-# Uncomment this to turn on verbose mode.
-#export DH_VERBOSE=1
 
 PACKAGE=geneweb
 
@@ -20,10 +14,6 @@ else
         else echo "out";                                                \
         fi)
 endif
-
-### # Use dpatch for patches
-### PATCHLIST	 = $(notdir $(basename $(wildcard debian/patches/*.dpatch)))
-### include /usr/share/dpatch/dpatch.make
 
 # Use quilt for patches
 include /usr/share/quilt/quilt.make
@@ -63,6 +53,7 @@ clean-patched:
 	rm -rf debian/pobuild
 	rm -f debian/geneweb.templates.tmp
 	rm -f debian/geneweb.templates
+	debconf-updatepo
 
 	# Add here commands to clean up after the build process.
 	-$(MAKE) clean
@@ -118,8 +109,6 @@ binary-arch: build install
 	debian/get-iso-codes
 	# Build templates
 	chmod u+x debian/mktemplates
-	#chmod u+x debian/po2debconf
-	#chmod u+x debian/intltool-merge
 	debian/mktemplates
 
 	dh_installdebconf
@@ -135,9 +124,6 @@ binary-arch: build install
 
 	dh_md5sums
 	dh_builddeb
-
-source diff:                                                                  
-	@echo >&2 'source and diff are obsolete - use dpkg-source -b'; false
 
 binary: binary-indep binary-arch
 .PHONY: build clean binary-indep binary-arch binary install patch unpatch

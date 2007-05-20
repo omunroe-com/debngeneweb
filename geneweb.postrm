@@ -18,6 +18,7 @@ set -e
 
 if [ "$1" = "purge" ]
 then
+    . /usr/share/debconf/confmodule
     # 
     # Try to remove log files (Policy 11.8)
     rm /var/log/geneweb.log* 2>/dev/null || true
@@ -33,19 +34,17 @@ then
     rmdir /etc/geneweb/etc 2>/dev/null || true
     rmdir /etc/geneweb 2>/dev/null || true
 
+    db_get geneweb/remove_databases
+    remove_databases="$RET"
 
-    if [ -e /usr/share/debconf/confmodule ] ; then
-	    . /usr/share/debconf/confmodule
-
-	    db_get geneweb/remove_databases
-	    remove_databases="$RET"
-
-	    if [ "$remove_databases" = "true" ]; then
-		echo ""
-	        echo "Removing databases and database directory as requested ..."
-		rm -rf /var/lib/geneweb 2>/dev/null || true
-	    fi
+    if [ "$remove_databases" = "true" ]; then
+	echo ""
+        echo "Removing databases and database directory as requested ..."
+	rm -rf /var/lib/geneweb 2>/dev/null || true
     fi
+    db_purge
+
+
 fi
 
 # dh_installdeb will replace this with shell code automatically
