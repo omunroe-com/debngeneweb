@@ -2,8 +2,6 @@
 #
 # Get ISO codes from the iso-codes package and extract translations
 #
-ISO639TAB=/usr/share/iso-codes/iso_639.tab
-[ -r $ISO639TAB ] || exit 1
 rm -rf debian/iso-codes || true
 mkdir debian/iso-codes
 
