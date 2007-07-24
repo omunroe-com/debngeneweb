@@ -1,13 +1,12 @@
-geneweb (5.00-4) unstable; urgency=high
+geneweb (5.00-4) unstable; urgency=low
 
   * Debconf translations:
     - Galician added. Closes: #419864
-  * debian/get-iso-codes: remove useless test for the existence of iso_639.tab
-    which was removed from iso-codes, hence causing a FTBFS. Closes: #432543
   * debian/patches/001_dag2html.1: refreshed to fit geneweb 5.00
     (I wonder how this thing was building before)
+  * Rebuild with new iso-codes and, therefore, no longer FTBFS.
 
- -- Christian Perrier <bubulle@debian.org>  Wed, 11 Jul 2007 08:21:56 +0200
+ -- Christian Perrier <bubulle@debian.org>  Tue, 24 Jul 2007 23:06:23 +0200
 
 geneweb (5.00-3) unstable; urgency=low
 
