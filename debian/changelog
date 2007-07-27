@@ -2,8 +2,6 @@ geneweb (5.00-4) unstable; urgency=low
 
   * Debconf translations:
     - Galician added. Closes: #419864
-  * debian/patches/001_dag2html.1: refreshed to fit geneweb 5.00
-    (I wonder how this thing was building before)
   * Rebuild with new iso-codes and, therefore, no longer FTBFS.
 
  -- Christian Perrier <bubulle@debian.org>  Tue, 24 Jul 2007 23:06:23 +0200
