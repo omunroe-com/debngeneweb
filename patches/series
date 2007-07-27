@@ -1,7 +1,6 @@
 000_Makefile
 001_dag2html.1
 002_de-translation
-003_gwd.ml-writelog
 004_gwd.ml-readauth
 005_memory-leak-301378
 006_consang.1
