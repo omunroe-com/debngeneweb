@@ -2,20 +2,29 @@ Goal: Allow configuring various paths in gwsetup
 
 Status wrt upstream: Forwarded in the Geneweb ML
 
-Index: geneweb-4.10/setup/setup.ml
+Index: geneweb-5.00/setup/setup.ml
 ===================================================================
---- geneweb-4.10.orig/setup/setup.ml	2005-11-29 18:59:43.883439599 +0100
-+++ geneweb-4.10/setup/setup.ml	2005-11-29 19:02:15.107722966 +0100
+--- geneweb-5.00.orig/setup/setup.ml	2007-02-25 03:32:19.000000000 +0100
++++ geneweb-5.00/setup/setup.ml	2007-02-28 21:08:52.835124034 +0100
 @@ -6,6 +6,8 @@
  value port = ref 2316;
  value default_lang = ref "en";
  value setup_dir = ref ".";
 +value only_dir = ref ".";
 +value comm_log = ref ".";
+ value bin_dir = ref "";
  value lang_param = ref "";
+ value only_file = ref "";
+@@ -319,7 +321,7 @@
+ ;
  
- value slashify s =
-@@ -701,7 +703,7 @@
+ value only_file_name () =
+-  if only_file.val = "" then Filename.concat setup_dir.val "only.txt"
++  if only_file.val = "" then Filename.concat only_dir.val "only.txt"
+   else only_file.val
+ ;
+ 
+@@ -710,7 +712,7 @@
  ;
  
  value exec_f comm =
@@ -24,34 +33,34 @@ Index: geneweb-4.10/setup/setup.ml
    do {
      eprintf "$ cd \"%s\"\n" (Sys.getcwd ());
      flush stderr;
-@@ -826,7 +828,7 @@
+@@ -835,7 +837,7 @@
  
  value gwc conf =
    let rc =
--    let comm = stringify (Filename.concat setup_dir.val "gwc") in
+-    let comm = stringify (Filename.concat bin_dir.val "gwc") in
 +    let comm = "gwc" in
      exec_f (comm ^ parameters conf.env)
    in
-   let rc = ifdef WIN95 then infer_rc conf rc else rc in
-@@ -1044,7 +1046,7 @@
+   let rc = IFDEF WIN95 THEN infer_rc conf rc ELSE rc END in
+@@ -1055,7 +1057,7 @@
        Sys.chdir dir;
        let c =
-         Filename.concat setup_dir.val src_to_new ^ " " ^ tmp ^ " -f -o " ^
+         Filename.concat bin_dir.val src_to_new ^ " " ^ tmp ^ " -f -o " ^
 -          out_file ^ " > " ^ "comm.log"
 +          out_file ^ " > " ^ comm_log.val
        in
        eprintf "$ %s\n" c;
        flush stderr;
-@@ -1126,7 +1128,7 @@
+@@ -1138,7 +1140,7 @@
      Sys.rename in_base_dir (Filename.concat "old" in_base_dir);
      let c =
-       Filename.concat setup_dir.val "gwc" ^ " tmp.gw -o " ^ in_base ^
+       Filename.concat bin_dir.val "gwc" ^ " tmp.gw -nofail -o " ^ in_base ^
 -        " > comm.log "
 +        " > " ^ comm_log.val
      in
      eprintf "$ %s\n" c;
      flush stderr;
-@@ -1249,7 +1251,7 @@
+@@ -1262,7 +1264,7 @@
                (fun s b ->
                   if s = "" then " " ^ b ^ ".gw" else s ^ " -sep " ^ b ^ ".gw")
                "" bases ^
@@ -60,26 +69,17 @@ Index: geneweb-4.10/setup/setup.ml
          in
          eprintf "$ %s\n" c;
          flush stderr;
-@@ -1595,7 +1597,7 @@
- value local_addr = "127.0.0.1";
- 
- value only_addr () =
--  let fname = Filename.concat setup_dir.val "only.txt" in
-+  let fname = Filename.concat only_dir.val "gwsetup_only.txt" in
-   match try Some (open_in fname) with [ Sys_error _ -> None ] with
-   [ Some ic ->
-       let v = try input_line ic with [ End_of_file -> local_addr ] in
-@@ -1768,8 +1770,12 @@
-    ("-p", Arg.Int (fun x -> port.val := x),
-     "<number>:\n       Select a port number (default = " ^
+@@ -1783,8 +1785,12 @@
        string_of_int port.val ^ "); > 1024 for normal users.");
+    ("-only", Arg.String (fun s -> only_file.val := s),
+     "<file>: File containing the only authorized address");
 +   ("-only", Arg.String (fun x -> only_dir.val := x),
 +    "<string>: directory for gwsetup_only.txt file") ;
 +   ("-log", Arg.String (fun x -> comm_log.val := x),
 +    "<string>: full path for last command log file") ;
     ("-gd", Arg.String (fun x -> setup_dir.val := x),
--    "<string>: gwsetup directory") ::
-+    "<string>: geneweb share directory") ::
-    ifdef SYS_COMMAND then
-      [("-wserver", Arg.String (fun _ -> ()), " (internal feature)")]
-    else []]
+-    "<string>: gwsetup directory");
++    "<string>: geneweb share directory") ;
+    ("-bindir", Arg.String (fun x -> bin_dir.val := x),
+     "<string>: binary directory (default = value of option -gd)") ::
+    IFDEF SYS_COMMAND THEN
