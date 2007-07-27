@@ -6,8 +6,8 @@ Status wrt upstream: will not be applied because of upstream design choices
 
 Index: geneweb-5.00/src/gwd.ml
 ===================================================================
---- geneweb-5.00.orig/src/gwd.ml	2007-07-27 08:50:21.454510194 +0200
-+++ geneweb-5.00/src/gwd.ml	2007-07-27 08:57:03.433880318 +0200
+--- geneweb-5.00.orig/src/gwd.ml	2007-02-24 21:08:15.000000000 +0100
++++ geneweb-5.00/src/gwd.ml	2007-02-28 21:05:29.893404569 +0100
 @@ -1355,7 +1355,7 @@
      let auth = Wserver.extract_param "authorization: " '\r' request in
      if auth <> "" then
@@ -17,16 +17,3 @@ Index: geneweb-5.00/src/gwd.ml
        with
        [ Some ic ->
            let auth =
-Index: geneweb-5.00/src/util.ml
-===================================================================
---- geneweb-5.00.orig/src/util.ml	2007-07-27 08:59:46.925513094 +0200
-+++ geneweb-5.00/src/util.ml	2007-07-27 09:00:01.924745762 +0200
-@@ -2225,7 +2225,7 @@
- 
- value read_gen_auth_file fname =
-   let fname = base_path [] fname in
--  match try Some (Secure.open_in fname) with [ Sys_error _ -> None ] with
-+  match try Some (open_in fname) with [ Sys_error _ -> None ] with
-   [ Some ic ->
-       let rec loop data =
-         match try Some (input_line ic) with [ End_of_file -> None ] with

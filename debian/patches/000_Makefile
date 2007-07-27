@@ -4,17 +4,18 @@ Goal: Add differentiated Makefile.inc files for optimized and non
 Status wrt upstream: too Debian specific
 
 
-Index: geneweb-4.10/tools/Makefile.inc.opt
+Index: geneweb-5.00/tools/Makefile.inc.opt
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ geneweb-4.10/tools/Makefile.inc.opt	2005-08-30 08:13:40.000000000 +0200
-@@ -0,0 +1,42 @@
-+# $Id: 000_Makefile,v 1.2 2005/10/10 20:22:40 bubulle Exp $
++++ geneweb-5.00/tools/Makefile.inc.opt	2007-02-28 21:05:03.625182006 +0100
+@@ -0,0 +1,43 @@
++# $Id: Makefile.inc,v 5.1 2006/05/18 20:49:37 ddr Exp $
 +
 +TOP=..
-+CAMLP4_COMM=TOP=$(TOP) $(TOP)/tools/camlp4_comm.sh pa_ifdef.cmo
++CAMLP4_COMM=TOP=$(TOP) $(TOP)/tools/camlp4_comm.sh $(PPDEF)
 +CAMLP4F=-DUNIX
-+CAMLP4D=`camlp4 -where`
++PPDEF=../src/ppdef.cmo
++CAMLP4D=$$(camlp4 -where)
 +LIBUNIX=-cclib -lunix
 +OCAMLC=ocamlc.opt -warn-error A
 +OCAMLOPT=ocamlopt.opt -warn-error A
@@ -37,31 +38,32 @@ Index: geneweb-4.10/tools/Makefile.inc.opt
 +.mli.cmi:
 +	@if test `basename $<` != $<; then echo "Bad directory for $<"; exit 1; fi
 +	@$(CAMLP4_COMM) $(CAMLP4F) $< -o $*.ppi
-+	$(OCAMLC) $(OCAMLI) -I $(CAMLP4D) -c -intf $*.ppi
++	$(OCAMLC) $(OCAMLI) -I +camlp4 -c -intf $*.ppi
 +	$(RM) $*.ppi
 +
 +.ml.cmo:
 +	@if test `basename $<` != $<; then echo "Bad directory for $<"; exit 1; fi
 +	@$(CAMLP4_COMM) $(CAMLP4F) $< -o $*.ppo
-+	$(OCAMLC) $(OCAMLI) $(OCAMLD) -I $(CAMLP4D) -c -impl $*.ppo
++	$(OCAMLC) $(OCAMLI) $(OCAMLD) -I +camlp4 -c -impl $*.ppo
 +	$(RM) $*.ppo
 +
 +.ml.cmx:
 +	@if test `basename $<` != $<; then echo "Bad directory for $<"; exit 1; fi
 +	@$(CAMLP4_COMM) $(CAMLP4F) $< -o $*.ppo
-+	$(OCAMLOPT) $(OCAMLI) -I $(CAMLP4D) -c -impl $*.ppo
++	$(OCAMLOPT) $(OCAMLI) -I +camlp4 -c -impl $*.ppo
 +	$(RM) $*.ppo
-Index: geneweb-4.10/tools/Makefile.inc.out
+Index: geneweb-5.00/tools/Makefile.inc.out
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ geneweb-4.10/tools/Makefile.inc.out	2005-08-30 08:13:40.000000000 +0200
-@@ -0,0 +1,42 @@
-+# $Id: 000_Makefile,v 1.2 2005/10/10 20:22:40 bubulle Exp $
++++ geneweb-5.00/tools/Makefile.inc.out	2007-02-28 21:05:03.641182141 +0100
+@@ -0,0 +1,43 @@
++# $Id: Makefile.inc,v 5.1 2006/05/18 20:49:37 ddr Exp $
 +
 +TOP=..
-+CAMLP4_COMM=TOP=$(TOP) $(TOP)/tools/camlp4_comm.sh pa_ifdef.cmo
++CAMLP4_COMM=TOP=$(TOP) $(TOP)/tools/camlp4_comm.sh $(PPDEF)
 +CAMLP4F=-DUNIX
-+CAMLP4D=`camlp4 -where`
++PPDEF=../src/ppdef.cmo
++CAMLP4D=$$(camlp4 -where)
 +LIBUNIX=-cclib -lunix
 +OCAMLC=ocamlc -warn-error A
 +OCAMLOPT=ocamlopt -warn-error A
@@ -84,17 +86,17 @@ Index: geneweb-4.10/tools/Makefile.inc.out
 +.mli.cmi:
 +	@if test `basename $<` != $<; then echo "Bad directory for $<"; exit 1; fi
 +	@$(CAMLP4_COMM) $(CAMLP4F) $< -o $*.ppi
-+	$(OCAMLC) $(OCAMLI) -I $(CAMLP4D) -c -intf $*.ppi
++	$(OCAMLC) $(OCAMLI) -I +camlp4 -c -intf $*.ppi
 +	$(RM) $*.ppi
 +
 +.ml.cmo:
 +	@if test `basename $<` != $<; then echo "Bad directory for $<"; exit 1; fi
 +	@$(CAMLP4_COMM) $(CAMLP4F) $< -o $*.ppo
-+	$(OCAMLC) $(OCAMLI) $(OCAMLD) -I $(CAMLP4D) -c -impl $*.ppo
++	$(OCAMLC) $(OCAMLI) $(OCAMLD) -I +camlp4 -c -impl $*.ppo
 +	$(RM) $*.ppo
 +
 +.ml.cmx:
 +	@if test `basename $<` != $<; then echo "Bad directory for $<"; exit 1; fi
 +	@$(CAMLP4_COMM) $(CAMLP4F) $< -o $*.ppo
-+	$(OCAMLOPT) $(OCAMLI) -I $(CAMLP4D) -c -impl $*.ppo
++	$(OCAMLOPT) $(OCAMLI) -I +camlp4 -c -impl $*.ppo
 +	$(RM) $*.ppo
