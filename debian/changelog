@@ -1,12 +1,8 @@
 geneweb (5.00-4) unstable; urgency=low
 
-  * Debconf translations:
-    - Galician added. Closes: #419864
-  * Rebuild with new iso-codes and, therefore, no longer FTBFS.
-  * debian/patches/004_gwd.ml-readauth: really adapted for 5.00. Also
-    patches src/util.ml
+  * Remove useless test in get-iso-codes
 
- -- Christian Perrier <bubulle@debian.org>  Fri, 27 Jul 2007 09:05:09 +0200
+ -- Christian Perrier <bubulle@debian.org>  Fri, 27 Jul 2007 16:53:46 +0200
 
 geneweb (5.00-3) unstable; urgency=low
 
