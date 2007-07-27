@@ -4,16 +4,16 @@ Fixes: #287734
 Status wrt upstream: will not be applied because of upstream design choices
 
 
-Index: geneweb-4.10/src/gwd.ml
+Index: geneweb-5.00/src/gwd.ml
 ===================================================================
---- geneweb-4.10.orig/src/gwd.ml	2005-08-30 07:57:12.000000000 +0200
-+++ geneweb-4.10/src/gwd.ml	2005-08-30 08:14:05.000000000 +0200
-@@ -36,7 +36,7 @@
+--- geneweb-5.00.orig/src/gwd.ml	2007-02-24 21:08:15.000000000 +0100
++++ geneweb-5.00/src/gwd.ml	2007-07-27 07:29:33.203365056 +0200
+@@ -39,7 +39,7 @@
  
  value log_oc () =
    if log_file.val <> "" then
--    try Secure.open_out_gen log_flags 0o644 log_file.val with
-+    try open_out_gen log_flags 0o644 log_file.val with
+-    try open_out_gen log_flags 0o644 log_file.val with
++    try Secure.open_out_gen log_flags 0o644 log_file.val with
      [ Sys_error _ -> do { log_file.val := ""; stderr } ]
    else stderr
  ;
