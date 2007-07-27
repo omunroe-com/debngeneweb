@@ -1,0 +1,13 @@
+Index: geneweb-5.00/man/gwc.1
+===================================================================
+--- geneweb-5.00.orig/man/gwc.1	2005-12-13 12:51:26.000000000 +0100
++++ geneweb-5.00/man/gwc.1	2007-02-28 21:08:57.379162535 +0100
+@@ -48,7 +48,7 @@
+ .BI \-sep
+ Separate all persons in next file
+ .TP
+-.BI \-sh  \f\<int\>\f
++.B \-sh <int>
+ Shift all persons numbers in next files
+ .TP
+ .BI \-ds 
