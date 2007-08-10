@@ -1,3 +1,10 @@
+geneweb (5.00-5) unstable; urgency=low
+
+  * debian/patches/000_Makefile: set STRIP=true in Makefile(s)
+    to avoid forced stripping of binaries. Closes: #436970
+
+ -- Christian Perrier <bubulle@debian.org>  Fri, 10 Aug 2007 16:37:44 +0200
+
 geneweb (5.00-4) unstable; urgency=low
 
   * Remove useless test in get-iso-codes

@@ -21,7 +21,7 @@ Index: geneweb-5.00/tools/Makefile.inc.opt
 +OCAMLOPT=ocamlopt.opt -warn-error A
 +OCAMLI=
 +OCAMLD=
-+STRIP=strip
++STRIP=true
 +RM=/bin/rm -f
 +EXE=
 +STATIC=-ccopt -static
@@ -69,7 +69,7 @@ Index: geneweb-5.00/tools/Makefile.inc.out
 +OCAMLOPT=ocamlopt -warn-error A
 +OCAMLI=
 +OCAMLD=
-+STRIP=strip
++STRIP=true
 +RM=/bin/rm -f
 +EXE=
 +STATIC=-ccopt -static
