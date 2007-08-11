@@ -53,10 +53,16 @@ clean-patched:
 	rm -rf debian/pobuild
 	rm -f debian/geneweb.templates.tmp
 	rm -f debian/geneweb.templates
+
 	debconf-updatepo
 
 	# Add here commands to clean up after the build process.
-	[ ! -f Makefile ] || $(MAKE) clean
+	[ ! -f tools/Makefile.inc ] || [ ! -f Makefile] || $(MAKE) clean
+
+	# Clean out cruft left by former builds
+	rm -f tools/Makefile.inc
+	rm -f compilation.ml
+
 	dh_clean
 
 install: install-stamp
