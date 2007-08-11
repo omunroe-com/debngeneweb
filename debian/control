@@ -10,7 +10,7 @@ Section: misc
 Architecture: any
 Depends: ${shlibs:Depends},perl5-base, lsb-base (>= 3.0-6)
 Pre-Depends: ${misc:Depends}, iso-codes, adduser
-Suggests: menu (>=1.5), gwtp, gwsetup, lynx | www-browser
+Suggests: menu (>=2.1.35), gwtp, gwsetup, lynx | www-browser
 Priority: optional
 Description: genealogy software with web interface
  Geneweb allows you to keep track of ancestral data.  It is a powerful
