@@ -3,7 +3,7 @@ Section: misc
 Priority: optional
 Maintainer: Christian Perrier <bubulle@debian.org>
 Standards-Version: 3.7.2.0
-Build-Depends: debhelper (>= 5.0.0), ocaml-best-compilers, ocaml (>= 3.04), camlp4, doc-base, dh-buildinfo, iso-codes, po-debconf, quilt (>= 0.40)
+Build-Depends: debhelper (>= 5.0.0), ocaml-best-compilers, ocaml (>= 3.04), camlp5, doc-base, dh-buildinfo, iso-codes, po-debconf, quilt (>= 0.40)
 
 Package: geneweb
 Section: misc
