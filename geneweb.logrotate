@@ -6,7 +6,7 @@
 	notifempty
 	create 0660 geneweb geneweb
 	postrotate
-		invoke-rc.d force-reload >/dev/null
+		invoke-rc.d geneweb force-reload >/dev/null
 	endscript
 }
 
