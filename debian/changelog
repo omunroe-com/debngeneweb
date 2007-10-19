@@ -1,3 +1,11 @@
+geneweb (5.01-3) unstable; urgency=low
+
+  * debian/get-iso-codes:
+    - Delete all 0 size .po files, as pkgstriptranslations in Ubuntu
+      throws an error if such files don't contain anything.
+
+ -- Christian Perrier <bubulle@debian.org>  Fri, 19 Oct 2007 20:22:48 +0200
+
 geneweb (5.01-2) unstable; urgency=low
 
   * Add a "Homepage:" field to debian/control
