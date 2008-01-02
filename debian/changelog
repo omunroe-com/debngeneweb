@@ -2,6 +2,9 @@ geneweb (5.01-4) UNRELEASED; urgency=low
 
   * Add (empty) Should-Start and Should-Stop lines to the init
     script LSB header as per http://wiki.debian.org/LSBInitScripts
+  * Remove runlevels 0 and 6 from the Default-Stop entry in the init
+    script LSB header. Stopping processes is already done by the default
+    halt and shutdown sequences.
 
  -- Christian Perrier <bubulle@debian.org>  Wed, 02 Jan 2008 07:41:10 +0100
 
