@@ -8,7 +8,7 @@
 # Should-Start:
 # Required-Stop:
 # Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
+# Default-Stop:      1
 # Should-Stop:
 # Short-Description: Geneweb genealogical data server
 ### END INIT INFO
