@@ -1,5 +1,9 @@
-geneweb (5.01-4) UNRELEASED; urgency=low
+geneweb (5.01-4) unstable; urgency=low
 
+  * debian/rules:
+    - Install init scripts for all runlevels but 0 and 6 as
+      stopping processes is already done by the default
+      halt and shutdown sequences.
   * debian/geneweb.init:
     - Add (empty) Should-Start and Should-Stop lines
       as per http://wiki.debian.org/LSBInitScripts
@@ -8,8 +12,9 @@ geneweb (5.01-4) UNRELEASED; urgency=low
       halt and shutdown sequences.
   * debian/geneweb.templates.master:
     - Set default value for language to "English" and not "en"
+      Closes: #459277
 
- -- Christian Perrier <bubulle@debian.org>  Wed, 02 Jan 2008 07:41:10 +0100
+ -- Christian Perrier <bubulle@debian.org>  Sat, 05 Jan 2008 12:15:43 +0100
 
 geneweb (5.01-3) unstable; urgency=low
 
