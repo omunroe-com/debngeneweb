@@ -10,6 +10,12 @@ geneweb (5.01-4) unstable; urgency=low
     - Remove runlevels 0 and 6 from the Default-Stop entry.
       Stopping processes is already done by the default
       halt and shutdown sequences.
+  * debian/gwsetup.init:
+    - Add (empty) Should-Start and Should-Stop lines
+      as per http://wiki.debian.org/LSBInitScripts
+    - Remove runlevels 0 and 6 from the Default-Stop entry.
+      Stopping processes is already done by the default
+      halt and shutdown sequences.
   * debian/geneweb.templates.master:
     - Set default value for language to "English" and not "en"
       Closes: #459277
