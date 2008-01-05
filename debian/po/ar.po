@@ -14,8 +14,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: geneweb_ar\n"
-"Report-Msgid-Bugs-To: bubulle@debian.org\n"
-"POT-Creation-Date: 2006-12-01 19:37+0100\n"
+"Report-Msgid-Bugs-To: geneweb@packages.debian.org\n"
+"POT-Creation-Date: 2008-01-05 10:13+0100\n"
 "PO-Revision-Date: 2006-03-02 14:19+0300\n"
 "Last-Translator: Ossama M. Khayat <okhayat@yahoo.com>\n"
 "Language-Team: Arabic <support@arabeyes.org>\n"
@@ -28,10 +28,10 @@ msgstr ""
 #. Default
 #. This is the default choice. Translators may put their own language here
 #. instead of the default.
-#. WARNING : you MUST use the iso_639 two-letter code of your language
+#. WARNING : you MUST use the ENGLISH NAME of your language
 #: ../geneweb.templates.master:1001
-msgid "en[ translators, please see comment in PO files]"
-msgstr "ar"
+msgid "English[ translators, please see comment in PO files]"
+msgstr "English"
 
 #. Type: select
 #. Description
