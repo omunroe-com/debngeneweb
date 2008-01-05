@@ -4,8 +4,8 @@ Type: select
 Choices: @LANGUAGELIST@
 # This is the default choice. Translators may put their own language here
 # instead of the default.
-# WARNING : you MUST use the iso_639 two-letter code of your language
-_Default: en[ translators, please see comment in PO files]
+# WARNING : you MUST use the ENGLISH NAME of your language
+_Default: English[ translators, please see comment in PO files]
 _Description: Geneweb default language:
  Geneweb can display its prompts in a number of languages.
  .

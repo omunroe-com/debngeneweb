@@ -6,8 +6,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: geneweb_4.10-20_templates\n"
-"Report-Msgid-Bugs-To: bubulle@debian.org\n"
-"POT-Creation-Date: 2006-12-01 19:37+0100\n"
+"Report-Msgid-Bugs-To: geneweb@packages.debian.org\n"
+"POT-Creation-Date: 2008-01-05 10:13+0100\n"
 "PO-Revision-Date: 2006-03-02 20:50+0100\n"
 "Last-Translator: Bjørn Steensrud <bjornst@powertech.no>\n"
 "Language-Team: Norwegian Bokmål <i18n-nb@lister.ping.uio.no>\n"
@@ -20,10 +20,10 @@ msgstr ""
 #. Default
 #. This is the default choice. Translators may put their own language here
 #. instead of the default.
-#. WARNING : you MUST use the iso_639 two-letter code of your language
+#. WARNING : you MUST use the ENGLISH NAME of your language
 #: ../geneweb.templates.master:1001
-msgid "en[ translators, please see comment in PO files]"
-msgstr "nb"
+msgid "English[ translators, please see comment in PO files]"
+msgstr "Norwegian"
 
 #. Type: select
 #. Description

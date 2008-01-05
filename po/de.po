@@ -8,13 +8,13 @@
 # or http://www.debian.org/intl/l10n/po-debconf/README-trans
 # Developers do not need to manually edit POT or PO files.
 # Holger Wansing <h.wansing@onlinehome.de>, 2005.
-# 
-# 
+#
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: geneweb 4.09-7\n"
-"Report-Msgid-Bugs-To: bubulle@debian.org\n"
-"POT-Creation-Date: 2006-12-01 19:37+0100\n"
+"Report-Msgid-Bugs-To: geneweb@packages.debian.org\n"
+"POT-Creation-Date: 2008-01-05 10:13+0100\n"
 "PO-Revision-Date: 2006-03-04 17:50+0100\n"
 "Last-Translator: Holger Wansing <h.wansing@onlinehome.de>\n"
 "Language-Team: German <debian-l10n-german@lists.debian.org>\n"
@@ -26,10 +26,10 @@ msgstr ""
 #. Default
 #. This is the default choice. Translators may put their own language here
 #. instead of the default.
-#. WARNING : you MUST use the iso_639 two-letter code of your language
+#. WARNING : you MUST use the ENGLISH NAME of your language
 #: ../geneweb.templates.master:1001
-msgid "en[ translators, please see comment in PO files]"
-msgstr "de"
+msgid "English[ translators, please see comment in PO files]"
+msgstr "German"
 
 #. Type: select
 #. Description
@@ -248,8 +248,8 @@ msgstr ""
 #: ../gwsetup.templates:1001
 msgid "Choose a port number above 1023 for the port gwsetup will listen to."
 msgstr ""
-"Wählen Sie eine Portnummer über 1023 für den Port, auf dem gwsetup "
-"»lauschen« soll."
+"Wählen Sie eine Portnummer über 1023 für den Port, auf dem gwsetup »lauschen« "
+"soll."
 
 #. Type: string
 #. Description
