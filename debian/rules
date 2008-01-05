@@ -102,7 +102,9 @@ binary-arch: build install
 	rm `pwd`/debian/geneweb/usr/share/doc/geneweb/LICENSE.htm || true
 
 	dh_installmenu
-	dh_installinit
+	# At least until dh_installinit has a safe option
+	# to avoid installing links for runlevels 0 and 6
+	dh_installinit -- start 20 2 3 4 5 . stop 20 1 .
 	dh_installman
 	dh_installcron
 	dh_installexamples
