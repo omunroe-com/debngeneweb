@@ -1,5 +1,9 @@
 geneweb (5.01-5) UNRELEASED; urgency=low
 
+  * debian/get-iso-codes:
+    - Use "--no-run-if-empty" on xargs to avoid rm failing in some cases.
+      Thanks to the build daemon from hell by Lucas Nussbaum for
+      spotting this. Closes: #465629
   * Fix a typo in README.Debian (s/member os/member of)
 
  -- Christian Perrier <bubulle@debian.org>  Wed, 13 Feb 2008 20:53:47 +0100
