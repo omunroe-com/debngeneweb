@@ -26,4 +26,4 @@ for i in `find iso-codes.updates -name \*.po -maxdepth 1 2>/dev/null` ; do
 done
 
 # Delete all files of size 0.
-find debian/iso-codes -size 0 | xargs rm
+find debian/iso-codes -size 0 | xargs --no-run-if-empty rm 
