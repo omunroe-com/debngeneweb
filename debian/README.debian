@@ -95,7 +95,7 @@ This will minimize the consequences of a possible security hole, but
 complicates handling of the files/directories permissions.
 
 Users who want to share databases in the main directory (/var/lib/geneweb)
-have to be members os the geneweb group (just like the geneweb user is).
+have to be members of the geneweb group (just like the geneweb user is).
 All files and directories there should be writable by the owning user AND
 the geneweb group. This means that you should use 002 as umask when writing
 to this directory. Users with the more common 022 umask must then
