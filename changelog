@@ -1,3 +1,9 @@
+geneweb (5.01-6) unstable; urgency=low
+
+  * Fix watch file as upstream now uses "tgz" as extension
+
+ -- Christian Perrier <bubulle@debian.org>  Mon, 18 Feb 2008 19:40:03 +0100
+
 geneweb (5.01-5) unstable; urgency=medium
 
   * debian/get-iso-codes:
