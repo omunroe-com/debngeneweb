@@ -5,5 +5,5 @@ version=2
 # This the format for an FTP site:
 # Full‐site‐with‐pattern  [Version  [Action]]
 
-ftp://ftp.inria.fr/INRIA/Projects/cristal/geneweb/Src/geneweb-(.*)\.tar\.gz \
+ftp://ftp.inria.fr/INRIA/Projects/cristal/geneweb/Src/geneweb-(.*)\.tgz \
   debian uupdate
