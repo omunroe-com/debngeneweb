@@ -20,8 +20,6 @@ msgstr ""
 #. instead of the default.
 #. WARNING : you MUST use the ENGLISH NAME of your language
 #: ../geneweb.templates.master:1001
-#, fuzzy
-#| msgid "en[ translators, please see comment in PO files]"
 msgid "English[ translators, please see comment in PO files]"
 msgstr "Portuguese"
 
