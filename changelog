@@ -1,3 +1,13 @@
+geneweb (5.01-7) unstable; urgency=low
+
+  * Unfuzzy Portuguese and Tamil translations that were fuzzy for no
+    reason, on the default language entry
+  * Updated to Standards: 3.8.0 (checked)
+  * [Lintian] Add copy right information to debian/copyright
+  * [Lintian] Empty directories removed: usr/lib/menu, usr/share/doc-base
+
+ -- Christian Perrier <bubulle@debian.org>  Sun, 22 Jun 2008 19:29:45 +0200
+
 geneweb (5.01-6) unstable; urgency=low
 
   * Fix watch file as upstream now uses "tgz" as extension
