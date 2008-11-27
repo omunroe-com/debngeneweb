@@ -1,6 +1,7 @@
 geneweb (5.01-8) UNRELEASED; urgency=low
 
   * Add "-bindir" to gwsetup's invocation in the wrapper script.
+    Thanks to Andreas Beckmann for the proposed patch.
     Closes: #500166
   * Remove stupid debugging line in gwtp's CGI script
     Closes: #503849
