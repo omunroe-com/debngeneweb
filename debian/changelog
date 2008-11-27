@@ -1,3 +1,10 @@
+geneweb (5.01-8) UNRELEASED; urgency=low
+
+  * Add "-bindir" to gwsetup's invocation in the wrapper script.
+    Closes: #500166
+
+ -- Christian Perrier <bubulle@debian.org>  Thu, 27 Nov 2008 10:01:30 +0100
+
 geneweb (5.01-7) unstable; urgency=low
 
   * Unfuzzy Portuguese and Tamil translations that were fuzzy for no
