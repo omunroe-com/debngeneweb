@@ -11,7 +11,6 @@ SITE=http://${SERVER_NAME}:2317/
 
 # set umask for token to be created 666
 umask 007
-touch /var/tmp/toto
 /usr/lib/geneweb/gwtp \
    -etc $GWTP_ETC \
    -dst $GENEWEB_DBS \
