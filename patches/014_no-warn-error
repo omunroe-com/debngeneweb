@@ -1,0 +1,66 @@
+commit 04f584f0e3d161eec6b566da133f6925f2942d7d
+Author: Stephane Glondu <steph@glondu.net>
+Date:   Sun Mar 29 14:00:48 2009 +0200
+
+    Remove "-warn-error A" to work around FTBFS (Closes: #521674)
+
+diff --git a/tools/Makefile.inc.opt b/tools/Makefile.inc.opt
+index 5f7aeb4..594c1f9 100644
+--- a/tools/Makefile.inc.opt
++++ b/tools/Makefile.inc.opt
+@@ -5,8 +5,8 @@ CAMLP5_COMM=TOP=$(TOP) $(TOP)/tools/camlp5_comm.sh
+ CAMLP5F=-DUNIX
+ CAMLP5D=+camlp5
+ LIBUNIX=-cclib -lunix
+-OCAMLC=ocamlc.opt -warn-error A
+-OCAMLOPT=ocamlopt.opt -warn-error A
++OCAMLC=ocamlc.opt
++OCAMLOPT=ocamlopt.opt
+ OCAMLI=
+ OCAMLD=
+ STRIP=strip
+diff --git a/tools/Makefile.inc.out b/tools/Makefile.inc.out
+index 0102b96..bec0364 100644
+--- a/tools/Makefile.inc.out
++++ b/tools/Makefile.inc.out
+@@ -5,8 +5,8 @@ CAMLP5_COMM=TOP=$(TOP) $(TOP)/tools/camlp5_comm.sh
+ CAMLP5F=-DUNIX
+ CAMLP5D=+camlp5
+ LIBUNIX=-cclib -lunix
+-OCAMLC=ocamlc -warn-error A
+-OCAMLOPT=ocamlopt -warn-error A
++OCAMLC=ocamlc
++OCAMLOPT=ocamlopt
+ OCAMLI=
+ OCAMLD=
+ STRIP=strip
+diff --git a/tools/Makefile.inc.unix b/tools/Makefile.inc.unix
+index 5f7aeb4..594c1f9 100644
+--- a/tools/Makefile.inc.unix
++++ b/tools/Makefile.inc.unix
+@@ -5,8 +5,8 @@ CAMLP5_COMM=TOP=$(TOP) $(TOP)/tools/camlp5_comm.sh
+ CAMLP5F=-DUNIX
+ CAMLP5D=+camlp5
+ LIBUNIX=-cclib -lunix
+-OCAMLC=ocamlc.opt -warn-error A
+-OCAMLOPT=ocamlopt.opt -warn-error A
++OCAMLC=ocamlc.opt
++OCAMLOPT=ocamlopt.opt
+ OCAMLI=
+ OCAMLD=
+ STRIP=strip
+diff --git a/tools/Makefile.inc.win b/tools/Makefile.inc.win
+index 38db249..edc61cc 100644
+--- a/tools/Makefile.inc.win
++++ b/tools/Makefile.inc.win
+@@ -5,8 +5,8 @@ CAMLP5_COMM=TOP=$(TOP) $(TOP)/tools/camlp5_comm.sh
+ CAMLP5F=-DWIN95
+ CAMLP5D=+camlp5
+ LIBUNIX=-cclib -lunix
+-OCAMLC=ocamlc.opt -warn-error A
+-OCAMLOPT=ocamlopt.opt -warn-error A
++OCAMLC=ocamlc.opt
++OCAMLOPT=ocamlopt.opt
+ OCAMLI=
+ OCAMLD=
+ STRIP=true
