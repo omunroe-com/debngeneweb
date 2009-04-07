@@ -3,7 +3,7 @@
 #
 # see: dh_installdeb(1)
 
-set +e 
+set -e 
 
 # ISO 639 (language nales and codes) reference file
 # Needs Depends: iso-codes

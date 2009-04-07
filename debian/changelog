@@ -4,6 +4,8 @@ geneweb (5.01-9) UNRELEASED; urgency=low
   * debian/patches/014_no-warn-error: disable -warn-error to fix
     a build failure. Closes: #521674
     Thanks to Stéphane Glondu for the patch
+  * Lintian fixes:
+    - geneweb.postinst: no longer ignore errors (set -e)
 
  -- Christian Perrier <bubulle@debian.org>  Sun, 29 Mar 2009 10:51:45 +0200
 
