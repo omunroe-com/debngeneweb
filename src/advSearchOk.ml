@@ -1,10 +1,12 @@
-(* camlp4r ./pa_html.cmo ./def.syn.cmo *)
-(* $Id: advSearchOk.ml,v 4.8 2004/12/14 09:30:10 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* camlp4r ./pa_html.cmo *)
+(* $Id: advSearchOk.ml,v 5.12 2007/01/19 01:53:16 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
 open Def;
 open Gutil;
+open Gwdb;
+open Hutil;
 open Util;
 
 value get_number var key env = p_getint env (var ^ "_" ^ key);
@@ -37,7 +39,7 @@ value name_eq x y = Name.abbrev (Name.lower x) = Name.abbrev (Name.lower y);
 
 value rec skip_spaces x i =
   if i = String.length x then i
-  else if String.unsafe_get x i == ' ' then skip_spaces x (i + 1)
+  else if String.unsafe_get x i = ' ' then skip_spaces x (i + 1)
   else i
 ;
 
@@ -49,14 +51,14 @@ value rec skip_no_spaces x i =
 
 value string_incl x y =
   loop 0 where rec loop j_ini =
-    if j_ini == String.length y then False
+    if j_ini = String.length y then False
     else
       let rec loop1 i j =
-        if i == String.length x then
-          if j == String.length y then True else String.unsafe_get y j == ' '
+        if i = String.length x then
+          if j = String.length y then True else String.unsafe_get y j = ' '
         else if
           j < String.length y &&
-          String.unsafe_get x i == String.unsafe_get y j then
+          String.unsafe_get x i = String.unsafe_get y j then
           loop1 (i + 1) (j + 1)
         else loop (skip_spaces y (skip_no_spaces y j_ini))
       in
@@ -104,19 +106,19 @@ value advanced_search conf base max_answers =
     [ (Some d1, Some d2) ->
         match df () with
         [ Some d when fast_auth_age conf p ->
-            if d strictly_before d1 then False
-            else if d2 strictly_before d then False
+            if CheckItem.strictly_before d d1 then False
+            else if CheckItem.strictly_before d2 d then False
             else True
         | _ -> False ]
     | (Some d1, _) ->
         match df () with
         [ Some d when fast_auth_age conf p ->
-            if d strictly_before d1 then False else True
+            if CheckItem.strictly_before d d1 then False else True
         | _ -> False ]
     | (_, Some d2) ->
         match df () with
         [ Some d when fast_auth_age conf p ->
-            if d strictly_after d2 then False else True
+            if CheckItem.strictly_after d d2 then False else True
         | _ -> False ]
     | _ -> True ]
   in
@@ -125,14 +127,14 @@ value advanced_search conf base max_answers =
   let test_person p u =
     if test "sex"
          (fun
-          [ "M" -> p.sex = Male
-          | "F" -> p.sex = Female
+          [ "M" -> get_sex p = Male
+          | "F" -> get_sex p = Female
           | _ -> True ]) &&
-       test_date p "birth" (fun () -> Adef.od_of_codate p.birth) &&
-       test_date p "bapt" (fun () -> Adef.od_of_codate p.baptism) &&
+       test_date p "birth" (fun () -> Adef.od_of_codate (get_birth p)) &&
+       test_date p "bapt" (fun () -> Adef.od_of_codate (get_baptism p)) &&
        test_auth p "death"
          (fun d ->
-            match (d, p.death) with
+            match (d, get_death p) with
             [ ("Dead", NotDead | DontKnowIfDead) -> False
             | ("Dead", _) -> True
             | ("NotDead", NotDead) -> True
@@ -140,12 +142,12 @@ value advanced_search conf base max_answers =
             | _ -> True ]) &&
        test_date p "death"
          (fun () ->
-            match p.death with
+            match get_death p with
             [ Death _ cd -> Some (Adef.date_of_cdate cd)
             | _ -> None ]) &&
        test_date p "burial"
          (fun () ->
-            match p.burial with
+            match get_burial p with
             [ Buried cod -> Adef.od_of_codate cod
             | Cremated cod -> Adef.od_of_codate cod
             | _ -> None ]) &&
@@ -153,19 +155,19 @@ value advanced_search conf base max_answers =
        test "surname" (fun x -> name_eq x (p_surname base p)) &&
        test "married"
          (fun
-          [ "Y" -> u.family <> [| |]
-          | "N" -> u.family = [| |]
+          [ "Y" -> get_family u <> [| |]
+          | "N" -> get_family u = [| |]
           | _ -> True ]) &&
        test_auth p "birth_place"
-         (fun x -> name_incl x (sou base p.birth_place)) &&
+         (fun x -> name_incl x (sou base (get_birth_place p))) &&
        test_auth p "bapt_place"
-         (fun x -> name_incl x (sou base p.baptism_place)) &&
+         (fun x -> name_incl x (sou base (get_baptism_place p))) &&
        test_auth p "death_place"
-         (fun x -> name_incl x (sou base p.death_place)) &&
+         (fun x -> name_incl x (sou base (get_death_place p))) &&
        test_auth p "burial_place"
-         (fun x -> name_incl x (sou base p.burial_place)) &&
-       test_auth p "occu" (fun x -> name_incl x (sou base p.occupation)) then
-       do {
+         (fun x -> name_incl x (sou base (get_burial_place p))) &&
+       test_auth p "occu" (fun x -> name_incl x (sou base (get_occupation p)))
+    then do {
       list.val := [p :: list.val]; incr len;
     }
     else ()
@@ -174,17 +176,19 @@ value advanced_search conf base max_answers =
     if gets "first_name" <> "" || gets "surname" <> "" then
       let (slist, _) =
         if gets "first_name" <> "" then
-          Some.persons_of_fsname conf base base.func.persons_of_first_name.find
-            (fun x -> x.first_name) (gets "first_name")
+          Some.persons_of_fsname conf base base_strings_of_first_name
+            (spi_find (persons_of_first_name base)) get_first_name
+            (gets "first_name")
         else
-          Some.persons_of_fsname conf base base.func.persons_of_surname.find
-            (fun x -> x.surname) (gets "surname")
+          Some.persons_of_fsname conf base base_strings_of_surname
+            (spi_find (persons_of_surname base)) get_surname
+            (gets "surname")
       in
       let slist = List.fold_right (fun (_, _, l) sl -> l @ sl) slist [] in
       List.iter
         (fun ip -> test_person (pget conf base ip) (uget conf base ip)) slist
     else
-      for i = 0 to base.data.persons.len - 1 do {
+      for i = 0 to nb_of_persons base - 1 do {
         if len.val > max_answers then ()
         else
           test_person (pget conf base (Adef.iper_of_int i))
@@ -201,7 +205,7 @@ value print_result conf base max_answers (list, len) =
     Wserver.wprint "\n";
     html_p conf;
   }
-  else if len == 0 then
+  else if len = 0 then
     Wserver.wprint "%s\n" (capitale (transl conf "no match"))
   else
     tag "ul" begin

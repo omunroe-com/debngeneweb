@@ -1,4 +1,4 @@
-(* $Id: calendar.ml,v 4.1 2001/04/10 23:10:28 ddr Exp $ *)
+(* $Id: calendar.ml,v 5.1 2006/10/15 15:39:39 ddr Exp $ *)
 
 (* Borrowed from Scott E. Lee http://genealogy.org/~scottlee/;
    converted his C program into this OCaml program.
@@ -192,18 +192,18 @@ value fTishri1 metonicYear moladDay moladHalakim =
   in
   let (tishri1, dow) =
     if moladHalakim >= noon
-    || not leapYear && dow == tuesday && moladHalakim >= am3_11_20
-    || lastWasLeapYear && dow == monday && moladHalakim >= am9_32_43
+    || not leapYear && dow = tuesday && moladHalakim >= am3_11_20
+    || lastWasLeapYear && dow = monday && moladHalakim >= am9_32_43
     then
       let tishri1 = tishri1 + 1 in
       let dow = dow + 1 in
-      let dow = if dow == 7 then 0 else dow in
+      let dow = if dow = 7 then 0 else dow in
       (tishri1, dow)
     else
       (tishri1, dow)
   in
   let tishri1 =
-    if dow == wednesday || dow == friday || dow == sunday then tishri1 + 1
+    if dow = wednesday || dow = friday || dow = sunday then tishri1 + 1
     else tishri1
   in
   tishri1
@@ -260,18 +260,18 @@ value sdn_of_hebrew d =
           fTishri1 ((metonicYear + 1) mod 19) moladDay moladHalakim
         in
         let yearLength = tishri1After - tishri1 in
-        if yearLength == 355 || yearLength == 385 then tishri1 + d.day + 59
+        if yearLength = 355 || yearLength = 385 then tishri1 + d.day + 59
         else tishri1 + d.day + 58
     | 4 | 5 | 6 ->
         let (metonicCycle, metonicYear, moladDay, moladHalakim, tishri1After) =
           findStartOfYear (d.year + 1)
         in
         let lengthOfAdarIAndII =
-          if monthsPerYear.((d.year - 1) mod 19) == 12 then 29 else 59
+          if monthsPerYear.((d.year - 1) mod 19) = 12 then 29 else 59
         in
-        if d.month == 4 then
+        if d.month = 4 then
           tishri1After + d.day - lengthOfAdarIAndII - 237
-        else if d.month == 5 then
+        else if d.month = 5 then
           tishri1After + d.day - lengthOfAdarIAndII - 208
         else
           tishri1After + d.day - lengthOfAdarIAndII - 178
@@ -327,7 +327,7 @@ value findTishriMolad inputDay =
 value glop inputDay tishri1 tishri1After =
   let yearLength = tishri1After - tishri1 in
   let day = inputDay - tishri1 - 29 in
-  if yearLength == 355 || yearLength == 385 then
+  if yearLength = 355 || yearLength = 385 then
     if day <= 30 then (2, day)
     else (3, day - 30)
   else
@@ -373,7 +373,7 @@ value hebrew_of_sdn prec sdn =
           in
           (year, month, day)
         else
-          if monthsPerYear.((year - 1) mod 19) == 13 then
+          if monthsPerYear.((year - 1) mod 19) = 13 then
             let month = 7 in
             let day = inputDay - tishri1 + 207 in
             if day > 0 then (year, month, day)
@@ -462,3 +462,218 @@ value french_of_gregorian = conv french_of_sdn 13 sdn_of_gregorian 12;
 
 value gregorian_of_hebrew = conv gregorian_of_sdn 12 sdn_of_hebrew 13;
 value hebrew_of_gregorian = conv hebrew_of_sdn 13 sdn_of_gregorian 12;
+
+(* Moon phases *)
+(* Borrowed from G.Satre of CNRS's program found at:
+   http://portail.imcce.fr/fr/ephemerides/astronomie/Promenade/pages4/441.html
+   Program written in JavaScript; converted into OCaml with code cleaning
+   and transforming for interface sdn -> moon-day: but I did not understand
+   everything and the code could perhaps be improved *)
+
+type found 'a 'b = [ Found of 'a | NotYetFound of 'b ];
+type moon_phase =
+  [ NewMoon
+  | FirstQuarter
+  | FullMoon
+  | LastQuarter ]
+;
+
+value jjdate date_JJD =
+  let z1 = date_JJD +. 0.5 in
+  let z = truncate z1 in
+  let a =
+    if z < 2299161 then float z
+    else
+      let alpha = truncate ((float z -. 1867216.25) /. 36524.25) in
+      float z +. 1. +. float alpha -. float (truncate (float alpha /. 4.0))
+  in
+  let b = a +. 1524.0 in
+  let c = float (truncate ((b -. 122.1) /. 365.25)) in
+  let d = float (truncate (365.25 *. c)) in
+  let e = float (truncate ((b -. d) /. 30.6001)) in
+  let day = truncate (b -. d -. float (truncate (30.6001 *. e))) in
+  let month =
+    if e < 13.5 then truncate (e -. 1.0) else truncate (e -. 13.0)
+  in
+  let year =
+    if month >= 3 then truncate (c -. 4716.0) else truncate (c -. 4715.0)
+  in
+  (day, month, year)
+;
+
+value is_leap_year year =
+  if year mod 4 = 0 then
+    if year mod 100 = 0 && year mod 400 != 0 then False else True
+  else False
+;
+
+value init_moon_age month day leap_year =
+  let nbdays =
+    if month = 2 then
+      if not leap_year then 28 else 29
+    else if month < 8 then
+      if month land 1 != 0 then 31 else 30
+    else
+      if month land 1 !=0 then 30 else 31
+  in
+  nbdays - day + 2
+;
+
+value testmon i date first_moon_age_found date_JJD month_day moon_age =
+  let d = float date.year /. 100.0 in
+  let tetus = 32.23 *. (d -. 18.30) *. (d -. 18.30) -. 15.0 in
+  let tetuj = tetus /. 86400.0 in
+  let date_JJD = date_JJD +. 0.0003472222 -. tetuj in
+  let (day, month, year) = jjdate date_JJD in
+  let leap_year = is_leap_year year in
+  let inside_month = month = date.month in
+  let (month_day, moon_age) =
+    if i = 0 && (date.month > month || month = 12 && date.month = 1) &&
+       not first_moon_age_found
+    then
+      (1, init_moon_age month day leap_year)
+    else (month_day, moon_age)
+  in
+  (inside_month, date_JJD, leap_year, month_day, moon_age)
+;
+
+value affmoph i date_JJD leap_year first_moon_age_found month_day moon_age
+      date =
+  let tabjm = [| 31; 28; 31; 30; 31; 30; 31; 31; 30; 31; 30; 31 |] in
+  let (day, month, year) = jjdate date_JJD in
+  let fracj = mod_float (date_JJD +. 0.5) 1.0 in
+  let hh = fracj *. 24.0 in
+  let hh = int_of_float (floor hh +. 0.1) in
+  let fracj = fracj -. float hh /. 24.0 in
+  let mm = fracj *. 1440.0 in
+  let mm = int_of_float (floor mm +. 0.1) in
+  let (jour, hh) =
+    if hh = 24 then
+      let jfin = tabjm.(month - 1) in
+      let _ = assert (leap_year = is_leap_year year) in
+      let jfin = if month = 2 && leap_year then 29 else jfin in
+      if day < jfin then (day + 1, 0) else (day, hh)
+    else
+      (day, hh)
+  in
+  loop month_day moon_age where rec loop month_day moon_age =
+    if month_day < day then
+      if month_day = date.day then Found (None, moon_age)
+      else loop (month_day + 1) (moon_age + 1)
+    else if month_day = date.day then
+      let r =
+        match i with
+        [ 0 -> (Some (NewMoon, hh, mm), 1)
+        | 1 -> (Some (FirstQuarter, hh, mm), moon_age)
+        | 2 -> (Some (FullMoon, hh, mm), moon_age)
+        | _ -> (Some (LastQuarter, hh, mm), moon_age) ]
+      in
+      Found r
+    else
+      let (moon_age, first_moon_age_found) =
+        if i = 0 then (2, True) else (moon_age + 1, first_moon_age_found)
+      in
+      NotYetFound (first_moon_age_found, month_day + 1, moon_age)
+;
+
+value moon_phase_of_gregorian date =
+  let pi314 = 3.141592653589793 in
+  let tabm =
+    [| 0.041; 0.126; 0.203; 0.288;
+       0.370; 0.455; 0.537; 0.622;
+       0.707; 0.789; 0.874; 0.956 |]
+  in
+  let (year, date_month) =
+    if date.month = 1 then (date.year - 1, 12)
+    else (date.year, date.month - 1)
+  in
+  let year = float year +. tabm.(date_month - 1) in
+  let ini_k =
+    let k = (year -. 1900.0) *. 12.3685 in
+    let k = float (truncate k) -. 0.25 in
+    if k < 0.0 then k -. 1. else k
+  in
+  let rad = pi314 /. 180.0 in
+  loop 0 ini_k False False 0 0
+  where rec loop ii prev_k leap_year first_moon_age_found month_day moon_age =
+    if ii >= 12 then
+      let nbdays =
+        if date.month = 2 then
+          if not leap_year then 28 else 29
+          else if date.month < 8 then
+            if date.month land 1 != 0 then 31 else 30
+          else
+            if date.month land 1 !=0 then 30 else 31
+      in
+      loop month_day moon_age where rec loop month_day moon_age =
+        if month_day <= nbdays then
+          if month_day = date.day then (None, moon_age)
+          else loop (month_day + 1) (moon_age + 1)
+        else failwith "moon_phase"
+    else
+      let k = prev_k +. 0.25 in
+      let t = k /. 1236.85 in
+      let t2 = t *. t in
+      let t3 = t *. t2 in
+      let j = 2415020.75933 +. 29.5305888531 *. k
+            +. 0.0001337 *. t2 -. 0.000000150 *. t3
+            +. 0.00033 *. sin (rad *. (166.56 +. 132.87 *. t -. 0.009 *. t2))
+      in
+      let m =
+        rad *.
+        (359.2242 +. 29.10535608 *. k -. 0.0000333 *. t2 -. 0.00000347 *. t3)
+      in
+      let m = mod_float m (2.0 *. pi314) in
+      let mp =
+        rad *.
+        (306.0253 +. 385.81691806 *. k +. 0.0107306 *. t2 +. 0.00001236 *. t3)
+      in
+      let mp = mod_float mp (2. *. pi314) in
+      let f =
+        rad *.
+        (21.2964 +. 390.67050646 *. k -. 0.0016528 *. t2 -. 0.00000239 *. t3)
+      in
+      let f = mod_float f (2. *. pi314) in
+      let i = ii mod 4 in
+      let date_JJD =
+        if i = 0 || i = 2 then
+          j +. (0.1734 -. 0.000393 *. t) *. sin m
+            +. 0.0021 *. sin (2.0 *. m) -. 0.4068 *. sin mp
+            +. 0.0161 *. sin (2.0 *. mp) -. 0.0004 *. sin (3.0 *. mp)
+            +. 0.0104 *. sin (2.0 *. f) -. 0.0051 *. sin (m +. mp)
+            -. 0.0074 *. sin (m -. mp) +. 0.0004 *. sin (2.0 *. f +. m)
+            -. 0.0004 *. sin (2.0 *. f -. m) -. 0.0006 *. sin (2.0 *. f +. mp)
+            +. 0.001 *. sin (2.0 *. f -. mp) +. 0.0005 *. sin (m +. 2.0 *. mp)
+        else
+          let j =
+            j +. (0.1721 -. 0.0004 *. t) *. sin m
+              +. 0.0021 *. sin (2.0 *. m) -. 0.6280 *. sin mp
+              +. 0.0089 *. sin (2.0 *. mp) -. 0.0004 *. sin (3.0 *. mp)
+              +. 0.0079 *. sin (2.0 *. f) -. 0.0119 *. sin (m +. mp)
+              -. 0.0047 *. sin (m -. mp) +. 0.0003 *. sin (2.0 *. f +. m)
+             -. 0.0004 *. sin (2.0 *. f -. m) -. 0.0006 *. sin (2.0 *. f +. mp)
+            +. 0.0021 *. sin (2.0 *. f -. mp) +. 0.0003 *. sin (m +. 2.0 *. mp)
+            +. 0.0004 *. sin (m -. 2.0 *. mp) -. 0.0003 *. sin (2.0 *. m +. mp)
+          in
+          if i = 1 then j +. 0.0028 -. 0.0004 *. cos m +. 0.0003 *. cos mp
+          else j -. 0.0028 +. 0.0004 *. cos m -. 0.0003 *. cos mp
+      in
+      let (inside_month, date_JJD, leap_year, month_day, moon_age) =
+        testmon i date first_moon_age_found date_JJD month_day moon_age
+      in
+      if inside_month then
+        match affmoph i date_JJD leap_year first_moon_age_found month_day
+              moon_age date
+        with
+        [ NotYetFound (first_moon_age_found, month_day, moon_age) ->
+            loop (ii + 1) k leap_year first_moon_age_found month_day moon_age
+        | Found x -> x ]
+      else
+        loop (ii + 1) k leap_year first_moon_age_found month_day moon_age
+;
+
+value moon_phase_of_sdn jd =
+  let date = gregorian_of_sdn Sure jd in
+  if date.year < -4000 || date.year > 2500 then failwith "moon_phase_of_sdn"
+  else moon_phase_of_gregorian date
+;

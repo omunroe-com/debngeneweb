@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
 <head>
-  <meta name="ROBOTS" content="NONE">
+  <meta name="robots" content="none">
   <title>Base</title>
 </head>
 <body background="%o/gwback.jpg">
@@ -16,7 +16,7 @@
 alt=GeneWeb width=64 height=72 align=right>
 <br>
 
-<p><hr><font size=-1><em>Copyright (c) 1998-2005 INRIA -
-<a href="http://pauillac.inria.fr/~ddr/GeneWeb/">
+<p><hr><font size=-1><em>Copyright (c) 1998-2007 INRIA -
+<a href="http://www.geneweb.org/">
 GeneWeb %v</a></em></font><br>
 </body>

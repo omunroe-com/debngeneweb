@@ -1,9 +1,11 @@
 (* camlp4r ./pa_lock.cmo ./pa_html.cmo pa_extend.cmo *)
-(* $Id: srcfile.ml,v 4.24 2004/12/14 09:30:17 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: srcfile.ml,v 5.40 2007/01/19 01:53:17 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
 open Def;
+open Gwdb;
+open TemplAst;
 open Util;
 
 type counter =
@@ -96,7 +98,9 @@ value set_wizard_and_friend_traces conf =
       try List.assoc "friend_passwd" conf.base_env with
       [ Not_found -> "" ]
     in
-    if fpf <> "" && conf.passwd <> fp then
+    if fpf <> "" &&
+       is_that_user_and_password conf.auth_scheme conf.user fp = False
+    then
       let fname = adm_file (conf.bname ^ "_f.txt") in
       update_wf_trace conf fname
     else ()
@@ -174,7 +178,10 @@ value digit =
   | _ -> failwith "digit" ]
 ;
 
-module G = Grammar.Make (struct value lexer = Plexer.make (); end);
+module G =
+  Grammar.GMake
+    (struct type te = (string * string); value lexer = Plexer.gmake (); end)
+;
 value date = G.Entry.create "date";
 GEXTEND G
   date:
@@ -196,7 +203,7 @@ value string_of_start_date conf =
         Dgreg {day = d; month = m; year = y; prec = Sure; delta = 0}
           Dgregorian
       in
-      Date.string_of_date conf d
+      Util.translate_eval (Date.string_of_date conf d)
   | _ -> r.start_date ]
 ;
 
@@ -212,11 +219,11 @@ value macro conf base =
   fun
   [ 'a' ->
       match Util.find_sosa_ref conf base with
-      [ Some ip -> referenced_person_title_text conf base ip
+      [ Some p -> referenced_person_title_text conf base p
       | None -> "" ]
   | 'b' ->
       let s =
-        try " dir=" ^ Hashtbl.find conf.lexicon " !dir" with
+        try " dir=\"" ^ Hashtbl.find conf.lexicon " !dir" ^ "\"" with
         [ Not_found -> "" ]
       in
       s ^ body_prop conf
@@ -233,11 +240,7 @@ value macro conf base =
   | 'i' -> conf.highlight
   | 'k' -> conf.indep_command
   | 'l' -> conf.lang
-  | 'L' ->
-      let s =
-        try Hashtbl.find conf.lexicon " !dir" with [ Not_found -> "" ]
-      in
-      if s = "rtl" then "right" else "left"
+  | 'L' -> conf.left
   | 'm' ->
       try
         let s = List.assoc "latest_event" conf.base_env in
@@ -246,55 +249,43 @@ value macro conf base =
       [ Not_found -> "20" ]
   | 'n' ->
       string_of_num (transl conf "(thousand separator)")
-        (Num.of_int base.data.persons.len)
+        (Num.of_int (nb_of_persons base))
+  | 'N' ->
+      let s = base_notes_read_first_line base "" in
+      let len = String.length s in
+      if len > 9 && String.sub s 0 5 = "<!-- " &&
+         String.sub s (len - 4) 4 = " -->"
+      then " : " ^ String.sub s 5 (String.length s - 9)
+      else ""
   | 'o' -> image_prefix conf
   | 'q' ->
       let r = count conf in
       string_of_num (transl conf "(thousand separator)")
         (Num.of_int (r.welcome_cnt + r.request_cnt))
-  | 'R' ->
-      let s =
-        try Hashtbl.find conf.lexicon " !dir" with [ Not_found -> "" ]
-      in
-      if s = "rtl" then "left" else "right"
+  | 'R' -> conf.right
   | 's' -> commd conf
   | 't' -> conf.bname
+  | 'T' -> Util.doctype conf
   | 'U' ->
       if (conf.wizard || conf.just_friend_wizard) && conf.user <> "" then
         ": " ^ conf.user
       else ""
   | 'v' -> Version.txt
-  | 'w' -> let s = Util.link_to_referer conf in if s = "" then "&nbsp;" else s
+  | 'w' ->
+      let s = Hutil.link_to_referer conf in
+      if s = "" then "&nbsp;" else s
+  | '/' -> conf.xhs
   | c -> "%" ^ String.make 1 c ]
 ;
 
-module Lbuff =
-  struct
-    value buff = ref (String.create 80);
-    value store len x =
-      do {
-        if len >= String.length buff.val then
-          buff.val := buff.val ^ String.create (String.length buff.val)
-        else ();
-        buff.val.[len] := x;
-        succ len
-      }
-    ;
-    value mstore len s =
-      add_rec len 0 where rec add_rec len i =
-        if i == String.length s then len
-        else add_rec (store len s.[i]) (succ i)
-    ;
-    value get len = String.sub buff.val 0 len;
-  end
-;
+module Lbuff = Buff.Make (struct value buff = ref (String.create 80); end);
 
 value rec lexicon_translate conf base nomin strm first_c =
   let (upp, s) =
     loop 0 first_c where rec loop len c =
       if c = ']' then
         let s = Lbuff.get len in
-        if len > 0 && s.[0] == '*' then (True, String.sub s 1 (len - 1))
+        if len > 0 && s.[0] = '*' then (True, String.sub s 1 (len - 1))
         else (False, s)
       else loop (Lbuff.store len c) (Stream.next strm)
   in
@@ -309,15 +300,15 @@ value rec lexicon_translate conf base nomin strm first_c =
         (lexicon_translate conf base False strm (Stream.next strm))
     else
       let r = Util.transl_nth conf s n in
-      match Gutil.lindex r '%' with
+      match Mutil.lindex r '%' with
       [ Some i when c = "(" ->
           let sa =
             loop 0 where rec loop len =
               let c = Stream.next strm in
-              if c == ')' then Lbuff.get len
+              if c = ')' then Lbuff.get len
               else
                 let len =
-                  if c == '%' then
+                  if c = '%' then
                     let c = Stream.next strm in
                     Lbuff.mstore len (macro conf base c)
                   else Lbuff.store len c
@@ -326,7 +317,7 @@ value rec lexicon_translate conf base nomin strm first_c =
           in
           String.sub r 0 i ^ sa ^
             String.sub r (i + 2) (String.length r - i - 2)
-      | _ -> (if nomin then Gutil.nominative r else r) ^ c ]
+      | _ -> (if nomin then Util.translate_eval r else r) ^ c ]
   in
   if upp then capitale r else r
 ;
@@ -351,6 +342,12 @@ value rec stream_line =
 
 type src_mode = [ Lang | Source ];
 
+value notes_links conf =
+  let bdir = Util.base_path [] (conf.bname ^ ".gwb") in
+  let fname = Filename.concat bdir "notes_links" in
+  NotesLinks.read_db_from_file fname
+;
+
 value rec copy_from_stream conf base strm mode =
   let echo = ref True in
   let no_tables = browser_doesnt_have_tables conf in
@@ -371,8 +368,9 @@ value rec copy_from_stream conf base strm mode =
     | 'h' -> Sys.file_exists (History.file_name conf)
     | 'j' -> conf.just_friend_wizard
     | 'l' -> no_tables
-    | 'n' -> base.data.bnotes.nread 1 <> ""
-    | 'o' -> Sys.file_exists (Wiznotes.dir conf)
+    | 'm' -> notes_links conf <> []
+    | 'n' -> not (base_notes_are_empty base "")
+    | 'o' -> Sys.file_exists (Wiznotes.dir conf base)
     | 'p' ->
         match p_getenv conf.base_env (get_variable strm) with
         [ Some "" | None -> False
@@ -421,7 +419,8 @@ value rec copy_from_stream conf base strm mode =
           | '%' -> Wserver.wprint "%%"
           | '[' | ']' -> Wserver.wprint "%c" c
           | 'h' -> hidden_env conf
-          | 'j' -> include_hed_trl conf (Some base) ".hed"
+          | 'j' -> Templ.include_hed_trl conf (Some base) "hed"
+          | 'P' -> let _ = Stream.next strm in ()
           | 'r' -> copy_from_file conf base (stream_line strm) mode
           | 'u' ->
               let lang =
@@ -432,10 +431,10 @@ value rec copy_from_stream conf base strm mode =
               let lang_def = transl conf " !languages" in
               Wserver.wprint "%s" (Translate.language_name lang lang_def)
           | 'V' ->
-	      let txt =
+              let txt =
                 try List.assoc (get_variable strm) conf.base_env with
-		[ Not_found -> "" ]
-	      in
+                [ Not_found -> "" ]
+              in
               copy_from_string conf base txt mode
           | c -> Wserver.wprint "%s" (macro conf base c) ]
       | c -> if echo.val then Wserver.wprint "%c" c else () ]
@@ -450,8 +449,8 @@ and src_translate conf base nomin strm echo mode =
         fun
         [ '[' -> loop (lev + 1) (Lbuff.store len '[') (Stream.next strm)
         | ']' ->
-  	    if lev = 0 then Lbuff.get len
-  	    else loop (lev - 1) (Lbuff.store len ']') (Stream.next strm)
+            if lev = 0 then Lbuff.get len
+            else loop (lev - 1) (Lbuff.store len ']') (Stream.next strm)
         | c -> loop lev (Lbuff.store len c) (Stream.next strm) ]
     in
     let (s, _) = Translate.inline conf.lang '%' (macro conf base) s in
@@ -500,17 +499,17 @@ value gen_print with_logo mode conf base fname =
         Util.html conf;
         Util.nl ();
         copy_from_channel conf base ic mode;
-        Util.gen_trailer with_logo conf;
+        Hutil.gen_trailer with_logo conf;
       }
   | _ ->
       let title _ = Wserver.wprint "Error" in
       do {
-        Util.header conf title;
+        Hutil.header conf title;
         tag "ul" begin
           html_li conf;
           Wserver.wprint "Cannot access file \"%s.txt\".\n" fname;
         end;
-        Util.gen_trailer with_logo conf;
+        Hutil.gen_trailer with_logo conf;
         raise Exit
       } ]
 ;
@@ -519,25 +518,134 @@ value print = gen_print True Lang;
 
 value print_source = gen_print True Source;
 
-value print_start conf base =
-  let fname =
-    if Sys.file_exists (lang_file_name conf conf.bname) then conf.bname
-    else if Sys.file_exists (any_lang_file_name conf.bname) then conf.bname
-    else "start"
-  in
-  gen_print False Lang conf base fname
+(* welcome page *)
+
+type env 'a =
+  [ Vsosa_ref of Lazy.t (option person)
+  | Vother of 'a
+  | Vnone ]
 ;
+
+value get_env v env =
+  try List.assoc v env with [ Not_found -> Vnone ]
+;
+value get_vother = fun [ Vother x -> Some x | _ -> None ];
+value set_vother x = Vother x;
+
+value eval_var conf base env () loc =
+  fun
+  [ ["base"; "has_notes"] -> VVbool (not (base_notes_are_empty base ""))
+  | ["base"; "name"] -> VVstring conf.bname
+  | ["base"; "nb_persons"] ->
+      VVstring
+        (string_of_num (Util.transl conf "(thousand separator)")
+           (Num.of_int (nb_of_persons base)))
+  | ["base"; "title"] ->
+      let s = base_notes_read_first_line base "" in
+      let len = String.length s in
+      let s =
+        if len > 9 && String.sub s 0 5 = "<!-- " &&
+           String.sub s (len - 4) 4 = " -->"
+        then " : " ^ String.sub s 5 (String.length s - 9)
+        else ""
+      in
+      VVstring s
+  | ["browsing_with_sosa_ref"] ->
+      match get_env "sosa_ref" env with
+      [ Vsosa_ref v -> VVbool (Lazy.force v <> None)
+      | _ -> raise Not_found ]
+  | ["has_history"] -> VVbool (Sys.file_exists (History.file_name conf))
+  | ["has_misc_notes"] -> VVbool (notes_links conf <> [])
+  | ["nb_accesses"] ->
+      let r = count conf in
+      let s =
+        string_of_num (transl conf "(thousand separator)")
+          (Num.of_int (r.welcome_cnt + r.request_cnt))
+      in
+      VVstring s
+  | ["nb_accesses_to_welcome"] ->
+      let r = count conf in
+      let s =
+        string_of_num (transl conf "(thousand separator)")
+          (Num.of_int r.welcome_cnt)
+      in
+      VVstring s
+  | ["random"; "init"] -> do {
+      Random.self_init ();
+      VVstring ""
+    }
+  | ["random"; s] ->
+      try VVstring (string_of_int (Random.int (int_of_string s))) with
+      [ Failure _ | Invalid_argument _ -> raise Not_found ]
+  | ["sosa_ref"] ->
+      match get_env "sosa_ref" env with
+      [ Vsosa_ref v ->
+          match Lazy.force v with
+          [ Some p -> VVstring (referenced_person_title_text conf base p)
+          | None -> raise Not_found ]
+      | _ -> raise Not_found ]
+  | ["start_date"] -> VVstring (string_of_start_date conf)
+  | ["wiznotes_dir_exists"] ->
+      VVbool (Sys.file_exists (Wiznotes.dir conf base))
+  | _ -> raise Not_found ]
+;
+
+value eval_predefined_apply conf env f vl = raise Not_found;
+
+value print_start conf base =
+  let new_welcome =
+    match p_getenv conf.base_env "old_welcome" with
+    [ Some "yes" -> False
+    | Some _ | None -> Mutil.utf_8_db.val ]
+  in
+  if new_welcome then do {
+    let env =
+      let sosa_ref_l =
+        let sosa_ref () = Util.find_sosa_ref conf base in
+        Lazy.lazy_from_fun sosa_ref
+      in
+      [("sosa_ref", Vsosa_ref sosa_ref_l)]
+    in
+    Wserver.wrap_string.val := Util.xml_pretty_print;
+    Hutil.interp conf base "welcome"
+      {Templ.eval_var = eval_var conf base;
+       Templ.eval_transl env = Templ.eval_transl conf;
+       Templ.eval_predefined_apply = eval_predefined_apply conf;
+       Templ.get_vother = get_vother; Templ.set_vother = set_vother;
+       Templ.print_foreach = fun []}
+      env ()
+  }
+  else
+    let fname =
+      if Sys.file_exists (lang_file_name conf conf.bname) then conf.bname
+      else if Sys.file_exists (any_lang_file_name conf.bname) then conf.bname
+      else if Mutil.utf_8_db.val then "start_utf8"
+      else "start"
+    in
+    gen_print False Lang conf base fname
+;
+
+(* lexicon (info) *)
 
 value print_lexicon conf base =
   let title _ = Wserver.wprint "Lexicon" in
-  let fname = search_in_lang_path (Filename.concat "lang" "lexicon.txt") in
+  let fname =
+    let f = if Mutil.utf_8_db.val then "lex_utf8.txt" else "lexicon.txt" in
+    search_in_lang_path (Filename.concat "lang" f)
+  in
   do {
-    Util.header conf title;
+    Hutil.header conf title;
     match try Some (Secure.open_in fname) with [ Sys_error _ -> None ] with
     [ Some ic ->
         do {
-          Wserver.wprint "<pre>\n";
-          try while True do { Wserver.wprint "%s\n" (input_line ic) } with
+          Wserver.wprint "<pre dir=\"ltr\">\n";
+          try
+            while True do {
+              match input_char ic with
+              [ '<' -> Wserver.wprint "&lt;"
+              | c -> Wserver.wprint "%c" c ];
+            }
+          with
           [ End_of_file -> () ];
           Wserver.wprint "</pre>\n";
           close_in ic;
@@ -547,6 +655,6 @@ value print_lexicon conf base =
           Wserver.wprint "<em>... file not found: \"%s.txt\"</em>" "lexicon";
           html_br conf;
         } ];
-    Util.trailer conf;
+    Hutil.trailer conf;
   }
 ;

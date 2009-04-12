@@ -1,18 +1,18 @@
-(* $Id: check.ml,v 4.15 2004/12/14 09:30:11 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: check.ml,v 5.20 2007/01/19 01:53:16 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
 open Def;
-open Gutil;
+open Gwdb;
 open Printf;
 
-value feminin =
-  fun
-  [ Male -> ""
-  | Female -> "e"
-  | Neuter -> "(e)" ]
-;
-
 (* Printing check errors *)
+
+value designation base p =
+  let first_name = p_first_name base p in
+  let nom = p_surname base p in
+  Mutil.iso_8859_1_of_utf_8
+    (first_name ^ "." ^ string_of_int (get_occ p) ^ " " ^ nom)
+;
 
 value print_base_error oc base =
   fun
@@ -42,17 +42,17 @@ value print_base_warning oc base =
         fprintf oc "\n";
       }
   | ChangedOrderOfChildren ifam des _ ->
-      let cpl = coi base ifam in
+      let cpl = foi base ifam in
       fprintf oc "Changed order of children of %s and %s\n"
-        (designation base (poi base (father cpl)))
-        (designation base (poi base (mother cpl)))
+        (designation base (poi base (get_father cpl)))
+        (designation base (poi base (get_mother cpl)))
   | ChildrenNotInOrder ifam des elder x ->
-      let cpl = coi base ifam in
+      let cpl = foi base ifam in
       do {
         fprintf oc
           "The following children of\n  %s\nand\n  %s\nare not in order:\n"
-          (designation base (poi base (father cpl)))
-          (designation base (poi base (mother cpl)));
+          (designation base (poi base (get_father cpl)))
+          (designation base (poi base (get_mother cpl)));
         fprintf oc "- %s\n" (designation base elder);
         fprintf oc "- %s\n" (designation base x)
       }
@@ -81,7 +81,7 @@ value print_base_warning oc base =
         (designation base parent) (designation base child)
   | ParentTooYoung p a ->
       fprintf oc "%s was parent at age of %d\n" (designation base p)
-        (year_of a)
+        a.year
   | TitleDatesError p t ->
       do {
         fprintf oc "%s\n" (designation base p);
@@ -91,7 +91,7 @@ value print_base_warning oc base =
   | UndefinedSex _ ->
       ()
   | YoungForMarriage p a ->
-      fprintf oc "%s married at age %d\n" (designation base p) (year_of a) ]
+      fprintf oc "%s married at age %d\n" (designation base p) a.year ]
 ;      
 
 type stats =
@@ -108,7 +108,7 @@ type stats =
 ;
 
 value birth_year p =
-  match Adef.od_of_codate p.birth with
+  match Adef.od_of_codate (get_birth p) with
   [ Some d ->
       match d with
       [ Dgreg {year = y; prec = Sure} _ -> Some y
@@ -117,7 +117,7 @@ value birth_year p =
 ;
 
 value death_year current_year p =
-  match p.death with
+  match get_death p with
   [ Death _ d ->
       match Adef.date_of_cdate d with
       [ Dgreg {year = y; prec = Sure} _ -> Some y
@@ -128,7 +128,7 @@ value death_year current_year p =
 
 value update_stats base current_year s p =
   do {
-    match p.sex with
+    match get_sex p with
     [ Male -> s.men := s.men + 1
     | Female -> s.women := s.women + 1
     | Neuter -> s.neutre := s.neutre + 1 ];
@@ -139,39 +139,39 @@ value update_stats base current_year s p =
     [ (Some y1, Some y2) ->
         let age = y2 - y1 in
         do {
-          if age > fst s.oldest_dead && p.death <> NotDead then
+          if age > fst s.oldest_dead && get_death p <> NotDead then
             s.oldest_dead := (age, p)
           else ();
-          if age > fst s.oldest_still_alive && p.death = NotDead then
+          if age > fst s.oldest_still_alive && get_death p = NotDead then
             s.oldest_still_alive := (age, p)
           else ();
         }
     | _ -> () ];
-    match (birth_year p, parents (aoi base p.cle_index)) with
+    match (birth_year p, get_parents p) with
     [ (Some y2, Some ifam) ->
-        let cpl = coi base ifam in
+        let cpl = foi base ifam in
         do {
-          match birth_year (poi base (father cpl)) with
+          match birth_year (poi base (get_father cpl)) with
           [ Some y1 ->
               let age = y2 - y1 in
               do {
                 if age > fst s.oldest_father then
-                  s.oldest_father := (age, poi base (father cpl))
+                  s.oldest_father := (age, poi base (get_father cpl))
                 else ();
                 if age < fst s.youngest_father then
-                  s.youngest_father := (age, poi base (father cpl))
+                  s.youngest_father := (age, poi base (get_father cpl))
                 else ();
               }
           | _ -> () ];
-          match birth_year (poi base (mother cpl)) with
+          match birth_year (poi base (get_mother cpl)) with
           [ Some y1 ->
               let age = y2 - y1 in
               do {
                 if age > fst s.oldest_mother then
-                  s.oldest_mother := (age, poi base (mother cpl))
+                  s.oldest_mother := (age, poi base (get_mother cpl))
                 else ();
                 if age < fst s.youngest_mother then
-                  s.youngest_mother := (age, poi base (mother cpl))
+                  s.youngest_mother := (age, poi base (get_mother cpl))
                 else ();
               }
           | _ -> () ];
@@ -181,44 +181,45 @@ value update_stats base current_year s p =
   }
 ;
 
-value check_base_aux base error warning =
+value check_base_aux base error warning changed_p =
   do {
     Printf.eprintf "check persons\n";
-    ConsangAll.start_progr_bar ();
-    for i = 0 to base.data.persons.len - 1 do {
-      ConsangAll.run_progr_bar i base.data.persons.len;
-      let p = base.data.persons.get i in check_person base error warning p
+    ProgrBar.start ();
+    for i = 0 to nb_of_persons base - 1 do {
+      ProgrBar.run i (nb_of_persons base);
+      let p = poi base (Adef.iper_of_int i) in
+      match CheckItem.person base warning p with
+      [ Some ippl -> List.iter changed_p ippl
+      | None -> () ]
     };
-    ConsangAll.finish_progr_bar ();
+    ProgrBar.finish ();
     Printf.eprintf "check families\n";
-    ConsangAll.start_progr_bar ();
-    for i = 0 to base.data.families.len - 1 do {
-      ConsangAll.run_progr_bar i base.data.families.len;
-      let fam = base.data.families.get i in
+    ProgrBar.start ();
+    for i = 0 to nb_of_families base - 1 do {
+      ProgrBar.run i (nb_of_families base);
+      let ifam = Adef.ifam_of_int i in
+      let fam = foi base ifam in
       if is_deleted_family fam then ()
-      else
-        let cpl = base.data.couples.get i in
-        let des = base.data.descends.get i in
-        check_family base error warning fam cpl des
+      else CheckItem.family base error warning ifam fam
     };
-    ConsangAll.finish_progr_bar ();
-    check_noloop base error;
+    ProgrBar.finish ();
+    Consang.check_noloop base error;
   }
 ;
 
-value check_base base error warning def pr_stats =
+value check_base base error warning def changed_p pr_stats =
   let s =
-    let y = (1000, base.data.persons.get 0) in
-    let o = (0, base.data.persons.get 0) in
+    let y = (1000, poi base (Adef.iper_of_int 0)) in
+    let o = (0, poi base (Adef.iper_of_int 0)) in
     {men = 0; women = 0; neutre = 0; noname = 0; oldest_father = o;
      oldest_mother = o; youngest_father = y; youngest_mother = y;
      oldest_dead = o; oldest_still_alive = o}
   in
   let current_year = (Unix.localtime (Unix.time ())).Unix.tm_year + 1900 in
   do {
-    check_base_aux base error warning;
-    for i = 0 to base.data.persons.len - 1 do {
-      let p = base.data.persons.get i in
+    check_base_aux base error warning changed_p;
+    for i = 0 to nb_of_persons base - 1 do {
+      let p = poi base (Adef.iper_of_int i) in
       if not (def i) then
         printf "Undefined: %s\n" (designation base p)
       else ();

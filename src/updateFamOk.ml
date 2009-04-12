@@ -1,10 +1,14 @@
 (* camlp4r ./pa_html.cmo *)
-(* $Id: updateFamOk.ml,v 4.38 2004/12/14 09:30:18 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: updateFamOk.ml,v 5.48 2007/01/19 01:53:17 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
 open Def;
+open Futil;
 open Gutil;
+open Gwdb;
+open Hutil;
+open Mutil;
 open Util;
 
 value raw_get conf key =
@@ -26,8 +30,8 @@ value getn conf var key =
 ;
 
 value reconstitute_somebody conf var =
-  let first_name = only_printable (getn conf var "fn") in
-  let surname = only_printable (getn conf var "sn") in
+  let first_name = no_html_tags (only_printable (getn conf var "fn")) in
+  let surname = no_html_tags (only_printable (getn conf var "sn")) in
   let occ = try int_of_string (getn conf var "occ") with [ Failure _ -> 0 ] in
   let sex =
     match p_getenv conf.env (var ^ "_sex") with
@@ -44,9 +48,9 @@ value reconstitute_somebody conf var =
 ;
 
 value reconstitute_parent_or_child conf var default_surname =
-  let first_name = only_printable (getn conf var "fn") in
+  let first_name = no_html_tags (only_printable (getn conf var "fn")) in
   let surname =
-    let surname = only_printable (getn conf var "sn") in
+    let surname = no_html_tags (only_printable (getn conf var "sn")) in
     if surname = "" then default_surname else surname
   in
   let occ = try int_of_string (getn conf var "occ") with [ Failure _ -> 0 ] in
@@ -75,6 +79,13 @@ value reconstitute_parent_or_child conf var default_surname =
     | _ -> Update.Link ]
   in
   (first_name, surname, occ, create, var)
+;
+
+value invert_children conf (c, children, ext) i =
+  let var = "inv_ch" ^ string_of_int (i + 1) in
+  match (p_getenv conf.env var, children) with
+  [ (Some "on", [c1 :: children]) -> (c1, [c :: children], True)
+  | _ -> (c, children, ext) ]
 ;
 
 value insert_child conf (children, ext) i =
@@ -116,11 +127,15 @@ value insert_parent conf (parents, ext) i =
 value reconstitute_family conf =
   let ext = False in
   let relation =
-    match p_getenv conf.env "mrel" with
-    [ Some "not_marr" -> NotMarried
-    | Some "engaged" -> Engaged
-    | Some "nsck" -> NoSexesCheck
-    | Some "no_ment" -> NoMention
+    match (p_getenv conf.env "mrel", p_getenv conf.env "nsck") with
+    [ (Some "marr", Some "on") -> NoSexesCheckMarried
+    | (Some "marr", Some _ | None) -> Married
+    | (Some "not_marr", Some "on") -> NoSexesCheckNotMarried
+    | (Some "not_marr", Some _ | None) -> NotMarried
+    | (Some "engaged", _) -> Engaged
+    | (Some "nsck", _) -> NoSexesCheckNotMarried
+    | (Some "nsckm", _) -> NoSexesCheckMarried
+    | (Some "no_ment", _) -> NoMention
     | _ -> Married ]
   in
   let marriage = Update.reconstitute_date conf "marr" in
@@ -167,6 +182,7 @@ value reconstitute_family conf =
       with
       [ Some c ->
           let (children, ext) = loop (i + 1) ext in
+          let (c, children, ext) = invert_children conf (c, children, ext) i in
           let (children, ext) = insert_child conf (children, ext) i in
           ([c :: children], ext)
       | None -> ([], ext) ]
@@ -186,8 +202,8 @@ value reconstitute_family conf =
           ([c :: parents], ext)
       | None -> ([], ext) ]
   in
-  let comment = strip_spaces (get conf "comment") in
-  let fsources = strip_spaces (get conf "src") in
+  let comment = only_printable (get conf "comment") in
+  let fsources = only_printable (get conf "src") in
   let origin_file =
     match p_getenv conf.env "origin_file" with
     [ Some x -> x
@@ -219,10 +235,9 @@ value strip_array_persons pl =
 ;
 
 value strip_family fam des =
-  do {
-    des.children := strip_array_persons des.children;
-    fam.witnesses := strip_array_persons fam.witnesses
-  }
+  let fam = {(fam) with witnesses = strip_array_persons fam.witnesses} in
+  let des = {children = strip_array_persons des.children} in
+  (fam, des)
 ;
 
 value print_err_parents conf base p =
@@ -231,7 +246,7 @@ value print_err_parents conf base p =
     rheader conf title;
     Wserver.wprint "\n";
     Wserver.wprint (fcapitale (ftransl conf "%t already has parents"))
-      (fun _ -> Wserver.wprint "\n%s" (referenced_person_text conf base p));
+      (fun _ -> Printf.sprintf "\n%s" (referenced_person_text conf base p));
     Wserver.wprint "\n";
     html_p conf;
     tag "ul" begin
@@ -284,14 +299,15 @@ value print_error_disconnected conf =
   let title _ = Wserver.wprint "%s" (capitale (transl conf "error")) in
   do {
     rheader conf title;
-    Util.print_link_to_welcome conf True;
+    Hutil.print_link_to_welcome conf True;
     Wserver.wprint "\
 Sorry, you can add only families connected to the rest.<br>
 This restriction has been added by this database owner.
 <p>
-Désolé, vous ne pouvez ajouter que des familles connectées au reste.<br>
-Cette restriction a été ajoutée par le propriétaire de cette base de
-données.
+D&eacute;sol&eacute;, vous ne pouvez ajouter que des familles
+connect&eacute;es au reste.<br>
+Cette restriction a &eacute;t&eacute; ajout&eacute;e par le
+propri&eacute;taire de cette base de donn&eacute;es.
 ";
     trailer conf;
     raise Update.ModErr
@@ -301,19 +317,20 @@ données.
 value family_exclude pfams efam =
   let pfaml =
     List.fold_right
-      (fun fam faml -> if fam == efam then faml else [fam :: faml])
+      (fun fam faml -> if fam = efam then faml else [fam :: faml])
       (Array.to_list pfams) []
   in
   Array.of_list pfaml
 ;
 
 value infer_origin_file_from_other_marriages conf base ifam ip =
-  let u = uoi base ip in
+  let u = poi base ip in
+  let ufams = get_family u in
   let rec loop i =
-    if i = Array.length u.family then None
-    else if u.family.(i) = ifam then loop (i + 1)
+    if i = Array.length ufams then None
+    else if ufams.(i) = ifam then loop (i + 1)
     else
-      let r = (foi base u.family.(i)).origin_file in
+      let r = get_origin_file (foi base ufams.(i)) in
       if sou base r <> "" then Some r else loop (i + 1)
   in
   loop 0
@@ -321,33 +338,37 @@ value infer_origin_file_from_other_marriages conf base ifam ip =
 
 value infer_origin_file conf base ifam ncpl ndes =
   let r =
-    infer_origin_file_from_other_marriages conf base ifam (father ncpl)
+    infer_origin_file_from_other_marriages conf base ifam (Adef.father ncpl)
   in
   let r =
     if r = None then
-      infer_origin_file_from_other_marriages conf base ifam (mother ncpl)
+      infer_origin_file_from_other_marriages conf base ifam (Adef.mother ncpl)
     else r
   in
   let r =
     match r with
     [ Some r -> r
     | None ->
-        let afath = aoi base (father ncpl) in
-        let amoth = aoi base (mother ncpl) in
-        match (parents afath, parents amoth) with
-        [ (Some if1, _) when sou base (foi base if1).origin_file <> "" ->
-            (foi base if1).origin_file
-        | (_, Some if2) when sou base (foi base if2).origin_file <> "" ->
-            (foi base if2).origin_file
+        let afath = poi base (Adef.father ncpl) in
+        let amoth = poi base (Adef.mother ncpl) in
+        match (get_parents afath, get_parents amoth) with
+        [ (Some if1, _)
+          when sou base (get_origin_file (foi base if1)) <> "" ->
+            (get_origin_file (foi base if1))
+        | (_, Some if2)
+          when sou base (get_origin_file (foi base if2)) <> "" ->
+            (get_origin_file (foi base if2))
         | _ ->
             let rec loop i =
-              if i == Array.length ndes.children then
-                Update.insert_string base ""
+              if i = Array.length ndes.children then
+                Gwdb.insert_string base ""
               else
-                let cifams = (uoi base ndes.children.(i)).family in
-                if Array.length cifams == 0 then loop (i + 1)
-                else if sou base (foi base cifams.(0)).origin_file <> "" then
-                  (foi base cifams.(0)).origin_file
+                let cifams = get_family (poi base ndes.children.(i)) in
+                if Array.length cifams = 0 then loop (i + 1)
+                else if
+                  sou base (get_origin_file (foi base cifams.(0))) <> ""
+                then
+                  get_origin_file (foi base cifams.(0))
                 else loop (i + 1)
             in
             loop 0 ] ]
@@ -365,37 +386,47 @@ value update_related_witnesses base ofam_witn nfam_witn ncpl =
   let mod_ippl =
     List.fold_left
       (fun ippl ip ->
-         if List.memq ip ofam_witn then ippl
+         if List.mem ip ofam_witn then ippl
          else
-           let p = poi base ip in
-           if not (List.mem (father ncpl) p.related) then do {
-             p.related := [(father ncpl) :: p.related];
+           let p = gen_person_of_person (poi base ip) in
+           if not (List.mem (Adef.father ncpl) p.related) then
+             let p = {(p) with related = [Adef.father ncpl :: p.related]} in
              if List.mem_assoc ip ippl then ippl else [(ip, p) :: ippl]
-           }
            else ippl)
       mod_ippl nfam_witn
   in
   let mod_ippl =
     List.fold_left
       (fun ippl ip ->
-         if List.memq ip nfam_witn then ippl
+         if List.mem ip nfam_witn then ippl
          else
-           let p = poi base ip in
-           if List.mem (father ncpl) p.related then do {
-             p.related := List.filter ( \<> (father ncpl)) p.related;
+           let p =
+             try List.assoc ip ippl with
+             [ Not_found -> gen_person_of_person (poi base ip) ]
+           in
+           if List.mem (Adef.father ncpl) p.related then
+             let p =
+               {(p) with
+                related = (List.filter ( \<> (Adef.father ncpl)) p.related)}
+             in
              if List.mem_assoc ip ippl then ippl else [(ip, p) :: ippl]
-           }
            else ippl)
       mod_ippl ofam_witn
   in
-  List.iter (fun (ip, p) -> base.func.patch_person ip p) mod_ippl
+  List.iter (fun (ip, p) -> patch_person base ip p) mod_ippl
 ;
 
-value effective_mod conf base sfam scpl sdes =
+value effective_mod conf base sfam scpl sdes = do {
   let fi = sfam.fam_index in
-  let ofam = foi base fi in
-  let ocpl = coi base fi in
-  let odes = doi base fi in
+  let (oorigin, owitnesses) =
+    let ofam = foi base fi in
+    (get_origin_file ofam, get_witnesses ofam)
+  in
+  let (oarr, ofather, omother) =
+    let ocpl = foi base fi in
+    (get_parent_array ocpl, get_father ocpl, get_mother ocpl)
+  in
+  let ochildren = get_children (foi base fi) in
   let created_p = ref [] in
   let psrc =
     match p_getenv conf.env "psrc" with
@@ -408,109 +439,120 @@ value effective_mod conf base sfam scpl sdes =
   in
   let nfam =
     map_family_ps (Update.insert_person conf base psrc created_p)
-      (Update.insert_string base) sfam
+      (Gwdb.insert_string base) sfam
   in
   let ndes =
     map_descend_p (Update.insert_person conf base psrc created_p) sdes
   in
-  let nfath = poi base (father ncpl) in
-  let nmoth = poi base (mother ncpl) in
-  let nfath_u = uoi base (father ncpl) in
-  let nmoth_u = uoi base (mother ncpl) in
-  do {
-    if sfam.relation <> NoSexesCheck then do {
-      match nfath.sex with
-      [ Female -> print_err_father_sex conf base nfath
-      | _ -> nfath.sex := Male ];
-      match nmoth.sex with
-      [ Male -> print_err_mother_sex conf base nmoth
-      | _ -> nmoth.sex := Female ]
-    }
-    else ();
-    if (father ncpl) == (mother ncpl) then print_err conf base else ();
-    if sfam.origin_file = "" then 
-      nfam.origin_file :=
-        if sou base ofam.origin_file <> "" then ofam.origin_file
-        else infer_origin_file conf base fi ncpl ndes
-    else ();
-    nfam.fam_index := fi;
-    base.func.patch_family fi nfam;
-    base.func.patch_couple fi ncpl;
-    base.func.patch_descend fi ndes;
-    let oarr = parent_array ocpl in
-    let narr = parent_array ncpl in
-    for i = 0 to Array.length oarr - 1 do {
-      if not (array_memq oarr.(i) narr) then do {
-        let ou = uoi base oarr.(i) in
-        ou.family := family_exclude ou.family ofam.fam_index;
-        base.func.patch_union oarr.(i) ou
-      }
-      else ()
-    };
-    for i = 0 to Array.length narr - 1 do {
-      if not (array_memq narr.(i) oarr) then do {
-        let nu = uoi base narr.(i) in
-        nu.family := Array.append nu.family [| fi |];
-        base.func.patch_union narr.(i) nu;
-      }
-      else ()
-    };
-    let find_asc =
-      let cache = Hashtbl.create 101 in
-      fun ip ->
-        try Hashtbl.find cache ip with
-        [ Not_found ->
-            let a = aoi base ip in
-            do { Hashtbl.add cache ip a; a } ]
-    in
-    let same_parents =
-      (father ncpl) = (father ocpl) && (mother ncpl) = (mother ocpl)
-    in
-    Array.iter
-      (fun ip ->
-         let a = find_asc ip in
-         do {
-           set_parents a None;
-           if not (array_memq ip ndes.children) then
-             set_consang a (Adef.fix (-1))
-           else ()
-         })
-      odes.children;
-    Array.iter
-      (fun ip ->
-         let a = find_asc ip in
-         match parents a with
-         [ Some _ -> print_err_parents conf base (poi base ip)
-         | None ->
-             do {
-               set_parents a (Some fi);
-               if not (array_memq ip odes.children) || not same_parents then
-                 set_consang a (Adef.fix (-1))
-               else ()
-             } ])
-      ndes.children;
-    Array.iter
-      (fun ip ->
-         if not (array_memq ip ndes.children) then
-           base.func.patch_ascend ip (find_asc ip)
-         else ())
-      odes.children;
-    Array.iter
-      (fun ip ->
-         if not (array_memq ip odes.children) || not same_parents then
-           base.func.patch_ascend ip (find_asc ip)
-         else ())
-      ndes.children;
-    Update.add_misc_names_for_new_persons base created_p.val;
-    Update.update_misc_names_of_family base nfath nfath_u;
-    update_related_witnesses base (Array.to_list ofam.witnesses)
-      (Array.to_list nfam.witnesses) ncpl;
-    (nfam, ncpl, ndes)
+  let nfath = poi base (Adef.father ncpl) in
+  let nmoth = poi base (Adef.mother ncpl) in
+  if sfam.relation <> NoSexesCheckNotMarried &&
+     sfam.relation <> NoSexesCheckMarried then do {
+    match get_sex nfath with
+    [ Female -> print_err_father_sex conf base nfath
+    | Male -> ()
+    | Neuter ->
+        let nfath = {(gen_person_of_person nfath) with sex = Male} in
+        patch_person base nfath.key_index nfath ];
+    match get_sex nmoth with
+    [ Male -> print_err_mother_sex conf base nmoth
+    | Female -> ()
+    | Neuter ->
+        let nmoth = {(gen_person_of_person nmoth) with sex = Female} in
+        patch_person base nmoth.key_index nmoth ];
   }
-;
+  else ();
+  if Adef.father ncpl = Adef.mother ncpl then print_err conf base else ();
+  let nfam =
+    let origin_file =
+      if sfam.origin_file = "" then 
+        if sou base oorigin <> "" then oorigin
+        else infer_origin_file conf base fi ncpl ndes
+      else nfam.origin_file
+    in
+    {(nfam) with origin_file = origin_file; fam_index = fi}
+  in
+  patch_family base fi nfam;
+  patch_couple base fi ncpl;
+  patch_descend base fi ndes;
+  let narr = Adef.parent_array ncpl in
+  for i = 0 to Array.length oarr - 1 do {
+    if not (array_mem oarr.(i) narr) then do {
+      let ou = poi base oarr.(i) in
+      let ou = {family = family_exclude (get_family ou) fi} in
+      patch_union base oarr.(i) ou
+    }
+    else ()
+  };
+  for i = 0 to Array.length narr - 1 do {
+    if not (array_mem narr.(i) oarr) then do {
+      let nu = poi base narr.(i) in
+      let nu = {family = Array.append (get_family nu) [| fi |]} in
+      patch_union base narr.(i) nu;
+    }
+    else ()
+  };
+  let cache = Hashtbl.create 101 in
+  let find_asc =
+    fun ip ->
+      try Hashtbl.find cache ip with
+      [ Not_found -> do {
+          let a = poi base ip in
+          let a = {parents = get_parents a; consang = get_consang a} in
+          Hashtbl.add cache ip a;
+          a
+        } ]
+  in
+  let same_parents =
+    Adef.father ncpl = ofather && Adef.mother ncpl = omother
+  in
+  Array.iter
+    (fun ip ->
+       let a = find_asc ip in
+       let a =
+         {parents = None;
+          consang =
+            if not (array_mem ip ndes.children) then Adef.fix (-1)
+            else a.consang}
+       in
+       Hashtbl.replace cache ip a)
+    ochildren;
+  Array.iter
+    (fun ip ->
+       let a = find_asc ip in
+       match a.parents with
+       [ Some _ -> print_err_parents conf base (poi base ip)
+       | None ->
+           let a =
+             {parents = Some fi;
+              consang =
+                if not (array_mem ip ochildren) || not same_parents then
+                  Adef.fix (-1)
+                else a.consang}
+           in
+           Hashtbl.replace cache ip a ])
+    ndes.children;
+  Array.iter
+    (fun ip ->
+       if not (array_mem ip ndes.children) then
+         patch_ascend base ip (find_asc ip)
+       else ())
+    ochildren;
+  Array.iter
+    (fun ip ->
+       if not (array_mem ip ochildren) || not same_parents then
+         patch_ascend base ip (find_asc ip)
+       else ())
+    ndes.children;
+  Update.add_misc_names_for_new_persons base created_p.val;
+  Update.update_misc_names_of_family base Male {family = get_family nfath};
+  update_related_witnesses base (Array.to_list owitnesses)
+    (Array.to_list nfam.witnesses) ncpl;
+  (fi, nfam, ncpl, ndes)
+};
 
 value effective_add conf base sfam scpl sdes =
-  let fi = Adef.ifam_of_int base.data.families.len in
+  let fi = Adef.ifam_of_int (nb_of_families base) in
   let created_p = ref [] in
   let psrc =
     match p_getenv conf.env "psrc" with
@@ -523,61 +565,53 @@ value effective_add conf base sfam scpl sdes =
   in
   let nfam =
     map_family_ps (Update.insert_person conf base psrc created_p)
-      (Update.insert_string base) sfam
+      (Gwdb.insert_string base) sfam
   in
   let ndes =
     map_descend_p (Update.insert_person conf base psrc created_p) sdes
   in
   let origin_file = infer_origin_file conf base fi ncpl ndes in
-  let nfath_p = poi base (father ncpl) in
-  let nmoth_p = poi base (mother ncpl) in
-  let nfath_u = uoi base (father ncpl) in
-  let nmoth_u = uoi base (mother ncpl) in
+  let nfath_p = poi base (Adef.father ncpl) in
+  let nmoth_p = poi base (Adef.mother ncpl) in
   do {
-    if sfam.relation <> NoSexesCheck then do {
-      match nfath_p.sex with
+    if sfam.relation <> NoSexesCheckNotMarried &&
+       sfam.relation <> NoSexesCheckMarried then do {
+      match get_sex nfath_p with
       [ Female -> print_err_father_sex conf base nfath_p
       | Male -> ()
       | _ ->
-          do {
-            nfath_p.sex := Male; base.func.patch_person (father ncpl) nfath_p
-          } ];
-      match nmoth_p.sex with
+          let nfath_p = {(gen_person_of_person nfath_p) with sex = Male} in
+          patch_person base nfath_p.key_index nfath_p ];
+      match get_sex nmoth_p with
       [ Male -> print_err_mother_sex conf base nmoth_p
       | Female -> ()
       | _ ->
-          do {
-            nmoth_p.sex := Female; base.func.patch_person (mother ncpl) nmoth_p
-          } ]
+          let nmoth_p = {(gen_person_of_person nmoth_p) with sex = Female} in
+          patch_person base nmoth_p.key_index nmoth_p ];
     }
-    else if (father ncpl) == (mother ncpl) then print_err conf base
+    else if Adef.father ncpl = Adef.mother ncpl then print_err conf base
     else ();
-    nfam.fam_index := fi;
-    nfam.origin_file := origin_file;
-    base.func.patch_family fi nfam;
-    base.func.patch_couple fi ncpl;
-    base.func.patch_descend fi ndes;
-    nfath_u.family := Array.append nfath_u.family [| fi |];
-    nmoth_u.family := Array.append nmoth_u.family [| fi |];
-    base.func.patch_union (father ncpl) nfath_u;
-    base.func.patch_union (mother ncpl) nmoth_u;
+    let nfam = {(nfam) with origin_file = origin_file; fam_index = fi} in
+    patch_family base fi nfam;
+    patch_couple base fi ncpl;
+    patch_descend base fi ndes;
+    let nfath_u = {family = Array.append (get_family nfath_p) [| fi |]} in
+    let nmoth_u = {family = Array.append (get_family nmoth_p) [| fi |]} in
+    patch_union base (Adef.father ncpl) nfath_u;
+    patch_union base (Adef.mother ncpl) nmoth_u;
     Array.iter
       (fun ip ->
-         let a = aoi base ip in
          let p = poi base ip in
-         match parents a with
+         match get_parents p with
          [ Some _ -> print_err_parents conf base p
          | None ->
-             do {
-               set_parents a (Some fi);
-               set_consang a (Adef.fix (-1));
-               base.func.patch_ascend p.cle_index a
-             } ])
+             let a = {parents = Some fi; consang = Adef.fix (-1)} in
+             patch_ascend base (get_key_index p) a ])
       ndes.children;
     Update.add_misc_names_for_new_persons base created_p.val;
-    Update.update_misc_names_of_family base nfath_p nfath_u;
+    Update.update_misc_names_of_family base Male nfath_u;
     update_related_witnesses base [] (Array.to_list nfam.witnesses) ncpl;
-    (nfam, ncpl, ndes)
+    (fi, nfam, ncpl, ndes)
   }
 ;
 
@@ -589,57 +623,39 @@ value effective_inv conf base ip u ifam =
         else [ifam1 :: loop [ifam2 :: ifaml]]
     | _ -> do { incorrect_request conf; raise Update.ModErr } ]
   in
-  do {
-    u.family := Array.of_list (loop (Array.to_list u.family));
-    base.func.patch_union ip u
-  }
+  let u = {family = Array.of_list (loop (Array.to_list (get_family u)))} in
+  patch_union base ip u
 ;
 
-value kill_family base fam ip =
-  let u = uoi base ip in
+value kill_family base ifam1 ip =
+  let u = poi base ip in
   let l =
     List.fold_right
       (fun ifam ifaml ->
-         if ifam == fam.fam_index then ifaml else [ifam :: ifaml])
-      (Array.to_list u.family) []
+         if ifam = ifam1 then ifaml else [ifam :: ifaml])
+      (Array.to_list (get_family u)) []
   in
-  do { u.family := Array.of_list l; base.func.patch_union ip u }
+  let u = {family = Array.of_list l} in
+  patch_union base ip u
 ;
 
 value kill_parents base ip =
-  let a = aoi base ip in
-  do {
-    set_parents a None;
-    set_consang a (Adef.fix (-1));
-    base.func.patch_ascend ip a
-  }
+  let a = {parents = None; consang = Adef.fix (-1)} in
+  patch_ascend base ip a
 ;
 
-value effective_del conf base fam =
-  let ifam = fam.fam_index in
-  let cpl = coi base ifam in
-  let des = doi base ifam in
-  do {
-    kill_family base fam (father cpl);
-    kill_family base fam (mother cpl);
-    Array.iter (kill_parents base) des.children;
-    set_father cpl (Adef.iper_of_int (-1));
-    set_mother cpl (Adef.iper_of_int (-1));
-    fam.witnesses := [| |];
-    des.children := [| |];
-    fam.comment := Update.insert_string base "";
-    fam.fam_index := Adef.ifam_of_int (-1);
-    base.func.patch_family ifam fam;
-    base.func.patch_couple ifam cpl;
-    base.func.patch_descend ifam des
-  }
-;
+value effective_del conf base (ifam, fam) = do {
+  kill_family base ifam (get_father fam);
+  kill_family base ifam (get_mother fam);
+  Array.iter (kill_parents base) (get_children fam);
+  delete_family base ifam;
+};
 
 value array_forall2 f a1 a2 =
   if Array.length a1 <> Array.length a2 then invalid_arg "array_forall2"
   else
     loop 0 where rec loop i =
-      if i == Array.length a1 then True
+      if i = Array.length a1 then True
       else if f a1.(i) a2.(i) then loop (i + 1)
       else False
 ;
@@ -658,7 +674,7 @@ value is_a_link =
 ;
 
 value is_created_or_already_there ochil_arr nchil schil =
-  not (is_a_link schil) || array_memq nchil ochil_arr
+  not (is_a_link schil) || array_mem nchil ochil_arr
 ;
 
 (* need_check_noloop: optimization
@@ -679,70 +695,66 @@ value need_check_noloop (scpl, sdes, onfs) =
     [ Some ((opar, ochil), (npar, nchil)) ->
         not
           (array_forall2 (is_created_or_already_there opar) npar
-	     (parent_array scpl)) ||
+             (parent_array scpl)) ||
         not
           (array_forall2 (is_created_or_already_there ochil) nchil
-	     sdes.children)
+             sdes.children)
     | None -> True ]
   else False
 ;
 
-value all_checks_family conf base fam cpl des scdo =
+value all_checks_family conf base ifam fam cpl des scdo = do {
   let wl = ref [] in
   let error = Update.error conf base in
   let warning w = wl.val := [w :: wl.val] in
-  do {
-    if need_check_noloop scdo then
-      Gutil.check_noloop_for_person_list base error
-        (Array.to_list (parent_array cpl))
-    else ();
-    Gutil.check_family base error warning fam cpl des;
-    List.rev wl.val
-  }
-;
+  if need_check_noloop scdo then
+    Consang.check_noloop_for_person_list base error
+      (Array.to_list (Adef.parent_array cpl))
+  else ();
+  let fam = family_of_gen_family base (fam, cpl, des) in
+  CheckItem.family base error warning ifam fam;
+  List.rev wl.val
+};
 
-value print_family conf base wl cpl des =
+value print_family conf base wl cpl des = do {
   let rdsrc =
     match p_getenv conf.env "rdsrc" with
     [ Some "on" -> p_getenv conf.env "src"
     | _ -> p_getenv conf.env "dsrc" ]
   in
-  do {
-    match rdsrc with
-    [ Some x ->
-        do {
-          conf.henv := List.remove_assoc "dsrc" conf.henv;
-          if x <> "" then conf.henv := [("dsrc", code_varenv x) :: conf.henv]
-          else ()
-        }
-    | None -> () ];
+  match rdsrc with
+  [ Some x ->
+      do {
+        conf.henv := List.remove_assoc "dsrc" conf.henv;
+        if x <> "" then conf.henv := [("dsrc", code_varenv x) :: conf.henv]
+        else ()
+      }
+  | None -> () ];
+  Wserver.wprint "<ul>\n";
+  html_li conf;
+  Wserver.wprint "\n%s"
+    (referenced_person_text conf base (poi base (Adef.father cpl)));
+  Wserver.wprint "\n";
+  html_li conf;
+  Wserver.wprint "\n%s"
+    (referenced_person_text conf base (poi base (Adef.mother cpl)));
+  Wserver.wprint "</ul>\n";
+  if des.children <> [| |] then do {
+    html_p conf;
     Wserver.wprint "<ul>\n";
-    html_li conf;
-    Wserver.wprint "\n%s"
-      (referenced_person_text conf base (poi base (father cpl)));
-    Wserver.wprint "\n";
-    html_li conf;
-    Wserver.wprint "\n%s"
-      (referenced_person_text conf base (poi base (mother cpl)));
-    Wserver.wprint "</ul>\n";
-    if des.children <> [| |] then do {
-      html_p conf;
-      Wserver.wprint "<ul>\n";
-      Array.iter
-        (fun ip ->
-           do {
-             html_li conf;
-             Wserver.wprint "\n%s"
-               (referenced_person_text conf base (poi base ip));
-             Wserver.wprint "\n"
-           })
-        des.children;
-      Wserver.wprint "</ul>\n"
-    }
-    else ();
-    Update.print_warnings conf base wl
+    Array.iter
+      (fun ip -> do {
+         html_li conf;
+         Wserver.wprint "\n%s"
+           (referenced_person_text conf base (poi base ip));
+         Wserver.wprint "\n"
+       })
+      des.children;
+    Wserver.wprint "</ul>\n"
   }
-;
+  else ();
+  Update.print_warnings conf base wl
+};
 
 value print_mod_ok conf base wl cpl des =
   let title _ =
@@ -775,7 +787,7 @@ value print_del_ok conf base wl =
     print_link_to_welcome conf True;
     match p_getint conf.env "ip" with
     [ Some i ->
-        let p = base.data.persons.get i in
+        let p = poi base (Adef.iper_of_int i) in
         tag "ul" begin
           Wserver.wprint "<li>\n";
           Wserver.wprint "%s\n"
@@ -829,39 +841,43 @@ value print_add o_conf base =
     let digest =
       match p_getint conf.env "ip" with
       [ Some ip ->
-          string_of_int (Array.length (base.data.unions.get ip).family)
+          string_of_int
+            (Array.length (get_family (poi base (Adef.iper_of_int ip))))
       | None -> "" ]
     in
     let sdigest = raw_get conf "digest" in
     if digest <> "" && sdigest <> "" && digest <> sdigest then
-      Update.error_digest conf base
+      Update.error_digest conf
     else if ext || redisp then
       UpdateFam.print_update_fam conf base (sfam, scpl, sdes) ""
     else if forbidden_disconnected conf sfam scpl sdes then
       print_error_disconnected conf
     else do {
-      strip_family sfam sdes;
-      let (fam, cpl, des) = effective_add conf base sfam scpl sdes in
-      let wl = all_checks_family conf base fam cpl des (scpl, sdes, None) in
-      let ((fn, sn, occ, _, _), act) =
+      let (sfam, sdes) = strip_family sfam sdes in
+      let (ifam, fam, cpl, des) = effective_add conf base sfam scpl sdes in
+      let wl =
+        all_checks_family conf base ifam fam cpl des (scpl, sdes, None)
+      in
+      let ((fn, sn, occ, _, _), i, act) =
         match p_getint conf.env "ip" with
         [ Some i ->
-            if Adef.int_of_iper (mother cpl) = i then ((mother scpl), "af")
+            if Adef.int_of_iper (Adef.mother cpl) = i then
+              (mother scpl, i, "af")
             else
-              let a = base.data.ascends.get i in
-              match parents a with
-              [ Some x when x = fam.fam_index ->
-                  let p = base.data.persons.get i in
+              let a = poi base (Adef.iper_of_int i) in
+              match get_parents a with
+              [ Some x when x = ifam ->
+                  let p = poi base (Adef.iper_of_int i) in
                   let key =
-                    (sou base p.first_name, sou base p.surname, p.occ,
-                     Update.Link, "")
+                    (sou base (get_first_name p), sou base (get_surname p),
+                     get_occ p, Update.Link, "")
                   in
-                  (key, "aa")
-              | _ -> ((father scpl), "af") ]
-        | _ -> ((father scpl), "af") ]
+                  (key, i, "aa")
+              | _ -> (father scpl, i, "af") ]
+        | _ -> (father scpl, -1, "af") ]
       in
       Util.commit_patches conf base;
-      History.record conf base (fn, sn, occ) act;
+      History.record conf base (fn, sn, occ, Adef.iper_of_int i) act;
       Update.delete_topological_sort conf base;
       print_add_ok conf base wl cpl des
     }
@@ -872,20 +888,22 @@ value print_add o_conf base =
 value print_del conf base =
   match p_getint conf.env "i" with
   [ Some i ->
-      let fam = foi base (Adef.ifam_of_int i) in
+      let ifam = Adef.ifam_of_int i in
+      let fam = foi base ifam in
       let k =
-        let cpl = coi base (Adef.ifam_of_int i) in
         let ip =
           match p_getint conf.env "ip" with
-          [ Some i when Adef.int_of_iper (mother cpl) = i -> (mother cpl)
-          | _ -> (father cpl) ]
+          [ Some i when Adef.int_of_iper (get_mother fam) = i ->
+              get_mother fam
+          | _ -> get_father fam ]
         in
         let p = poi base ip in
-        (sou base p.first_name, sou base p.surname, p.occ)
+        (sou base (get_first_name p), sou base (get_surname p), get_occ p,
+         get_key_index p)
       in
       do {
         if not (is_deleted_family fam) then do {
-          effective_del conf base fam;
+          effective_del conf base (ifam, fam);
           Util.commit_patches conf base;
           History.record conf base k "df";
           Update.delete_topological_sort conf base
@@ -905,40 +923,45 @@ value print_mod_aux conf base callback =
       | _ -> False ]
     in
     let digest =
-      Update.digest_family (foi base sfam.fam_index)
-        (coi base sfam.fam_index) (doi base sfam.fam_index)
+      let ini_sfam = UpdateFam.string_family_of conf base sfam.fam_index in
+      Update.digest_family ini_sfam
     in
     if digest = raw_get conf "digest" then
       if ext || redisp then
         UpdateFam.print_update_fam conf base (sfam, scpl, sdes) digest
-      else do { strip_family sfam sdes; callback sfam scpl sdes }
-    else Update.error_digest conf base
+      else
+        let (sfam, sdes) = strip_family sfam sdes in
+        callback sfam scpl sdes
+    else Update.error_digest conf
   with
   [ Update.ModErr -> () ]
 ;
 
 value family_structure conf base ifam =
-  let cpl = coi base ifam in
-  let des = doi base ifam in
-  (parent_array cpl, des.children)
+  let fam = foi base ifam in
+  (get_parent_array fam, get_children fam)
 ;
 
 value print_mod o_conf base =
   let conf = Update.update_conf o_conf in
   let callback sfam scpl sdes =
     let ofs = family_structure conf base sfam.fam_index in
-    let (fam, cpl, des) = effective_mod conf base sfam scpl sdes in
-    let nfs = (parent_array cpl, des.children) in
+    let (ifam, fam, cpl, des) = effective_mod conf base sfam scpl sdes in
+    let nfs = (Adef.parent_array cpl, des.children) in
     let onfs = Some (ofs, nfs) in
-    let wl = all_checks_family conf base fam cpl des (scpl, sdes, onfs) in
-    let (fn, sn, occ, _, _) =
+    let wl =
+      all_checks_family conf base ifam fam cpl des (scpl, sdes, onfs)
+    in
+    let ((fn, sn, occ, _, _), ip) =
       match p_getint conf.env "ip" with
-      [ Some i when Adef.int_of_iper (mother cpl) = i -> (mother scpl)
-      | _ -> (father scpl) ]
+      [ Some i ->
+          let ip = Adef.iper_of_int i in
+          (if Adef.mother cpl = ip then mother scpl else father scpl, ip)
+      | None -> (father scpl, Adef.iper_of_int (-1)) ]
     in
     do {
       Util.commit_patches conf base;
-      History.record conf base (fn, sn, occ) "mf";
+      History.record conf base (fn, sn, occ, ip) "mf";
       Update.delete_topological_sort conf base;
       print_mod_ok conf base wl cpl des
     }
@@ -949,12 +972,14 @@ value print_mod o_conf base =
 value print_inv conf base =
   match (p_getint conf.env "i", p_getint conf.env "f") with
   [ (Some ip, Some ifam) ->
-      let p = base.data.persons.get ip in
-      let u = base.data.unions.get ip in
-      let k = (sou base p.first_name, sou base p.surname, p.occ) in
+      let p = poi base (Adef.iper_of_int ip) in
+      let k =
+        (sou base (get_first_name p), sou base (get_surname p), get_occ p,
+         get_key_index p)
+      in
       try
         do {
-          effective_inv conf base p.cle_index u (Adef.ifam_of_int ifam);
+          effective_inv conf base (get_key_index p) p (Adef.ifam_of_int ifam);
           Util.commit_patches conf base;
           History.record conf base k "if";
           print_inv_ok conf base p

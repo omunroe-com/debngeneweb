@@ -1,6 +1,51 @@
 Internal, very small, undocumented, or invisible changes
 ********************************************************
 
+GeneWeb Version 5.00
+--------------------
+
+Preliminary remark: I neglected to record the Internal changes between
+version 4.10 and 01 Jul 2005, but there are a lot of them... I add
+them when I have some time (and some courage).
+
+* GeneWeb server or CGI (gwd)
+  - [11 Dec 05] In update family form, when creating a new person, if
+    conflict, display now at most 50 persons.
+  - [04 Sep 05] Data base forum file can be splited in several files:
+    forum, forum.1, forum.2, and so on.
+  - [27 Aug 05] In marriage relation kind added "no sex check married".
+  - [22 Aug 05] Changed behaviour of displaying a surname : grouping
+    branches when grandchildren have same name (and not children).
+  - [15 Aug 05] Added some shortcuts ("Alt-U" for "update", "Alt-P"
+    for (update) "Person" and ""Alt-F" for "Update family"...)
+  - [08 Aug 05] Fixed bug: in normal access, in personal page,
+    some displayed children could have "x x" and not all for
+    however visible children. Due to combination of authorized_age
+    in perso.ml and fast_auth_age in util.ml (2nd unuseful and
+    perturbating).
+  - [14 Jul 05] Fixed small bug: URL without index (";opt=no_index")
+    displayed "oc=" twice.
+
+* Consanguinity computing (consang)
+  - [02 Jul 05] Fixed bug: when number of persons was greater than 1M,
+    the consang applied to a *modified* database failed by "Segmentation
+    fault" after the message "*** read persons". Bug at creation of
+    database. This was due to initial bad save of array header (OCaml
+    integer overflowed on sign).
+
+* Dag2html
+  - [14 Aug 05] Fixed bug. Sometimes horiz bar linking two mates did
+    not appear in case of children exchange to nearer them. Had some
+    influence in relationship links "shortest path" because of cleaning
+    up the code by unifying parts coded differently.
+
+* Setup program (gwsetup)
+  - [06 Dec 05] Added option -only to set the file containing the
+    only address authorized to connect (default = "only.txt" in
+    directory set by option -gd). Added option -bindir to specify
+    the directory where executables are installed (default = the
+    directory set by option -gd).
+
 GeneWeb Version 4.10
 --------------------
 

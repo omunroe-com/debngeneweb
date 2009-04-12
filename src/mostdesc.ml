@@ -1,8 +1,8 @@
-(* $Id: mostdesc.ml,v 4.6 2004/12/14 09:30:14 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: mostdesc.ml,v 5.9 2007/01/19 01:53:16 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
-open Gutil;
 open Def;
+open Gwdb;
 
 value print_result base tab =
   let m_val = ref Num.zero in
@@ -22,25 +22,25 @@ value print_result base tab =
       if m_list.val <> [] then do {
         m_list.val :=
           let f i1 i2 =
-            let p1 = base.data.persons.get i1 in
-            let p2 = base.data.persons.get i2 in
+            let p1 = poi base (Adef.iper_of_int i1) in
+            let p2 = poi base (Adef.iper_of_int i2) in
             let s1 = Name.abbrev (Name.lower (p_surname base p1)) in
             let s2 = Name.abbrev (Name.lower (p_surname base p2)) in
-            if s1 < s2 then True
-            else if s1 > s2 then False
+            if s1 < s2 then -1
+            else if s1 > s2 then 1
             else
               let f1 = Name.abbrev (Name.lower (p_first_name base p1)) in
               let f2 = Name.abbrev (Name.lower (p_first_name base p2)) in
-              f1 <= f2
+              compare f1 f2
           in
-          Sort.list f m_list.val;
+          List.sort f m_list.val;
         Num.print print_string "." m_val.val;
         print_newline ();
         List.iter
           (fun i ->
-             let p = base.data.persons.get i in
+             let p = poi base (Adef.iper_of_int i) in
              do {
-               Printf.printf "- %s.%d %s\n" (p_first_name base p) p.occ
+               Printf.printf "- %s.%d %s\n" (p_first_name base p) (get_occ p)
                  (p_surname base p);
                flush stdout;
              })
@@ -53,9 +53,9 @@ value print_result base tab =
 ;
 
 value most_desc base p =
-  let _ = base.data.ascends.array () in
-  let _ = base.data.couples.array () in
-  let id = Consang.topological_sort base aoi in
+  let _ = load_ascends_array base in
+  let _ = load_couples_array base in
+  let id = Consang.topological_sort base poi in
   let module Pq =
     Pqueue.Make
       (struct
@@ -66,23 +66,23 @@ value most_desc base p =
 (*
   let _ = base.data.persons.array () in
 *)
-  let _ = base.data.descends.array () in
-  let _ = base.data.unions.array () in
-  let tab = Array.create base.data.persons.len Num.zero in
-  let entered = Array.create base.data.persons.len False in
+  let _ = load_descends_array base in
+  let _ = load_unions_array base in
+  let tab = Array.create (nb_of_persons base) Num.zero in
+  let entered = Array.create (nb_of_persons base) False in
   let q = ref Pq.empty in
   do {
-    q.val := Pq.add p.cle_index q.val;
-    tab.(Adef.int_of_iper p.cle_index) := Num.one;
+    q.val := Pq.add (get_key_index p) q.val;
+    tab.(Adef.int_of_iper (get_key_index p)) := Num.one;
     while not (Pq.is_empty q.val) do {
       let (ip, nq) = Pq.take q.val in
       q.val := nq;
       let u = uoi base ip in
       let n = tab.(Adef.int_of_iper ip) in
-      for i = 0 to Array.length u.family - 1 do {
-        let des = doi base u.family.(i) in
-        for j = 0 to Array.length des.children - 1 do {
-          let ip = des.children.(j) in
+      for i = 0 to Array.length (get_family u) - 1 do {
+        let des = doi base (get_family u).(i) in
+        for j = 0 to Array.length (get_children des) - 1 do {
+          let ip = (get_children des).(j) in
           tab.(Adef.int_of_iper ip) := Num.add tab.(Adef.int_of_iper ip) n;
           if not entered.(Adef.int_of_iper ip) then do {
             q.val := Pq.add ip q.val;
@@ -128,11 +128,10 @@ value main () =
     }
     else ();
     Secure.set_base_dir (Filename.dirname bname.val);
-    let base = Iobase.input bname.val in
-    let ip =
-      Gutil.person_ht_find_unique base p_fname.val p_sname.val p_num.val
-    in
-    most_desc base (poi base ip)
+    let base = Gwdb.open_base bname.val in
+    match Gwdb.person_of_key base p_fname.val p_sname.val p_num.val with
+    [ Some ip -> most_desc base (poi base ip)
+    | None -> raise Not_found ]
   }
 ;
 

@@ -1,5 +1,5 @@
-(* $Id: q_codes.ml,v 4.2 2004/12/14 09:30:16 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: q_codes.ml,v 5.2 2007/01/19 01:53:16 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
 value f _ =
   fun  
@@ -19,8 +19,9 @@ value f _ =
   | "CODE_DOUBLE_NATIVE" -> "11"
   | x ->
       Stdpp.raise_with_loc
-        (ifdef OCAML_308 then (Token.make_loc (0, String.length x))
-	 else (0, String.length x))
+        (IFDEF OCAML_308 THEN (Token.make_loc (0, String.length x))
+         ELSE (0, String.length x)
+         END)
         (Failure ("bad code " ^ x)) ]
 ;
 

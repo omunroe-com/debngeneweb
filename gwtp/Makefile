@@ -1,11 +1,12 @@
-# $Id: Makefile,v 4.6 2003/10/20 07:11:55 ddr Exp $
+# $Id: Makefile,v 5.17 2007/02/14 20:33:58 ddr Exp $
 
 include ../tools/Makefile.inc
 
 OCAMLI=-I ../src
-GWTP_OTHER=../src/lock.cmo ../src/buff.cmo ../src/name.cmo ../src/iovalue.cmo ../src/adef.cmo ../src/gutil.cmo ../src/btree.cmo ../src/secure.cmo ../src/iobase.cmo ../src/translate.cmo
+GWTP_OTHER=../src/lock.cmo ../src/buff.cmo ../src/name.cmo ../src/iovalue.cmo ../src/adef.cmo ../src/mutil.cmo ../src/futil.cmo ../src/dutil.cmo ../src/secure.cmo ../src/btree.cmo ../src/database.cmo ../src/db2.cmo ../src/db2disk.cmo ../src/diff.cmo ../src/outbase.cmo ../src/gwdb.cmo ../src/checkItem.cmo ../src/gutil.cmo ../src/translate.cmo
 GWTP_OBJS=httpEnv.cmo iolight.cmo gwtp.cmo
 OBJS=$(GWTP_OTHER) $(GWTP_OBJS)
+RECOVER_OBJS=$(GWTP_OTHER) iolight.cmo recover.cmo
 
 all:: out
 
@@ -18,6 +19,8 @@ opt:: gwtp.opt
 	cp gwtp.opt gwtp
 	$(STRIP) gwtp
 
+recover: recover.out
+
 clean::
 	$(RM) gwtp
 
@@ -26,6 +29,9 @@ gwtp.out: $(GWTP_OBJS)
 
 gwtp.opt: $(GWTP_OBJS:.cmo=.cmx)
 	$(OCAMLOPT) $(STATIC) unix.cmxa $(OBJS:.cmo=.cmx) $(LIBUNIX) -o gwtp.opt
+
+recover.out: $(RECOVER_OBJS)
+	$(OCAMLC) unix.cma $(RECOVER_OBJS) $(LIBUNIX) -o $@
 
 depend:
 	TOP=.. ../tools/camlp4_depend.sh $(OCAMLI) *.ml > .depend.new

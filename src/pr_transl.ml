@@ -1,6 +1,6 @@
 (* camlp4r q_MLast.cmo *)
-(* $Id: pr_transl.ml,v 4.10 2004/12/14 09:30:16 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: pr_transl.ml,v 5.3 2007/01/19 01:53:16 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
 open MLast;
 
@@ -18,26 +18,26 @@ value trace =
    "ftransl"; "ftransl_nth"]
 ;
 
+value loc = IFDEF OCAML_308 THEN Token.dummy_loc ELSE (0, 0) END;
+value token_eval_string loc s =
+  IFDEF OCAML_308 THEN Token.eval_string loc s ELSE Token.eval_string s END
+;
+
 value rec expr e =
   match e with
   [ <:expr< $lid:f$ $_$ $str:s$ >> when List.mem f trace ->
-(*
-      let loc = Token.dummy_loc in
-*)
-      Printf.printf "%s\n" (Token.eval_string (*loc*) s)
+      Printf.printf "%s\n" (token_eval_string loc s)
   | <:expr< Util.$lid:f$ $_$ $str:s$ >> when List.mem f trace ->
-(*
-      let loc = Token.dummy_loc in
-*)
-      Printf.printf "%s\n" (Token.eval_string (*loc*) s)
+      Printf.printf "%s\n" (token_eval_string loc s)
   | <:expr< $lid:f$ $_$ ($lid:g$ $_$ $str:s$ $_$) >>
     when List.mem f trace && List.mem g trace ->
-(*
-      let loc = Token.dummy_loc in
-*)
-      Printf.printf "%s\n" (Token.eval_string (*loc*) s)
+      Printf.printf "%s\n" (token_eval_string loc s)
   | <:expr< $lid:x$ >> when List.mem x trace ->
-      Stdpp.raise_with_loc (MLast.loc_of_expr e) (Failure "Bad source")
+      let loc = MLast.loc_of_expr e in
+      let (fn, ln, bp, ep) = Stdpp.line_of_loc Pcaml.input_file.val loc in
+      let fn = if fn = "" then Pcaml.input_file.val else fn in
+      Printf.printf "File \"%s\", line %d, characters %d-%d: bad source\n"
+        fn ln bp ep
   | <:expr< let $opt:_$ $list:pel$ in $e$ >> ->
       do { binding_list pel; expr e; () }
   | <:expr< fun [ $list:pel$ ] >> -> List.iter fun_binding pel
@@ -58,7 +58,7 @@ value rec expr e =
   | <:expr< { $list:fel$ } >> -> List.iter (fun (_, e) -> expr e) fel
   | <:expr< { ($e$) with $list:fel$ } >> ->
       do { expr e; List.iter (fun (_, e) -> expr e) fel; () }
-  | <:expr< $_$ := $_$ >> -> ()
+  | <:expr< $_$ := $e$ >> -> expr e
   | <:expr< $_$.($_$) >> -> ()
   | <:expr< $_$.[$_$] >> -> ()
   | <:expr< $lid:_$ >> -> ()
@@ -83,6 +83,8 @@ value rec module_expr =
   | <:module_expr< $me1$ $me2$ >> ->
       do { module_expr me1; module_expr me2; () }
   | <:module_expr< struct $list:sil$ end >> -> List.iter str_item sil
+  | <:module_expr< $uid:_$ >> -> ()
+  | <:module_expr< ($me$ : $_$) >> -> module_expr me
   | x -> not_impl "module_expr" x ]
 and str_item =
   fun
@@ -92,7 +94,9 @@ and str_item =
   | <:str_item< type $list:_$ >> -> ()
   | <:str_item< exception $_$ of $list:_$ >> -> ()
   | <:str_item< module $_$ = $me$ >> -> module_expr me
+  | <:str_item< module type $_$ = $_$ >> -> ()
   | <:str_item< $exp:e$ >> -> expr e
+  | <:str_item< # $_$ $_$ >> -> ()
   | x -> not_impl "str_item" x ]
 ;
 

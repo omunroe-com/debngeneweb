@@ -1,5 +1,5 @@
-(* $Id: argl.ml,v 4.7 2004/12/14 09:30:10 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: argl.ml,v 5.3 2007/01/19 01:53:16 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
 open Printf;
 
@@ -31,7 +31,7 @@ value action_arg s sl =
         | [] -> None ]
       else do { f (float_of_string s); Some sl }
   | x ->
-      ifdef OCAML_307 then
+      IFDEF OCAML_307 THEN
         match x with
         [ Arg.Unit f -> if s = "" then do { f (); Some sl } else None
         | Arg.Set_string r ->
@@ -61,16 +61,17 @@ value action_arg s sl =
             [ [s :: sl] when List.mem s syms -> do { f s; Some sl }
             | _ -> None ]
         | x -> assert False ]
-      else
+      ELSE
         match x with
         [ Arg.Unit f -> if s = "" then do { f (); Some sl } else None
-        | x -> assert False ] ]
+        | x -> assert False ]
+      END ]
 ;
 
 value common_start s1 s2 =
   loop 0 where rec loop i =
-    if i == String.length s1 || i == String.length s2 then i
-    else if s1.[i] == s2.[i] then loop (i + 1)
+    if i = String.length s1 || i = String.length s2 then i
+    else if s1.[i] = s2.[i] then loop (i + 1)
     else i
 ;
 
@@ -78,7 +79,7 @@ value rec parse_arg s sl =
   fun
   [ [(name, action, _) :: spec_list] ->
       let i = common_start s name in
-      if i == String.length name then
+      if i = String.length name then
         try action_arg (String.sub s i (String.length s - i)) sl action with
         [ Arg.Bad _ -> parse_arg s sl spec_list ]
       else parse_arg s sl spec_list
@@ -98,7 +99,7 @@ value rec parse_aux spec_list anon_fun =
 
 value parse_arg_list spec_list anon_fun remaining_args =
   let spec_list =
-    Sort.list (fun (k1, _, _) (k2, _, _) -> k1 >= k2) spec_list
+    List.sort (fun (k1, _, _) (k2, _, _) -> compare k2 k1) spec_list
   in
   try parse_aux spec_list anon_fun remaining_args with
   [ Arg.Bad s ->
@@ -135,7 +136,7 @@ value parse_list spec_list anonfun errmsg list =
 value parse spec_list anonfun errmsg =
   let remaining_args =
     List.rev (loop [] (Arg.current.val + 1)) where rec loop l i =
-      if i == Array.length Sys.argv then l
+      if i = Array.length Sys.argv then l
       else
         let s =
           let s = Sys.argv.(i) in
