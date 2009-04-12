@@ -1,6 +1,8 @@
 geneweb (5.01-9) UNRELEASED; urgency=low
 
   * First upload for squeeze
+  * Upgrade Standards to 3.8.1: /var/run/gwtp has been dealt with
+    (see below)
   * debian/patches/014_no-warn-error: disable -warn-error to fix
     a build failure. Closes: #521674
     Thanks to Stéphane Glondu for the patch
