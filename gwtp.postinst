@@ -3,6 +3,8 @@
 #
 # see: dh_installdeb(1)
 
+set -e
+
 if [ "$1" = "configure" ]; then
 	LOGFILE=/var/log/gwtp.log
 	GROUP=geneweb
