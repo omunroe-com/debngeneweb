@@ -1,0 +1,65 @@
+INSTALLATIONS INSTRUCTIONS IN UNIX or MACOSX MACHINES
+[For Windows machines, look at the end of this file]
+
+For the compilation, you need the Objective Caml compiler version 3.06
+or 3.07 and Camlp4 same version installed in your computer.
+
+It is freely distributed at address:
+     http://caml.inria.fr/ocaml/
+
+It may compile with other (older or newer) versions of OCaml and Camlp4,
+but no warranty: however, if you manage to compile, it has good chances
+to be correct.
+
+1- If the command ocamlc.opt is not installed, edit the file
+   "tools/Makefile.inc" and change:
+       OCAMLC=ocamlc.opt
+       OCAMLOPT=ocamlopt.opt
+   into
+       OCAMLC=ocamlc
+       OCAMLOPT=ocamlopt
+
+2- If your platform has the command ocamlopt, do:
+      make
+   Otherwise do (warning: slower executables):
+      make out
+
+3- Do:
+      make distrib
+
+   This creates a directory "distribution" where all executables programs
+   and documentation are copied.
+
+   This can constitute a "distribution" directory if you want to distribute
+   executables.
+
+4- To use GeneWeb, move the directory "distribution" to another place, or
+   rename it.
+
+   Go to this directory and launch the command "./gwsetup".
+
+   The reason why it is better to move this directory is that "make clean"
+   deletes it, and another "make distrib" overwrites it. If you created
+   genealogic databases inside, they would be deleted.
+
+
+INSTALLATIONS INSTRUCTIONS IN WINDOWS NT/95/98
+
+You need:
+
+- The Cygnus GNU-Win32 development tool, free, available at:
+      http://www.cygnus.com/misc/gnu-win32/
+
+- The Microsoft Visual C++ compiler.
+
+- The Microsoft Assembler masm.
+
+- The Objective Caml compiler, version 3.04
+
+In directory tools, move the file Makefile.inc as another name, and
+move the file Makefile.inc.win as Makefile.inc. Edit it and possibly
+change "CAMLP4D" and "LIBUNIX" to point file where the corresponding
+OCaml and Camlp4 files or directories are installed.
+
+Then follow the same instructions above than for the Unix installation,
+starting at point 2.

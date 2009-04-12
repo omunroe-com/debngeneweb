@@ -1,0 +1,10 @@
+gwc
+consang
+gwd
+gwu
+*.out
+*.opt
+*.lib
+*.cm[ioxa]
+*.cmxa
+gwlib.ml

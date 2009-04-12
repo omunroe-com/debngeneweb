@@ -1,0 +1,41 @@
+# $Id: Makefile.inc.win,v 4.5 2002/11/29 06:03:04 ddr Exp $
+
+TOP=..
+CAMLP4_COMM=TOP=$(TOP) $(TOP)/tools/camlp4_comm.sh pa_ifdef.cmo
+CAMLP4F=-DWIN95
+CAMLP4D=c:/ocaml/lib/camlp4
+LIBUNIX=c:/ocaml/lib/libunix.lib wsock32.lib
+OCAMLC=ocamlc -warn-error A
+OCAMLOPT=ocamlopt -warn-error A
+OCAMLI=
+OCAMLD=
+STRIP=true
+RM=rm -f
+EXE=.exe
+STATIC=
+
+all::
+opt::
+
+clean::
+	$(RM) *.out *.opt *.cm[oixa] *.cmxa *.pp[oi] *.o *.a *.obj *.lib *.lck *.bak *~ .#*
+
+.SUFFIXES: .ml .cmo .mli .cmi .cmx
+
+.mli.cmi:
+	@if test `basename $<` != $<; then echo "Bad directory for $<"; exit 1; fi
+	@$(CAMLP4_COMM) $(CAMLP4F) $< -o $*.ppi
+	$(OCAMLC) $(OCAMLI) -I $(CAMLP4D) -c -intf $*.ppi
+	$(RM) $*.ppi
+
+.ml.cmo:
+	@if test `basename $<` != $<; then echo "Bad directory for $<"; exit 1; fi
+	@$(CAMLP4_COMM) $(CAMLP4F) $< -o $*.ppo
+	$(OCAMLC) $(OCAMLI) $(OCAMLD) -I $(CAMLP4D) -c -impl $*.ppo
+	$(RM) $*.ppo
+
+.ml.cmx:
+	@if test `basename $<` != $<; then echo "Bad directory for $<"; exit 1; fi
+	@$(CAMLP4_COMM) $(CAMLP4F) $< -o $*.ppo
+	$(OCAMLOPT) $(OCAMLI) -I $(CAMLP4D) -c -impl $*.ppo
+	$(RM) $*.ppo

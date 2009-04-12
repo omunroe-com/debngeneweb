@@ -1,0 +1,105 @@
+# $Id: Makefile,v 4.23 2004/12/14 09:20:08 ddr Exp $
+
+include ../tools/Makefile.inc
+
+PREFIX=/usr
+OCAMLI=-I ../wserver -I ../dag2html
+GWC_OBJS=argl.cmo lock.cmo adef.cmo iovalue.cmo name.cmo buff.cmo gutil.cmo btree.cmo secure.cmo iobase.cmo pqueue.cmo consang.cmo consangAll.cmo check.cmo calendar.cmo gwcomp.cmo gwc.cmo
+CONSANG_OBJS=argl.cmo lock.cmo adef.cmo iovalue.cmo name.cmo buff.cmo gutil.cmo btree.cmo secure.cmo iobase.cmo pqueue.cmo consang.cmo consangAll.cmo mk_consang.cmo
+GWD_OBJS1=../wserver/wserver.cmo ../dag2html/dag2html.cmo argl.cmo lock.cmo adef.cmo iovalue.cmo name.cmo buff.cmo gutil.cmo btree.cmo secure.cmo iobase.cmo pqueue.cmo consang.cmo num.cmo version.cmo translate.cmo gwlib.cmo util.cmo calendar.cmo date.cmo history.cmo update.cmo wiznotes.cmo srcfile.cmo templ.cmo perso.cmo updateInd.cmo updateIndOk.cmo updateFam.cmo updateFamOk.cmo place.cmo
+GWD_OBJS2=merge.cmo mergeFamOk.cmo mergeFam.cmo mergeInd.cmo mergeIndOk.cmo changeChildren.cmo sendImage.cmo dag.cmo relationLink.cmo relation.cmo ascend.cmo descend.cmo birthday.cmo cousins.cmo alln.cmo some.cmo advSearchOk.cmo birthDeath.cmo title.cmo notes.cmo doc.cmo forum.cmo image.cmo family.cmo base64.cmo robot.cmo
+GWD_OBJS=$(GWD_OBJS1) $(GWD_OBJS2) gwd.cmo
+GWU_OBJS=argl.cmo adef.cmo iovalue.cmo name.cmo buff.cmo gutil.cmo btree.cmo secure.cmo iobase.cmo select.cmo calendar.cmo gwu.cmo
+PHONYGWD_OBJS=../wserver/wserver.cmo argl.cmo phonygwd.cmo
+PROBOT_OBJS=probot.cmo
+MOSTDESC_OBJS=adef.cmo name.cmo buff.cmo gutil.cmo iovalue.cmo btree.cmo secure.cmo iobase.cmo pqueue.cmo consang.cmo argl.cmo num.cmo mostdesc.cmo
+FPLA_OBJS=argl.cmo adef.cmo name.cmo buff.cmo gutil.cmo btree.cmo iovalue.cmo secure.cmo iobase.cmo fpla.cmo
+
+all:: out
+
+out:: gwlib.ml
+opt:: gwlib.ml
+
+out:: def.syn.cmo ansel.cmo gwc.out consang.out gwd.out gwu.out i18n_check.out
+	$(RM) gwc consang gwd gwu
+	cp gwc.out gwc
+	cp consang.out consang
+	cp gwd.out gwd
+	cp gwu.out gwu
+
+opt:: def.syn.cmo ansel.cmx gwc.opt consang.opt gwd.opt gwu.opt
+	$(RM) gwd consang gwd gwu
+	cp gwc.opt gwc
+	cp consang.opt consang
+	cp gwd.opt gwd
+	cp gwu.opt gwu
+	$(STRIP) gwc consang gwd gwu
+
+clean::
+	$(RM) gwc consang gwd gwu gwlib.ml
+
+gwlib.ml:
+	echo "value prefix =" > gwlib.ml
+	echo "  try Sys.getenv \"GWPREFIX\" with" >> gwlib.ml
+	echo "  [ Not_found -> \"$(PREFIX)\" ]" | \
+	sed -e 's|\\|/|g' >> gwlib.ml
+	echo ";" >> gwlib.ml
+
+gwc.out: $(GWC_OBJS)
+	$(OCAMLC) -custom $(STATIC) unix.cma $(GWC_OBJS) $(LIBUNIX) -o gwc.out
+
+gwc.opt: $(GWC_OBJS:.cmo=.cmx)
+	$(OCAMLOPT) $(STATIC) unix.cmxa $(GWC_OBJS:.cmo=.cmx) $(LIBUNIX) -o gwc.opt
+
+consang.out: $(CONSANG_OBJS)
+	$(OCAMLC) -custom $(STATIC) unix.cma $(LIBUNIX) $(CONSANG_OBJS) -o consang.out
+
+consang.opt: $(CONSANG_OBJS:.cmo=.cmx)
+	$(OCAMLOPT) $(STATIC) unix.cmxa $(LIBUNIX) $(CONSANG_OBJS:.cmo=.cmx) -o consang.opt
+
+gwd.out: $(GWD_OBJS)
+	$(OCAMLC) -custom $(STATIC) $(OCAMLD) unix.cma $(CAMLP4D)/gramlib.cma $(GWD_OBJS) $(LIBUNIX) -o gwd.out
+
+gwd.opt: $(GWD_OBJS:.cmo=.cmx)
+	$(OCAMLOPT) $(GWD_OBJS1:.cmo=.cmx) -a -o x1.cmxa
+	$(OCAMLOPT) $(GWD_OBJS2:.cmo=.cmx) -a -o x2.cmxa
+	$(OCAMLOPT) $(STATIC) unix.cmxa $(CAMLP4D)/gramlib.cmxa x1.cmxa x2.cmxa gwd.cmx $(LIBUNIX) -o gwd.opt
+
+gwu.out: $(GWU_OBJS)
+	$(OCAMLC) -custom $(STATIC) unix.cma $(LIBUNIX) $(GWU_OBJS) -o gwu.out
+
+gwu.opt: $(GWU_OBJS:.cmo=.cmx)
+	$(OCAMLOPT) $(STATIC) unix.cmxa $(LIBUNIX) $(GWU_OBJS:.cmo=.cmx) -o gwu.opt
+
+phonygwd.out: $(PHONYGWD_OBJS)
+	$(OCAMLC) -custom $(STATIC) unix.cma $(LIBUNIX) $(PHONYGWD_OBJS) -o phonygwd.out
+
+probot.out: $(PROBOT_OBJS)
+	$(OCAMLC) -custom $(STATIC) unix.cma $(LIBUNIX) $(PROBOT_OBJS) -o probot.out
+
+mostdesc.out: $(MOSTDESC_OBJS)
+	$(OCAMLC) -custom $(STATIC) unix.cma $(LIBUNIX) $(MOSTDESC_OBJS) -o mostdesc.out
+
+mostdesc.opt: $(MOSTDESC_OBJS:.cmo=.cmx)
+	$(OCAMLOPT) $(STATIC) unix.cmxa $(LIBUNIX) $(MOSTDESC_OBJS:.cmo=.cmx) -o mostdesc.opt
+
+fpla.out: $(FPLA_OBJS)
+	$(OCAMLC) -custom $(STATIC) unix.cma $(LIBUNIX) $(FPLA_OBJS) -o fpla.out
+
+fpla.opt: $(FPLA_OBJS:.cmo=.cmx)
+	$(OCAMLOPT) $(STATIC) unix.cmxa $(LIBUNIX) $(FPLA_OBJS:.cmo=.cmx) -o fpla.opt
+
+i18n_check.out: i18n_check.cmo
+	$(OCAMLC) i18n_check.cmo -o i18n_check.out
+
+i18n: pr_transl.cmo always
+	if test -f i18n; then mv i18n i18n.bak; fi
+	export LC_ALL=C; OBJS=`(grep -w -c "transl conf" *.ml; grep -w -c "transl_nth conf" *.ml) | grep -v :0 | sed s/:.*$$// | sort | uniq`; (for i in $$OBJS; do echo $$i 1>&2; camlp4r pa_ifdef.cmo ./pa_lock.cmo ./pa_html.cmo ./pr_transl.cmo pa_extend.cmo $$i; done; grep -h "\[" ../hd/etc/*.txt ../hd/lang/start.txt ../hd/lang/advanced.txt | grep -v "%\[" | sed -e "s/^.*\[\*\?//" -e "s/::.*$$//" -e "s/].*$$//") | sort | uniq | grep -v '^$$' > i18n
+
+always:
+
+depend:
+	export LC_ALL=C; TOP=.. ../tools/camlp4_depend.sh $(OCAMLI) `ls *.mli *.ml` > .depend.new
+	mv .depend.new .depend
+
+include .depend

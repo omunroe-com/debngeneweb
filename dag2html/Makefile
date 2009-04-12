@@ -1,0 +1,44 @@
+# $Id: Makefile,v 1.3 2004/02/10 09:45:47 ddr Exp $
+
+BINDIR=/usr/local/bin
+MANDIR=/usr/local/share/man/man1
+OCAMLC=ocamlc
+OCAMLOPT=ocamlopt
+OCARGS=
+OBJS=dag2html.cmo main.cmo
+
+all: dag2html
+
+out: dag2html.cmo
+opt: dag2html.cmx
+
+install:
+	cp dag2html $(BINDIR)/.
+	cp dag2html.1 $(MANDIR)/.
+
+dag2html: $(OBJS)
+	$(OCAMLC) $(OBJS) -o dag2html
+
+clean:
+	rm -f dag2html *.cm[oix] *.o
+
+.SUFFIXES: .ml .mli .cmo .cmx .cmi
+
+.ml.cmo:
+	camlp4r $< -o $*.ppo
+	$(OCAMLC) $(OCARGS) -c -impl $*.ppo
+	rm -f $*.ppo
+
+.ml.cmx:
+	camlp4r $< -o $*.ppo
+	$(OCAMLOPT) $(OCARGS) -c -impl $*.ppo
+	rm -f $*.ppo
+
+.mli.cmi:
+	camlp4r $< -o $*.ppi
+	$(OCAMLC) $(OCARGS) -c -intf $*.ppi
+	rm -f $*.ppi
+
+main.cmo: dag2html.cmo
+dag2html.cmo: dag2html.cmi
+dag2html.cmx: dag2html.cmi
