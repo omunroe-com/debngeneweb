@@ -3,7 +3,7 @@ Section: misc
 Priority: optional
 Maintainer: Christian Perrier <bubulle@debian.org>
 Standards-Version: 3.8.0
-Build-Depends: debhelper (>= 5.0.0), ocaml-best-compilers, ocaml (>= 3.04), camlp5, doc-base, dh-buildinfo, iso-codes, po-debconf, quilt (>= 0.40)
+Build-Depends: debhelper (>= 5.0.0), ocaml-best-compilers, ocaml (>= 3.04), camlp5, doc-base, dh-buildinfo, iso-codes, isoquery, po-debconf, quilt (>= 0.40)
 Homepage: http://www.geneweb.org/
 
 
@@ -11,7 +11,7 @@ Package: geneweb
 Section: misc
 Architecture: any
 Depends: ${shlibs:Depends},perl5-base, lsb-base (>= 3.0-6)
-Pre-Depends: ${misc:Depends}, iso-codes, adduser
+Pre-Depends: ${misc:Depends}, iso-codes, isoquery, adduser
 Suggests: menu (>=2.1.35), gwtp, gwsetup, lynx | www-browser
 Priority: optional
 Description: genealogy software with web interface

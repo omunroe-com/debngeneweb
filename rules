@@ -57,7 +57,7 @@ clean-patched:
 	debconf-updatepo
 
 	# Add here commands to clean up after the build process.
-	[ ! -f tools/Makefile.inc ] || [ ! -f Makefile] || $(MAKE) clean
+	[ ! -f tools/Makefile.inc ] || [ ! -f Makefile ] || $(MAKE) clean
 
 	# Clean out cruft left by former builds
 	rm -f tools/Makefile.inc

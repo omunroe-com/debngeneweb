@@ -8,23 +8,16 @@ set -e
 # iso-codes package
 #
 # Some variables
-# This one will be useless when iso-codes-utils will be available
-ISO639TAB=/usr/share/iso-codes/iso_639.tab
+ISOQUERY=/usr/bin/isoquery
 # Translations location (relative to the build root directory)
 ISO639TRANSLATIONS=debian/iso-codes
 #
 # This file will have all wanted languages, one ISO-639 code per line
 LANGUAGELIST=debian/languages
 
-# Be a bit more safe
-[ -r $ISO639TAB ] || exit 1
-
 # For each supported language, get the language name from ISO 639 list
 (for lang in `cat debian/languages | grep -v "^#"` ; do
-  echo `cat $ISO639TAB | grep -v "^#" | \
-  awk '{print $3 " " $4 " " $5}' | \
-  grep "^$lang " | \
-  awk '{print $2 " " $3}'`
+  $ISOQUERY --iso=639 $lang | cut -f4
 done) | \
 (read a; echo -n "$a"; while read b; do echo -n ", $b"; done; echo) \
 >debian/languagelist

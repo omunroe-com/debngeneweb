@@ -6,6 +6,9 @@ geneweb (5.01-9) UNRELEASED; urgency=low
     Thanks to Stéphane Glondu for the patch
   * Lintian fixes:
     - geneweb.postinst: no longer ignore errors (set -e)
+  * No longer use iso_639.tab for languages' names. Use
+    isoquery output instead. Thanks to Tobias Quatamer for the patch
+    Closes: #523161
 
  -- Christian Perrier <bubulle@debian.org>  Sun, 29 Mar 2009 10:51:45 +0200
 
