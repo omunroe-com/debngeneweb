@@ -5,9 +5,8 @@
 
 set -e 
 
-# ISO 639 (language nales and codes) reference file
-# Needs Depends: iso-codes
-ISO639=/usr/share/iso-codes/iso_639.tab
+# Needs Depends: iso-codes, isoquery
+ISOQUERY=/usr/bin/isoquery
 
 # These will be used here and there below
 SERVICES=/etc/services
@@ -84,9 +83,8 @@ get_debconf() {
 	FULLLNG=$DEFAULTFULLLNG
     fi
     # Find the two letter code for language
-    # waiting for a more general script in the iso-codes package
     # LNG=`echo $FULLLNG | cut -f 2 -d "(" | cut -f 1 -d ")"`
-    LNG=`grep "	${FULLLNG}\$" $ISO639 | grep -v XX | awk '{print $3};'`
+    LNG=`$ISOQUERY --iso=639 | grep "${FULLLNG}\$" | cut -f3`
 
 
     db_get geneweb/run_mode
