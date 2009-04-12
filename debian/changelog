@@ -6,6 +6,13 @@ geneweb (5.01-9) UNRELEASED; urgency=low
     Thanks to Stéphane Glondu for the patch
   * Lintian fixes:
     - geneweb.postinst: no longer ignore errors (set -e)
+    - gwtp.postinst: no longer ignore errors (set -e)
+    - gwtp.prerm: no longer ignore errors (set -e)
+    - gwsetup.postinst: no longer ignore errors (set -e)
+    - control: add ${misc:Depends} to gwtp dependencies
+    - gwtp.dirs, add-on/gwtp/cgi/gwtp.cgi: /var/run/gwtp is no
+      longer provided in the package but created dynamically by the CGI
+      wrapper
   * No longer use iso_639.tab for languages' names. Use
     isoquery output instead. Thanks to Tobias Quatamer for the patch
     Closes: #523161
