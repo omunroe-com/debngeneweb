@@ -30,7 +30,7 @@ Description: genealogy software with web interface
 Package: gwtp
 Section: misc
 Architecture: any
-Depends: ${shlibs:Depends}, geneweb
+Depends: ${shlibs:Depends}, ${misc:Depends}, geneweb
 Suggests: httpd
 Priority: optional
 Description: web interface interacting with Geneweb databases
