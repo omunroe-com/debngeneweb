@@ -1,5 +1,5 @@
-(* camlp4r ./pa_html.cmo *)
-(* $Id: place.ml,v 5.18 2007/01/19 01:53:16 ddr Exp $ *)
+(* camlp5r ./pa_html.cmo *)
+(* $Id: place.ml,v 5.20 2007/09/12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -133,7 +133,7 @@ value get_all conf base =
 
 value max_len = ref 2000;
 
-value print_html_places_surnames conf base =
+value print_html_places_surnames conf base list =
   let link_to_ind =
     match p_getenv conf.base_env "place_surname_link_to_ind" with
     [ Some "yes" -> True
@@ -212,7 +212,7 @@ value print_html_places_surnames conf base =
           }
       | [] -> List.iter (fun _ -> Wserver.wprint "</ul>\n") prev ]
     in
-    loop []
+    loop [] list
   }
 ;
 

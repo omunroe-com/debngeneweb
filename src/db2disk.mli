@@ -1,4 +1,4 @@
-(* $Id: db2disk.mli,v 5.7 2007/02/24 19:46:21 ddr Exp $ *)
+(* $Id: db2disk.mli,v 5.10 2007/03/03 05:27:21 ddr Exp $ *)
 (* Copyright (c) 2006-2007 INRIA *)
 
 open Def;
@@ -14,7 +14,7 @@ type patches =
     h_family : Hashtbl.t ifam (gen_family iper string);
     h_couple : Hashtbl.t ifam (gen_couple iper);
     h_descend : Hashtbl.t ifam (gen_descend iper);
-    h_key : Hashtbl.t (string * string * int) iper;
+    h_key : Hashtbl.t (string * string * int) (option iper);
     h_name : Hashtbl.t string (list iper) }
 ;
 
@@ -63,6 +63,7 @@ value spi2_find :
 value spi2gen_find :
   db2 -> string_person_index2 -> string -> list iper;
 
+value disk_person2_of_key : db2 -> string -> string -> int -> option iper;
 value person2_of_key : db2 -> string -> string -> int -> option iper;
 value strings2_of_fsname : db2 -> string -> string -> list int;
 value persons2_of_name : db2 -> string -> list iper;
@@ -74,7 +75,11 @@ value parents_array2 : db2 -> int -> int -> array (option ifam);
 value consang_array2 : db2 -> int -> array Adef.fix;
 value family_array2 : db2 -> array (array ifam);
 value children_array2 : db2 -> array (array iper);
-value read_notes : string -> string -> rn_mode -> string;
+value read_notes : db2 -> string -> rn_mode -> string;
 
 value commit_patches2 : db2 -> unit;
+value commit_notes2 : db2 -> string -> string -> unit;
 value base_of_base2 : string -> db2;
+
+value iter_patched_keys :
+  db2 -> ((string * string * int) -> option iper -> unit) -> unit;

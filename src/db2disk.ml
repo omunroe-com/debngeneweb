@@ -1,11 +1,11 @@
-(* $Id: db2disk.ml,v 5.13 2007/02/24 19:46:21 ddr Exp $ *)
+(* $Id: db2disk.ml,v 5.19 2007/04/06 09:51:29 ddr Exp $ *)
 (* Copyright (c) 2006-2007 INRIA *)
 
 open Def;
 open Mutil;
 open Printf;
 
-value magic_patch = "GwPt0001";
+value magic_patch = "GwPt0002";
 
 type patches =
   { nb_per : mutable int;
@@ -18,7 +18,7 @@ type patches =
     h_family : Hashtbl.t ifam (gen_family iper string);
     h_couple : Hashtbl.t ifam (gen_couple iper);
     h_descend : Hashtbl.t ifam (gen_descend iper);
-    h_key : Hashtbl.t (string * string * int) iper;
+    h_key : Hashtbl.t (string * string * int) (option iper);
     h_name : Hashtbl.t string (list iper) }
 ;
 
@@ -153,7 +153,7 @@ type string_person_index2 =
 ;
 
 value start_with s p =
-  String.length p < String.length s &&
+  String.length p <= String.length s &&
   String.sub s 0 (String.length p) = p
 ;
 
@@ -313,13 +313,8 @@ value spi2gen_add pl db2 spi s =
     else fun p -> p.surname
   in
   Hashtbl.fold
-    (fun _ iper iperl ->
-       try
-         let p = Hashtbl.find db2.patches.h_person iper in
-         if proj p = s then [iper :: iperl] else iperl
-       with
-       [ Not_found -> iperl ])
-    db2.patches.h_key pl
+    (fun _ p iperl -> if proj p = s then [p.key_index :: iperl] else iperl)
+    db2.patches.h_person pl
 ;
 
 value spi2_find db2 spi (f1, f2) pos =
@@ -333,20 +328,23 @@ value spi2gen_find = spi2gen_add [];
 
 (* *)
 
+value disk_person2_of_key db2 fn sn oc =
+  let person_of_key_d = Filename.concat db2.bdir2 "person_of_key" in
+  try do {
+    let ifn = hashtbl_find person_of_key_d "istr_of_string.ht" fn in
+    let isn = hashtbl_find person_of_key_d "istr_of_string.ht" sn in
+    let key = (ifn, isn, oc) in
+    Some (key_hashtbl_find person_of_key_d "iper_of_key.ht" key : iper)
+  }
+  with
+  [ Not_found -> None ]
+;
+
 value person2_of_key db2 fn sn oc =
   let fn = Name.lower (nominative fn) in
   let sn = Name.lower (nominative sn) in
-  try Some (Hashtbl.find db2.patches.h_key (fn, sn, oc)) with
-  [ Not_found ->
-      let person_of_key_d = Filename.concat db2.bdir2 "person_of_key" in
-      try do {
-        let ifn = hashtbl_find person_of_key_d "istr_of_string.ht" fn in
-        let isn = hashtbl_find person_of_key_d "istr_of_string.ht" sn in
-        let key = (ifn, isn, oc) in
-        Some (key_hashtbl_find person_of_key_d "iper_of_key.ht" key : iper)
-      }
-      with
-      [ Not_found -> None ] ]
+  try Hashtbl.find db2.patches.h_key (fn, sn, oc) with
+  [ Not_found -> disk_person2_of_key db2 fn sn oc ]
 ;
 
 value strings2_of_fsname db2 f s =
@@ -507,14 +505,14 @@ value children_array2 db2 = do {
   tab
 };
 
-value read_notes bname fnotes rn_mode =
+value read_notes db2 fnotes rn_mode =
+  let bdir = db2.bdir2 in
   let fname =
     if fnotes = "" then "notes.txt"
     else Filename.concat "notes_d" (fnotes ^ ".txt")
   in
-  let fname = Filename.concat "base_d" fname in
   match
-    try Some (Secure.open_in (Filename.concat bname fname)) with
+    try Some (Secure.open_in (Filename.concat bdir fname)) with
     [ Sys_error _ -> None ]
   with
   [ Some ic -> do {
@@ -550,6 +548,26 @@ value commit_patches2 db2 = do {
   remove_file (fname ^ "~");
   try Sys.rename fname (fname ^ "~") with [ Sys_error _ -> () ];
   Sys.rename (fname ^ "1") fname
+};
+
+value commit_notes2 db2 fnotes s = do {
+  let bdir = db2.bdir2 in
+  if fnotes <> "" then
+    try Unix.mkdir (Filename.concat bdir "notes_d") 0o755 with _ -> ()
+  else ();
+  let fname =
+    if fnotes = "" then "notes.txt"
+    else Filename.concat "notes_d" (fnotes ^ ".txt")
+  in
+  let fname = Filename.concat bdir fname in
+  try Sys.remove (fname ^ "~") with [ Sys_error _ -> () ];
+  try Sys.rename fname (fname ^ "~") with _ -> ();
+  if s = "" then ()
+  else do {
+    let oc = Secure.open_out fname in
+    output_string oc s;
+    close_out oc;
+  }
 };
 
 value base_of_base2 bname =
@@ -597,3 +615,5 @@ value base_of_base2 bname =
    father_array = None; mother_array = None; children_array = None;
    phony () = ()}
 ;
+
+value iter_patched_keys db2 f = Hashtbl.iter f db2.patches.h_key;

@@ -1,4 +1,4 @@
-(* $Id: gwdb.ml,v 5.228 2007/02/24 19:46:21 ddr Exp $ *)
+(* $Id: gwdb.ml,v 5.238 2007/04/05 09:22:53 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Dbdisk;
@@ -13,6 +13,18 @@ type gen_string_person_index 'istr = Dbdisk.string_person_index 'istr ==
     cursor : string -> 'istr;
     next : 'istr -> 'istr }
 ;
+
+value milazy_force f a (get, set) p =
+  match get p with
+  [ Some v -> v
+  | None -> do {
+      let v = f a in
+      set p (Some v);
+      v
+    } ]
+;
+
+value ht_find ht i = try Some (Hashtbl.find ht i) with [ Not_found -> None ];
 
 value no_person empty_string ip =
   {first_name = empty_string; surname = empty_string; occ = 0;
@@ -195,9 +207,9 @@ and person1_dat =
     asc1 : mutable option dsk_ascend;
     uni1 : mutable option dsk_union }
 and person2_dat =
-  { per2 : option (gen_person iper string);
-    asc2 : option (gen_ascend ifam);
-    uni2 : option (gen_union ifam) }
+  { per2 : mutable option (option (gen_person iper string));
+    asc2 : mutable option (option (gen_ascend ifam));
+    uni2 : mutable option (option (gen_union ifam)) }
 ;
 
 type person_fun 'p 'a 'u =
@@ -444,40 +456,57 @@ value person2gen_fun =
 
 (* Persons - user functions *)
 
+value get_set_per1 = (fun p -> p.per1, fun p v -> p.per1 := v);
+value get_set_asc1 = (fun p -> p.asc1, fun p v -> p.asc1 := v);
+value get_set_uni1 = (fun p -> p.uni1, fun p v -> p.uni1 := v);
+
+value get_set_per2 = (fun p -> p.per2, fun p v -> p.per2 := v);
+value get_set_asc2 = (fun p -> p.asc2, fun p v -> p.asc2 := v);
+value get_set_uni2 = (fun p -> p.uni2, fun p v -> p.uni2 := v);
+
 value wrap_per f g h =
   fun
-  [ Person _ _ {per1 = Some p} -> f person1_fun p
-  | Person base i p -> do {
-      let per = base.data.persons.get i in
-      p.per1 := Some per;
+  [ Person base i p ->
+      let per = milazy_force base.data.persons.get i get_set_per1 p in
       f person1_fun per
-    }
-  | Person2 db2 i {per2 = Some p} -> h person2gen_fun (db2, i, p)
-  | Person2 db2 i {per2 = None} -> g person2_fun (db2, i) ]
+  | Person2 db2 i p ->
+      let per =
+        milazy_force (ht_find db2.patches.h_person) (Adef.iper_of_int i)
+          get_set_per2 p
+      in
+      match per with
+      [ Some p -> h person2gen_fun (db2, i, p)
+      | None -> g person2_fun (db2, i) ] ]
 ;
 
 value wrap_asc f g h =
   fun
-  [ Person _ _ {asc1 = Some a} -> f person1_fun a
-  | Person base i p -> do {
-      let asc = base.data.ascends.get i in
-      p.asc1 := Some asc;
+  [ Person base i p ->
+      let asc = milazy_force base.data.ascends.get i get_set_asc1 p in
       f person1_fun asc
-    }
-  | Person2 db2 i {asc2 = Some a} -> h person2gen_fun (db2, i, a)
-  | Person2 db2 i {asc2 = None} -> g person2_fun (db2, i) ]
+  | Person2 db2 i p ->
+      let asc =
+        milazy_force (ht_find db2.patches.h_ascend) (Adef.iper_of_int i)
+          get_set_asc2 p
+      in
+      match asc with
+      [ Some a -> h person2gen_fun (db2, i, a)
+      | None -> g person2_fun (db2, i) ] ]
 ;
 
 value wrap_uni f g h =
   fun
-  [ Person _ _ {uni1 = Some u} -> f person1_fun u
-  | Person base i p -> do {
-      let uni = base.data.unions.get i in
-      p.uni1 := Some uni;
+  [ Person base i p ->
+      let uni = milazy_force base.data.unions.get i get_set_uni1 p in
       f person1_fun uni
-    }
-  | Person2 db2 i {uni2 = Some u} -> h person2gen_fun (db2, i, u)
-  | Person2 db2 i {uni2 = None} -> g person2_fun (db2, i) ]
+  | Person2 db2 i p ->
+      let uni =
+        milazy_force (ht_find db2.patches.h_union) (Adef.iper_of_int i)
+          get_set_uni2 p
+      in
+      match uni with
+      [ Some u -> h person2gen_fun (db2, i, u)
+      | None -> g person2_fun (db2, i) ] ]
 ;
 
 value get_access p =
@@ -612,11 +641,21 @@ value dsk_person_of_person p =
 
 value get_consang a =
   let f pf = pf.get_consang in
-  wrap_asc f f f a
+  match a with
+  [ Person2 db2 i _ ->
+      match db2.consang_array with
+      [ Some tab -> tab.(i)
+      | None -> wrap_asc f f f a ]
+  | _ -> wrap_asc f f f a ]
 ;
 value get_parents a =
   let f pf = pf.get_parents in
-  wrap_asc f f f a
+  match a with
+  [ Person2 db2 i _ ->
+      match db2.parents_array with
+      [ Some tab -> tab.(i)
+      | None -> wrap_asc f f f a ]
+  | _ -> wrap_asc f f f a ]
 ;
 
 value get_family u =
@@ -634,9 +673,9 @@ and family1_dat =
     cpl1 : mutable option dsk_couple;
     des1 : mutable option dsk_descend }
 and family2_dat =
-  { fam2 : option (gen_family iper string);
-    cpl2 : option (gen_couple iper);
-    des2 : option (gen_descend iper) }
+  { fam2 : mutable option (option (gen_family iper string));
+    cpl2 : mutable option (option (gen_couple iper));
+    des2 : mutable option (option (gen_descend iper)) }
 ;
 
 type family_fun 'f 'c 'd =
@@ -703,7 +742,13 @@ value family2_fun =
         divorce = self.get_divorce f; comment = self.get_comment f;
         origin_file = self.get_origin_file f; fsources = self.get_fsources f;
         fam_index = Adef.ifam_of_int i};
-     is_deleted_family (db2, f) = False (* not yet implemented *);
+     is_deleted_family (db2, i) =
+       let fath =
+         match db2.father_array with
+         [ Some tab -> tab.(i)
+         | None -> get_field db2 i ("family", "father") ]
+       in
+       Adef.int_of_iper fath < 0;
      get_father (db2, i) =
        match db2.father_array with
        [ Some tab -> tab.(i)
@@ -748,40 +793,57 @@ value family2gen_fun =
 
 (* Families - user functions *)
 
+value get_set_fam1 = (fun p -> p.fam1, fun p v -> p.fam1 := v);
+value get_set_cpl1 = (fun p -> p.cpl1, fun p v -> p.cpl1 := v);
+value get_set_des1 = (fun p -> p.des1, fun p v -> p.des1 := v);
+
+value get_set_fam2 = (fun p -> p.fam2, fun p v -> p.fam2 := v);
+value get_set_cpl2 = (fun p -> p.cpl2, fun p v -> p.cpl2 := v);
+value get_set_des2 = (fun p -> p.des2, fun p v -> p.des2 := v);
+
 value wrap_fam f g h =
   fun
-  [ Family _ _ {fam1 = Some fam} -> f family1_fun fam
-  | Family base i d -> do {
-      let fam = base.data.families.get i in
-      d.fam1 := Some fam;
+  [ Family base i d ->
+      let fam = milazy_force base.data.families.get i get_set_fam1 d in
       f family1_fun fam
-    }
-  | Family2 db2 i {fam2 = Some fam} -> h family2gen_fun (db2, fam)
-  | Family2 db2 i {fam2 = None} -> g family2_fun (db2, i) ]
+  | Family2 db2 i d ->
+      let fam =
+        milazy_force (ht_find db2.patches.h_family) (Adef.ifam_of_int i)
+          get_set_fam2 d
+      in
+      match fam with
+      [ Some fam -> h family2gen_fun (db2, fam)
+      | None -> g family2_fun (db2, i) ] ]
 ;
 
 value wrap_cpl f g h =
   fun
-  [ Family _ _ {cpl1 = Some cpl} -> f family1_fun cpl
-  | Family base i d -> do {
-      let cpl = base.data.couples.get i in
-      d.cpl1 := Some cpl;
+  [ Family base i d ->
+      let cpl = milazy_force base.data.couples.get i get_set_cpl1 d in
       f family1_fun cpl
-    }
-  | Family2 db2 i {cpl2 = Some cpl} -> h family2gen_fun (db2, cpl)
-  | Family2 db2 i {cpl2 = None} -> g family2_fun (db2, i) ]
+  | Family2 db2 i d ->
+      let cpl =
+        milazy_force (ht_find db2.patches.h_couple) (Adef.ifam_of_int i)
+          get_set_cpl2 d
+      in
+      match cpl with
+      [ Some cpl -> h family2gen_fun (db2, cpl)
+      | None -> g family2_fun (db2, i) ] ]
 ;
 
 value wrap_des f g h =
   fun
-  [ Family _ _ {des1 = Some des} -> f family1_fun des
-  | Family base i d -> do {
-      let des = base.data.descends.get i in
-      d.des1 := Some des;
+  [ Family base i d ->
+      let des = milazy_force base.data.descends.get i get_set_des1 d in
       f family1_fun des
-    }
-  | Family2 db2 i {des2 = Some des} -> h family2gen_fun (db2, des)
-  | Family2 db2 i {des2 = None} -> g family2_fun (db2, i) ]
+  | Family2 db2 i d ->
+      let des =
+        milazy_force (ht_find db2.patches.h_descend) (Adef.ifam_of_int i)
+          get_set_des2 d
+      in
+      match des with
+      [ Some des -> h family2gen_fun (db2, des)
+      | None -> g family2_fun (db2, i) ] ]
 ;
 
 value get_comment fam =
@@ -831,11 +893,21 @@ value is_deleted_family fam =
 
 value get_father cpl =
   let f pf = pf.get_father in
-  wrap_cpl f f f cpl
+  match cpl with
+  [ Family2 db2 i _ ->
+      match db2.father_array with
+      [ Some tab -> tab.(i)
+      | None -> wrap_cpl f f f cpl ]
+  | _ -> wrap_cpl f f f cpl ]
 ;
 value get_mother cpl =
   let f pf = pf.get_mother in
-  wrap_cpl f f f cpl
+  match cpl with
+  [ Family2 db2 i _ ->
+      match db2.mother_array with
+      [ Some tab -> tab.(i)
+      | None -> wrap_cpl f f f cpl ]
+  | _ -> wrap_cpl f f f cpl ]
 ;
 value get_parent_array cpl =
   let f pf = pf.get_parent_array in
@@ -875,8 +947,9 @@ type base =
     patch_family : ifam -> Def.gen_family iper istr -> unit;
     patch_descend : ifam -> Def.gen_descend iper -> unit;
     patch_couple : ifam -> Def.gen_couple iper -> unit;
-    patch_key : iper -> string -> string -> int -> unit;
     patch_name : string -> iper -> unit;
+    patch_key : iper -> string -> string -> int -> unit;
+    delete_key : string -> string -> int -> unit;
     insert_string : string -> istr;
     commit_patches : unit -> unit;
     commit_notes : string -> string -> unit;
@@ -1025,8 +1098,9 @@ value base1 base =
        base.func.Dbdisk.patch_family ifam f;
      patch_descend ifam d = base.func.Dbdisk.patch_descend ifam d;
      patch_couple ifam c = base.func.Dbdisk.patch_couple ifam c;
-     patch_key ip fn sn occ = ();
      patch_name s ip = base.func.Dbdisk.patch_name s ip;
+     patch_key ip fn sn occ = ();
+     delete_key fn sn occ = ();
      insert_string s = Istr (base.func.Dbdisk.insert_string s);
      commit_patches = base.func.Dbdisk.commit_patches;
      commit_notes = base.func.Dbdisk.commit_notes;
@@ -1095,14 +1169,9 @@ value base2 db2 =
     let s = Name.crush_lower s in
     let sl =
       Hashtbl.fold
-        (fun _ iper sl ->
-           try
-             let p = Hashtbl.find db2.patches.h_person iper in
-             if Name.crush_lower (proj p) = s then [proj p :: sl]
-             else sl
-           with
-           [ Not_found -> sl ])
-        db2.patches.h_key []
+        (fun _ p sl ->
+           if Name.crush_lower (proj p) = s then [proj p :: sl] else sl)
+        db2.patches.h_person []
     in
     let sl = list_uniq (List.sort compare sl) in
     List.fold_left (fun istrl s -> [Istr2New db2 s :: istrl]) istrl sl
@@ -1112,38 +1181,22 @@ value base2 db2 =
        Hashtbl.iter (fun (f1, f2, f) ic -> close_in ic) db2.cache_chan;
      empty_person ip =
        Person2 db2 (Adef.int_of_iper ip)
-         {per2 = Some (no_person "" ip); asc2 = Some no_ascend;
-          uni2 = Some no_union};
+         {per2 = Some (Some (no_person "" ip)); asc2 = Some (Some no_ascend);
+          uni2 = Some (Some no_union)};
      person_of_gen_person (p, a, u) =
        Person2 db2 (Adef.int_of_iper p.key_index)
-         {per2 = Some (map_person_ps (fun p -> p) un_istr2 p); asc2 = Some a;
-          uni2 = Some u};
+         {per2 = Some (Some (map_person_ps (fun p -> p) un_istr2 p));
+          asc2 = Some (Some a); uni2 = Some (Some u)};
      family_of_gen_family (f, c, d) =
        Family2 db2 (Adef.int_of_ifam f.fam_index)
-         {fam2 = Some (map_family_ps (fun p -> p) un_istr2 f); cpl2 = Some c;
-          des2 = Some d};
+         {fam2 = Some (Some (map_family_ps (fun p -> p) un_istr2 f));
+          cpl2 = Some (Some c); des2 = Some (Some d)};
      poi i =
        Person2 db2 (Adef.int_of_iper i)
-         {per2 =
-            try Some (Hashtbl.find db2.patches.h_person i) with
-             [ Not_found -> None ];
-          asc2 =
-            try Some (Hashtbl.find db2.patches.h_ascend i) with
-            [ Not_found -> None ];
-          uni2 =
-            try Some (Hashtbl.find db2.patches.h_union i) with
-            [ Not_found -> None ]};
+         {per2 = None; asc2 = None; uni2 = None};
      foi i =
        Family2 db2 (Adef.int_of_ifam i)
-         {fam2 =
-            try Some (Hashtbl.find db2.patches.h_family i) with
-            [ Not_found -> None ];
-          cpl2 =
-            try Some (Hashtbl.find db2.patches.h_couple i) with
-            [ Not_found -> None ];
-          des2 =
-            try Some (Hashtbl.find db2.patches.h_descend i) with
-            [ Not_found -> None ]};
+         {fam2 = None; cpl2 = None; des2 = None};
      sou i =
        match i with
        [ Istr2 db2 f pos -> string_of_istr2 db2 f pos
@@ -1180,16 +1233,6 @@ value base2 db2 =
        db2.patches.nb_fam :=
          max (Adef.int_of_ifam ifam + 1) db2.patches.nb_fam
      };
-     patch_key ip fn sn occ =
-       do {
-         Hashtbl.iter
-           (fun key ip1 ->
-              if ip = ip1 then Hashtbl.remove db2.patches.h_key key else ())
-           db2.patches.h_key;
-         let fn = Name.lower (nominative fn) in
-         let sn = Name.lower (nominative sn) in
-         Hashtbl.replace db2.patches.h_key (fn, sn, occ) ip
-       };
      patch_name s ip =
        let s = Name.crush_lower s in
        let ht = db2.patches.h_name in
@@ -1198,9 +1241,19 @@ value base2 db2 =
          if List.mem ip ipl then () else Hashtbl.replace ht s [ip :: ipl]
        with
        [ Not_found -> Hashtbl.add ht s [ip] ];
+     patch_key ip fn sn occ =
+       let fn = Name.lower (nominative fn) in
+       let sn = Name.lower (nominative sn) in
+       Hashtbl.replace db2.patches.h_key (fn, sn, occ) (Some ip);
+     delete_key fn sn occ =
+       let fn = Name.lower (nominative fn) in
+       let sn = Name.lower (nominative sn) in
+       match disk_person2_of_key db2 fn sn occ with
+       [ Some _ -> Hashtbl.replace db2.patches.h_key (fn, sn, occ) None
+       | None -> Hashtbl.remove db2.patches.h_key (fn, sn, occ) ];
      insert_string s = Istr2New db2 s;
      commit_patches () = commit_patches2 db2;
-     commit_notes _ = failwith "not impl commit_notes";
+     commit_notes fnotes s = commit_notes2 db2 fnotes s;
      is_patched_person ip = Hashtbl.mem db2.patches.h_person ip;
      patched_ascends () = do {
        let r = ref [] in
@@ -1258,24 +1311,25 @@ value base2 db2 =
      load_strings_array () = ();
      persons_array () = failwith "not impl persons_array";
      ascends_array () =
-       let nb = self.nb_of_persons () in
+       let nb = db2.patches.nb_per in
+       let nb_ini = db2.patches.nb_per_ini in
+       let ptab =
+         match db2.parents_array with
+         [ Some tab -> tab
+         | None -> parents_array2 db2 nb_ini nb ]
+       in
        let cg_tab =
          match db2.consang_array with
          [ Some tab -> tab
          | None -> consang_array2 db2 nb ]
        in
-       let fget i =
-         get_parents (Person2 db2 i {per2 = None; asc2 = None; uni2 = None})
-       in
+       let fget i = ptab.(i) in
        let cget i = cg_tab.(i) in
        let cset i v = cg_tab.(i) := v in
        (fget, cget, cset, Some cg_tab);
-     base_notes_read fnotes =
-       read_notes (Filename.dirname db2.bdir2) fnotes RnAll;
-     base_notes_read_first_line fnotes =
-       read_notes (Filename.dirname db2.bdir2) fnotes Rn1Ln;
-     base_notes_are_empty fnotes =
-       read_notes (Filename.dirname db2.bdir2) fnotes RnDeg = "";
+     base_notes_read fnotes = read_notes db2 fnotes RnAll;
+     base_notes_read_first_line fnotes = read_notes db2 fnotes Rn1Ln;
+     base_notes_are_empty fnotes = read_notes db2 fnotes RnDeg = "";
      base_notes_origin_file () =
        let fname = Filename.concat db2.bdir2 "notes_of.txt" in
        match try Some (Secure.open_in fname) with [ Sys_error _ -> None ] with
@@ -1305,11 +1359,8 @@ value open_base bname =
   let bname =
     if Filename.check_suffix bname ".gwb" then bname else bname ^ ".gwb"
   in
-  if Sys.file_exists (Filename.concat bname "base_d") then do {
-    Printf.eprintf "*** database new implementation\n";
-    flush stderr;
+  if Sys.file_exists (Filename.concat bname "base_d") then
     base2 (base_of_base2 bname)
-  }
   else base1 (Database.opendb bname)
 ;
 
@@ -1328,8 +1379,9 @@ value patch_union b = b.patch_union;
 value patch_family b = b.patch_family;
 value patch_descend b = b.patch_descend;
 value patch_couple b = b.patch_couple;
-value patch_key b = b.patch_key;
 value patch_name b = b.patch_name;
+value patch_key b = b.patch_key;
+value delete_key b = b.delete_key;
 value insert_string b = b.insert_string;
 value commit_patches b = b.commit_patches ();
 value commit_notes b = b.commit_notes;

@@ -1,5 +1,5 @@
-(* camlp4r ./pa_lock.cmo *)
-(* $Id: mk_consang.ml,v 5.46 2007/02/23 16:07:09 ddr Exp $ *)
+(* camlp5r ./pa_lock.cmo *)
+(* $Id: mk_consang.ml,v 5.49 2007/09/12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Printf;
@@ -442,9 +442,9 @@ value simple_output bname base carray =
   [ Some tab ->
       Gwdb.apply_base2 base
         (fun db2 -> do {
+           let bdir = db2.Db2disk.bdir2 in
            let dir =
-             List.fold_left Filename.concat db2.Db2disk.bdir2
-               ["person"; "consang"]
+             List.fold_left Filename.concat bdir ["person"; "consang"]
            in
            Mutil.mkdir_p dir;
            let oc = open_out_bin (Filename.concat dir "data") in
@@ -456,12 +456,9 @@ value simple_output bname base carray =
                0
            in
            close_out oc;
-           let bdir = db2.Db2disk.bdir2 in
            let has_patches =
              Sys.file_exists (Filename.concat bdir "patches")
            in
-           eprintf "has_patches %b\n" has_patches;
-           flush stderr;
            if has_patches then do {
              let list =
                Hashtbl.fold
@@ -498,52 +495,44 @@ value designation base p =
     (first_name ^ "." ^ string_of_int (Gwdb.get_occ p) ^ " " ^ nom)
 ;
 
-value main () =
-  do {
-    Argl.parse speclist anonfun errmsg;
-    Mutil.verbose.val := not quiet.val;
-    if fname.val = "" then do {
-      eprintf "Missing file name\n";
-      eprintf "Use option -help for usage\n";
-      flush stderr;
-      exit 2;
-    }
-    else ();
-    Secure.set_base_dir (Filename.dirname fname.val);
-    let f () =
-      let base = Gwdb.open_base fname.val in
-      try
-        do {
-          Sys.catch_break True;
-          let carray = ConsangAll.compute base scratch.val quiet.val in
-          simple_output fname.val base carray;
-        }
-      with
-      [ Consang.TopologicalSortError p ->
-          do {
-            printf
-              "\nError: loop in database, %s is his/her own ancestor.\n"
-              (designation base p);
-            flush stdout;
-            exit 2
-          } ]
-    in
-    lock (Mutil.lock_file fname.val) with
-    [ Accept -> f ()
-    | Refuse ->
-        do {
-          eprintf "Base is locked. Waiting... ";
-          flush stderr;
-          lock_wait (Mutil.lock_file fname.val) with
-          [ Accept -> do { eprintf "Ok\n"; flush stderr; f () }
-          | Refuse ->
-              do {
-                printf "\nSorry. Impossible to lock base.\n";
-                flush stdout;
-                exit 2
-              } ]
-        } ]
+value main () = do {
+  Argl.parse speclist anonfun errmsg;
+  if fname.val = "" then do {
+    eprintf "Missing file name\n";
+    eprintf "Use option -help for usage\n";
+    flush stderr;
+    exit 2;
   }
-;
+  else ();
+  Secure.set_base_dir (Filename.dirname fname.val);
+  let f () =
+    let base = Gwdb.open_base fname.val in
+    try do {
+      Sys.catch_break True;
+      let carray = ConsangAll.compute base scratch.val quiet.val in
+      simple_output fname.val base carray;
+    }
+    with
+    [ Consang.TopologicalSortError p -> do {
+        printf "\nError: loop in database, %s is his/her own ancestor.\n"
+          (designation base p);
+        flush stdout;
+        exit 2
+      } ]
+  in
+  lock (Mutil.lock_file fname.val) with
+  [ Accept -> f ()
+  | Refuse -> do {
+      eprintf "Base is locked. Waiting... ";
+      flush stderr;
+      lock_wait (Mutil.lock_file fname.val) with
+      [ Accept -> do { eprintf "Ok\n"; flush stderr; f () }
+      | Refuse -> do {
+          printf "\nSorry. Impossible to lock base.\n";
+          flush stdout;
+          exit 2
+        } ]
+  } ];
+};
 
 Printexc.catch main ();

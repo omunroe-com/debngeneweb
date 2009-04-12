@@ -1,4 +1,4 @@
-# $Id: lex_utf8.txt,v 5.76 2007/02/25 18:06:26 ddr Exp $
+# $Id: lex_utf8.txt,v 5.95 2007/08/17 02:05:32 ddr Exp $
 # Copyright (c) 1998-2007 INRIA
 
      !dates order
@@ -204,9 +204,24 @@ sl: pred %d leti
 sv: %d år sedan
 
     %s access cancelled for that page
+bg: отменен достъп като %s за тази страница
+cs: pristup pre tuto stranku bol zruseny
+de: Zugang zu dieser Seite gesperrt
 en: %s access cancelled for that page
+eo: %s aliro ne estas ebla por la paĝo
+es: %s acesso negado para esta página
 et: %s: ligipääs sellele lehele on keelatud
 fr: accès %s annulé pour cette page
+he: דף זה חסום בפניך. הגישה מוגבלת %s דפים
+it: accesso %s annullato per questa pagina
+lv: %s piekļuve šai lapai ir pārtraukta
+nl: toegang tot %s is afgebroken
+no: %s adgang til siden er sperret
+pl: dostęp %s anulowany dla tej strony
+pt: acesso %s cancelado para aquela página
+ro: %s acces anulat la această pagină
+ru: доступ %s к этой странице запрещён
+sv: %s åtkomst ogiltig för den sidan
 
     %s cousins
 af: neefs en niggies %s geslagte verwyder
@@ -1984,17 +1999,23 @@ sv: samtidigt
 
     average age at death
 bg: средна продължителност на живота
+cs: priemerny vek umrtia
 da: gennemsnitlig alder ved død
 de: Durchschnittliches Sterbealter
 en: average age at death
+eo: meza aĝo dum la morto
 es: edad promedio de deceso
 et: keskmine eluiga
 fr: âge moyen de décès
+he: גיל פטירה ממוצע
 it: età media di morte
+lv: vidējais dzīves ilgums
 nl: gemiddelde leeftijd bij overlijden
+no: gennemsnitlig alder ved død
 pl: średni wiek śmierci
 pt: idade média ao morrer
 ro: virsta media la deces
+ru: примерный возраст смерти
 sl: povprečna starost ob smrti
 sv: medelålder vid dödstillfället
 
@@ -2794,17 +2815,24 @@ sv: kommentar
 
     connections
 bg: потребителски връзки
+cs: spojenia
 da: forbindelser
 de: Verbindungen
 en: connections
+eo: konektoj
 es: conexiones
 et: ühendused
 fi: yhteyksien määrä
 fr: connexions
+he: קישורים
 it: connessioni
+lv: radniecība
 nl: connecties
+no: forbindelser
 pl: połączenie
 pt: conexões
+ro: conexiuni
+ru: связи
 sl: povprečna starost ob smrti
 sv: kopplingar
 
@@ -2864,16 +2892,23 @@ sv: fortsätt slå samman
 
     continued
 bg: следва
+cs: pokracuje
 da: fortsat
 de: fortgesetzt
 en: continued
+eo: continuigo
 es: continúa
 et: jätkub
 fr: suite
+he: המשך
 it: continua
+lv: nepārtraukts
 nl: vervolgd
+no: fortsatt
 pl: ciąg dalszy
 pt: continuação
+ro: continuare
+ru: продолжено
 sl: nadaljevano
 sv: forts
 
@@ -3233,16 +3268,23 @@ sv: försvunnen
 
     disconnect
 bg: да се прекъсне връзката
+cs: odpojene
 da: afbryd
 de: abmelden
 en: disconnect
+eo: diskonekti
 es: desconectar
 et: logi välja
 fr: déconnecter
+he: התנתק
+it: disconnettersi
+lv: atvienot
 nl: ontkoppelen
+no: avbryt
 pl: rozłącz
 pt: desconectar
 ro: deconectare
+ru: отключить
 sl: prekinjeno
 sv: koppla från
 
@@ -3934,16 +3976,23 @@ sv: för förnamnen i bokstavsordning
 
     for the list ordered by the date of the last modification
 bg: за списъка по дати на последно изменение
+cs: pre vypis podla datumu poslednej zmeny
 da: for en liste sorteret efter datoen for seneste ændring
 de: für eine, nach dem Datum der letzten Änderung geordnete Liste
 en: for the list ordered by the date of the last modification
+eo: por la listo ordita laǔ la dato de la lasta modifigo
 es: para la lista ordenada por fecha de la última modificación
 et: sorteerimaks nimekirja viimase muudatuse tegemise aja järgi
 fr: pour la liste par date de dernière modification
+he: לרשימה, ממוינת על פי תאריך עדכון אחרון
 it: per la lista ordinata secondo la data dell'ultima modifica
+lv: sarakstam, kas sakārtots pēc pēdējo izmaiņu datumiem
 nl: voor de lijst, gesorteerd op datum van de laatste wijziging
+no: for en liste sortert etter siste endringsdato
 pl: aby oglądać listę według daty ostatniej modyfikacji
 pt: para a lista ordenada por data da última modificação
+ro: pentru listă, după data ultimei modificări
+ru: для списка отсортированного по дате последнего изменения
 sl: za seznam razvrščen po datumu zadnje spremembe
 sv: för listan över sista ändringsdatum
 
@@ -5125,11 +5174,14 @@ cs: spojený stránky
 da: lænkede sider
 de: verknüpfte Seiten
 en: linked pages
+eo: linkitaj paĝoj
 es: páginas enlazadas
 et: seotud leheküljed
 fi: linkkisivuja
 fr: pages liées
+he: דפים מקושרים 
 it: pagine collegate
+lv: saistītās lapas
 nl: verbonden pagina's
 no: linkede sider
 pl: linki
@@ -5608,11 +5660,14 @@ cs: rozmanitý poznámky
 da: diverse noter
 de: diverse Notizen
 en: miscellaneous notes
+eo: diversaĵoj
 es: notas diversas
 et: mitmesugused märkused
 fi: sekalaisia huomautuksia
 fr: notes diverses
+he: הערות שונות
 it: note varie
+lv: dažādas piezīmes
 nl: diverse aantekeningen
 no: diverse notater
 pl: pozostałe uwagi
@@ -6363,16 +6418,23 @@ sv: antal grenar
 
     number of living persons:
 bg: брой на живите лица:
+cs: pocet zijucich osob:
 da: antal nulevende personer:
 de: Anzahl der lebenden Personen:
 en: number of living persons:
+eo: nombro de la vivantaj personoj:
 es: número de personas vivas:
 et: elavaid inimesi:
 fr: nombre de personnes vivantes :
+he: מספר האנשים שעודם בחיים
+it: numero di persone viventi:
+lv: dzīvo personu skaits:
 nl: aantal personen in leven:
-pl: liczba osób żyjących
+no: antall nålevende personer:
+pl: liczba osób żyjących:
 pt: número de pessoas vivas :
 ro: numarul de persoane in viata:
+ru: количество живых персон
 sl: število živih oseb
 sv: antal levande personer:
 
@@ -6871,22 +6933,45 @@ sv: plats
 
     population pyramid
 bg: възрастова пирамида
+cs: populacna pyramida
 da: befolkningspyramide
 de: Alterspyramide
 en: population pyramid
+eo: laǔaĝa piramido
 es: pirámide de población
 et: rahvastikupüramiid
 fr: pyramide des âges
+he: פירמידת גילאים
+it: piramide della popolazione
+lv: paaudžu piramīda
 nl: bevolkingspiramide
+no: befolkningspyramide
+pl: piramida wieku
 pt: pirâmide populacional
 ro: piramida demografică
+ru: пирамида популяции
 sl: populacijska piramida
 sv: befolkningspyramid
 
     possible duplications
+bg: възможни дублирания
+cs: mozna duplikacia
+de: mögliche Duplikate
 en: possible duplications
+eo: ebla duobligo
+es: posible duplicación
 et: võimalikud duplikaadid
 fr: doublons éventuels
+he: ייתכנו כפילויות
+it: possibile doppione
+lv: iespējama dublēšanās
+nl: mogelijke dubbele vermeldingen
+no: mulig dublett
+pl: możliwe duplikaty
+pt: eventual duplicidade
+ro: posibile dublete
+ru: возможные дубликаты
+sv: eventuellt dubblett
 
     possibly (date)
 af: miskien
@@ -7302,11 +7387,14 @@ cs: hledat/citlivý na velikost písma
 da: søg/følsom overfor store og små bogstaver
 de: suchen/Groß- &amp; Kleinschreibung beachten
 en: search/case sensitive
+eo: search/dependema de la grandaj-malgrandaj literoj
 es: buscar/fijarse en mayúsculas&#047;menúsculas
 et: otsi/tõstutundlik
 fi: haku/tunnistaa merkkikoon
 fr: rechercher/sensible à la casse
+he: חיפוש/case sensitive
 it: ricerca/sensibile a maiuscole e minuscole
+lv: meklēšana/reģistrjūtīga
 nl: zoeken/hoofdlettergevoelig
 no: søk/skiller mellom store og små bokstaver
 pl: szukaj/wielkość liter ma znaczenie
@@ -7444,7 +7532,7 @@ he:  נפרדו
 is: skilin
 it: separati
 lv: nedzīvo kopā
-nl: gescheiden
+nl: gescheiden van tafel en bed
 no: separert
 pl: w separacji
 pt: separados
@@ -7644,16 +7732,23 @@ sv: syskon
 
     since the last click
 bg: от последното щракване
+cs: este posledne kliknutie
 da: siden det sidste klik
 de: seit dem letzten click
 en: since the last click
+eo: depost la lasta kliko
 es: desde el último click
 et: alates viimasest klõpsust
 fr: depuis le dernier clic
+he: מאז הלחיצה האחרונה
 it: dall'ultimo click
+lv: kopš pēdējā klikšķa
 nl: sinds de laatste klik
+no: siden siste klikk
 pl: od ostatniego kliknięcia
 pt: desde o último clique
+ro: de la ultimul click
+ru: с момента последнего щелчка
 sl: od zadnjega klika
 sv: från senaste klick
 
@@ -8702,11 +8797,14 @@ cs: fórum je umírnìný
 da: dette forum er ændret
 de: dieses Forum wird moderiert
 en: this forum is moderated
+eo: tio-ĉi forumo estas moderata
 es: este foro está moderato
 et: see foorum on modereeritav
 fi: tämä foorumi on valvottu
 fr: ce forum est modéré
+he: הפורום הינו מונחה
 it: questo forum è moderato
+lv: šis forums tiek kontrolēts
 nl: dit forum wordt gemodereerd
 no: dette forumet er endret
 pl: forum jest moderowane
@@ -9307,6 +9405,10 @@ pt: validar/eliminar
 ro: valideaza/sterge
 ru: проверить/удалить
 sv: giltligt/tas bort
+
+    version
+en: version
+fr: version
 
     view source
 en: view source

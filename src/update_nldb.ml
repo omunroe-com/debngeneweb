@@ -1,5 +1,5 @@
-(* camlp4r *)
-(* $Id: update_nldb.ml,v 5.18 2007/01/19 01:53:17 ddr Exp $ *)
+(* camlp5r *)
+(* $Id: update_nldb.ml,v 5.23 2007/09/12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Def;
@@ -52,7 +52,8 @@ value compute base bdir =
   let bdir =
     if Filename.check_suffix bdir ".gwb" then bdir else bdir ^ ".gwb"
   in
-  let len = nb_of_persons base in
+  let nb_ind = nb_of_persons base in
+  let nb_fam = nb_of_families base in
   do {
     Printf.eprintf "--- database notes\n";
     flush stderr;
@@ -64,7 +65,9 @@ value compute base bdir =
     Printf.eprintf "--- wizard notes\n";
     flush stderr;
     try
-      let files = Sys.readdir (base_wiznotes_dir base) in
+      let files =
+        Sys.readdir (Filename.concat bdir (base_wiznotes_dir base))
+      in
       do {
         for i = 0 to Array.length files - 1 do {
           let file = files.(i) in
@@ -88,6 +91,7 @@ value compute base bdir =
       }
     with
     [ Sys_error _ -> () ];
+    let db = ref (NotesLinks.read_db bdir) in
     Printf.eprintf "--- misc notes\n";
     flush stderr;
     let ndir = Filename.concat bdir (base_notes_dir base) in
@@ -112,7 +116,7 @@ value compute base bdir =
                 in
                 Printf.eprintf "%s...\n" fnotes; flush stderr;
                 let pg = NotesLinks.PgMisc fnotes in
-                NotesLinks.update_db bdir pg list
+                db.val := NotesLinks.add_in_db db.val pg list;
               }
             }
             else
@@ -131,12 +135,12 @@ value compute base bdir =
     flush stderr;
     ProgrBar.full.val := '*';
     ProgrBar.start ();
-    for i = 0 to len - 1 do {
+    for i = 0 to nb_ind - 1 do {
       let p = poi base (Adef.iper_of_int i) in
       let s =
         let sl =
-          [get_notes; get_birth_src; get_baptism_src; get_death_src;
-           get_burial_src; get_psources]
+          [get_notes; get_occupation; get_birth_src; get_baptism_src;
+           get_death_src; get_burial_src; get_psources]
         in
         String.concat " " (List.map (fun f -> sou base (f p)) sl)
       in
@@ -144,10 +148,32 @@ value compute base bdir =
       if list = ([], []) then ()
       else
         let pg = NotesLinks.PgInd (Adef.iper_of_int i) in
-        NotesLinks.update_db bdir pg list;
-      ProgrBar.run i len
+        db.val := NotesLinks.add_in_db db.val pg list;
+      ProgrBar.run i nb_ind
     };
     ProgrBar.finish ();
+    Printf.eprintf "--- families notes\n";
+    flush stderr;
+    ProgrBar.full.val := '*';
+    ProgrBar.start ();
+    for i = 0 to nb_fam - 1 do {
+      let fam = foi base (Adef.ifam_of_int i) in
+      if not (is_deleted_family fam) then do {
+        let s =
+          let sl = [get_comment; get_fsources] in
+          String.concat " " (List.map (fun f -> sou base (f fam)) sl)
+        in
+        let list = notes_links s in
+        if list = ([], []) then ()
+        else
+          let pg = NotesLinks.PgFam (Adef.ifam_of_int i) in
+          db.val := NotesLinks.add_in_db db.val pg list;
+      }
+      else ();
+      ProgrBar.run i nb_fam
+    };
+    ProgrBar.finish ();
+    NotesLinks.write_db bdir db.val;
   }
 ;
 

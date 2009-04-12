@@ -1,5 +1,5 @@
-(* camlp4r ./pa_lock.cmo ./pa_html.cmo *)
-(* $Id: util.ml,v 5.110 2007/02/07 01:30:16 ddr Exp $ *)
+(* camlp5r ./pa_lock.cmo ./pa_html.cmo *)
+(* $Id: util.ml,v 5.130 2007/09/12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -374,7 +374,10 @@ value html conf =
     else ();
     Wserver.wprint "Date: %s" (string_of_ctime conf); nl ();
     Wserver.wprint "Connection: close"; nl ();
-    Wserver.wprint "Content-type: text/html; charset=%s" charset; nl ();
+    Wserver.wprint "Content-type: %s; charset=%s"
+      (if conf.pure_xhtml then "application/xhtml+xml" else "text/html")
+      charset;
+    nl ();
   }
 ;
 
@@ -492,12 +495,56 @@ value nobtit conf base p =
   Gwdb.nobtit base conf.allowed_titles conf.denied_titles p
 ;
 
+value is_old_person conf p =
+  match
+    (Adef.od_of_codate p.birth, Adef.od_of_codate p.baptism,
+     p.death, CheckItem.date_of_death p.death)
+  with
+  [ (_, _, NotDead, _) when conf.private_years > 0 -> False
+  | (Some (Dgreg d _), _, _, _) ->
+      let a = CheckItem.time_elapsed d conf.today in
+      a.year > conf.private_years
+  | (_, Some (Dgreg d _), _, _) ->
+      let a = CheckItem.time_elapsed d conf.today in
+      a.year > conf.private_years
+  | (_, _, _, Some (Dgreg d _)) ->
+      let a = CheckItem.time_elapsed d conf.today in
+      a.year > conf.private_years
+  | (None, None, DontKnowIfDead, None) ->
+      p.access <> Private && conf.public_if_no_date
+  | _ -> False ]
+;
+
+value fast_auth_age conf p =
+  if conf.friend || conf.wizard || get_access p = Public then True
+  else if
+    conf.public_if_titles && get_access p = IfTitles && get_titles p <> []
+  then
+    True
+  else is_old_person conf (gen_person_of_person p)
+;
+
+value is_restricted (conf : config) base ip =
+  let fct p =
+    not (is_quest_string (get_surname p)) &&
+    not (is_quest_string (get_first_name p)) &&
+    not (fast_auth_age conf p)
+  in  
+  if conf.use_restrict then base_visible_get base fct (Adef.int_of_iper ip)
+  else False 
+;
+
+value pget (conf : config) base ip =
+  if is_restricted conf base ip then Gwdb.empty_person base ip
+  else poi base ip
+;
+
 value parent_has_title conf base p =
   match get_parents p with
   [ Some ifam ->
       let cpl = foi base ifam in
-      let fath = poi base (get_father cpl) in
-      let moth = poi base (get_mother cpl) in
+      let fath = pget conf base (get_father cpl) in
+      let moth = pget conf base (get_mother cpl) in
       get_access fath <> Private && nobtit conf base fath <> [] ||
       get_access moth <> Private && nobtit conf base moth <> []
   | _ -> False ]
@@ -540,54 +587,7 @@ value authorized_age conf base p =
         loop 0 ]
 ;
 
-value is_old_person conf p =
-  match
-    (Adef.od_of_codate p.birth, Adef.od_of_codate p.baptism,
-     p.death, CheckItem.date_of_death p.death)
-  with
-  [ (_, _, NotDead, _) when conf.private_years > 0 -> False
-  | (Some (Dgreg d _), _, _, _) ->
-      let a = CheckItem.time_elapsed d conf.today in
-      a.year > conf.private_years
-  | (_, Some (Dgreg d _), _, _) ->
-      let a = CheckItem.time_elapsed d conf.today in
-      a.year > conf.private_years
-  | (_, _, _, Some (Dgreg d _)) ->
-      let a = CheckItem.time_elapsed d conf.today in
-      a.year > conf.private_years
-  | (None, None, DontKnowIfDead, None) ->
-      p.access <> Private && conf.public_if_no_date
-  | _ -> False ]
-;
-
-value fast_auth_age conf p =
-  if conf.friend || conf.wizard || get_access p = Public then True
-  else if
-    conf.public_if_titles && get_access p = IfTitles && get_titles p <> []
-  then
-    True
-  else is_old_person conf (gen_person_of_person p)
-;
-
-value is_restricted (conf : config) base ip =
-  let fct p =
-    not (is_quest_string (get_surname p)) &&
-    not (is_quest_string (get_first_name p)) &&
-    not (fast_auth_age conf p)
-  in  
-  if conf.use_restrict then base_visible_get base fct (Adef.int_of_iper ip)
-  else False 
-;
-
 value is_hidden p = is_empty_string (get_surname p);
-
-value pget (conf : config) base ip =
-  if is_restricted conf base ip then Gwdb.empty_person base ip
-  else poi base ip
-;
-
-value aget = pget;
-value uget = pget;
 
 value know base p =
   sou base (get_first_name p) <> "?" || sou base (get_surname p) <> "?"
@@ -997,13 +997,18 @@ value image_prefix conf =
   else "images"
 ;
 
+value default_background conf =
+  sprintf "background:url('%s/gwback.jpg')" (image_prefix conf)
+;
+
 value default_body_prop conf =
-  let s =
+  let style =
     match p_getenv conf.env "size" with
-    [ Some v -> " style=\"font-size:" ^ v ^ "\""
+    [ Some v -> "font-size:" ^ v ^ ";"
     | None -> "" ]
   in
-  s ^ " style=\"background: url('" ^ image_prefix conf ^ "/gwback.jpg')\""
+  let style = sprintf "%s%s" style (default_background conf) in
+  " style=\"" ^ style ^ "\""
 ;
 
 value body_prop conf =
@@ -1069,7 +1074,7 @@ value url_no_index conf base =
             if f = "" || s = "" then None
             else
               let oc = string_of_int (get_occ p) in
-              let u = uget conf base (get_father fam) in
+              let u = pget conf base (get_father fam) in
               let n =
                 loop 0 where rec loop k =
                   if (get_family u).(k) = Adef.ifam_of_int i then
@@ -1292,13 +1297,22 @@ value filter_html_tags s =
 
 value get_variable s i =
   loop 0 i where rec loop len i =
-    if i = String.length s then (Buff.get len, i)
+    if i = String.length s then (Buff.get len, [], i)
     else
       match s.[i] with
       [ 'a'..'z' | 'A'..'Z' | '0'..'9' | '_' as c ->
           loop (Buff.store len c) (i + 1)
-      | ';' -> (Buff.get len, i + 1)
-      | _ -> (Buff.get len, i) ]
+      | ':' ->
+          let v = Buff.get len in
+          loop [] 0 (i + 1) where rec loop vl len i =
+            if i = String.length s then (v, List.rev [Buff.get len :: vl], i)
+            else
+              match s.[i] with
+              [ ':' -> loop [Buff.get len :: vl] 0 (i + 1)
+              | ';' -> (v, List.rev [Buff.get len :: vl], i + 1)
+              | c -> loop vl (Buff.store len c) (i + 1) ]
+      | ';' -> (Buff.get len, [], i + 1)
+      | _ -> (Buff.get len, [], i) ]
 ;
 
 type tag_type = [ In_a_href | In_norm | Out ];
@@ -1336,7 +1350,7 @@ value string_with_macros conf env s =
               match s.[i + 1] with
               [ 's' -> do { Buffer.add_string buff (commd conf); i + 2 }
               | 'v' ->
-                  let (k, j) = get_variable s (i + 2) in
+                  let (k, vl, j) = get_variable s (i + 2) in
                   let (v, i) =
                     let v =
                       try
@@ -1346,7 +1360,24 @@ value string_with_macros conf env s =
                       [ Not_found -> None ]
                     in
                     match v with
-                    [ Some v -> (v, j)
+                    [ Some s ->
+                        let s =
+                          loop vl 0 0 where rec loop vl len i =
+                            if i = String.length s then Buff.get len
+                            else if
+                              i + 1 < String.length s && s.[i] = '%' &&
+                              s.[i+1] = 's'
+                            then
+                              match vl with
+                              [ [v :: vl] ->
+                                  loop vl (Buff.mstore len v) (i + 2)
+                              | [] ->
+                                  Buff.get len ^
+                                    String.sub s i (String.length s - i) ]
+                            else
+                              loop vl (Buff.store len s.[i]) (i + 1)
+                        in
+                        (s, j)
                     | None -> ("%", i + 1) ]
                   in
                   do { Buffer.add_string buff v; i }
@@ -1398,6 +1429,189 @@ value string_with_macros conf env s =
     else filter_html_tags (Buffer.contents buff)
 ;
 
+type xhtml_tag =
+  [ Btag of string and string
+  | Etag of string
+  | Atag of string ]
+;
+
+value tag_params_ok s =
+  loop 0 where rec loop i =
+    if i = String.length s then True
+    else
+      match s.[i] with
+      [ ' ' | '\n' -> loop (i+1)
+      | 'a'..'z' ->
+          loop_id (i+1) where rec loop_id i =
+            if i = String.length s then False
+            else
+              match s.[i] with
+              [ 'a'..'z' -> loop_id (i+1)
+              | '=' ->
+                  let i = i + 1 in
+                  if i = String.length s then False
+                  else if s.[i] = '"' then
+                    loop_str (i+1) where rec loop_str i =
+                      if i = String.length s then False
+                      else if s.[i] = '"' then loop (i+1)
+                      else loop_str (i+1)
+                  else False
+              | _ -> False ]
+      | _ -> False ]
+;
+
+value xhtml_tag s i =
+  if s.[i] = '<' then
+    if i = String.length s - 1 then None
+    else if s.[i+1] = '!' then None
+    else
+      let k =
+        try String.index_from s i '>' with [ Not_found -> String.length s ]
+      in
+      let j =
+        loop i where rec loop i =
+          if i = k then k
+          else
+            match s.[i] with
+            [ ' ' | '\n' -> i
+            | _ -> loop (i + 1) ]
+      in
+      if i + 1 = String.length s then None
+      else
+        let next_i = min (k + 1) (String.length s) in
+        if s.[i+1] = '/' then
+          let t = String.sub s (i + 2) (k - i - 2) in
+          if j = k then Some (Etag t, next_i) else None
+        else if s.[k-1] = '/' then
+          let t = String.sub s (i + 1) (k - i - 2) in
+          Some (Atag t, next_i)
+        else
+          let t = String.sub s (i + 1) (j - i - 1) in
+          let a = String.sub s j (k - j) in
+          if tag_params_ok a then Some (Btag t a, next_i)
+          else None
+  else None
+;
+
+value check_ampersand s i =
+  if i = String.length s then Some ("&amp;", i)
+  else
+    match s.[i] with
+    [ 'a'..'z' ->
+        loop_id i where rec loop_id j =
+          if j = String.length s then do {
+            let a = sprintf "&amp;%s" (String.sub s i (j - i)) in
+            Some (a, j)
+          }
+          else
+            match s.[j] with
+            [ 'a'..'z' -> loop_id (j + 1)
+            | ';' -> None
+            | _ ->
+                let a = sprintf "&amp;%s" (String.sub s i (j - i)) in
+                Some (a, j) ]
+    | _ -> Some ("&amp;", i) ]
+;
+
+value bad col s = sprintf "<span style=\"color:%s\">%s</span>" col s;
+
+value check_ampersands s =
+  let b = Buffer.create (String.length s) in
+  loop False 0 where rec loop error i =
+    if i = String.length s then
+      if error then Some (Buffer.contents b)
+      else None
+    else
+      match s.[i] with
+      [ '&' ->
+          match check_ampersand s (i + 1) with
+          [ Some (txt, j) -> do {
+              Buffer.add_string b (bad "red" txt);
+              loop True j
+            }
+          | None -> do {
+              Buffer.add_char b '&';
+              loop error (i + 1)
+            } ]
+      | c -> do {
+          Buffer.add_char b c;
+          loop error (i + 1)
+        } ]
+;
+
+value check_xhtml s =
+  let b = Buffer.create (String.length s) in
+  loop [] 0 where rec loop tag_stack i =
+    if i = String.length s then do {
+      List.iter
+        (fun (pos, txt, t) -> do {
+           let s = Buffer.contents b in
+           let s_bef = String.sub s 0 pos in
+           let pos_aft = pos + String.length txt + 2 in
+           let s_aft = String.sub s pos_aft (String.length s - pos_aft) in
+           Buffer.clear b;
+           Buffer.add_string b s_bef;
+           Buffer.add_string b (bad "red" (sprintf "&lt;%s&gt;" txt));
+           Buffer.add_string b s_aft
+         })
+        tag_stack;
+      Buffer.contents b
+    }
+    else
+      match xhtml_tag s i with
+      [ Some (Btag t a, i) ->
+          if t = "br" && a = "" then do {
+            (* frequent error *)
+            Buffer.add_string b (sprintf "<%s/>" t);
+            loop tag_stack i
+          }
+          else do {
+            match check_ampersands a with
+            [ Some a -> do {
+                Buffer.add_string b (sprintf "&lt;%s%s&gt;" t a);
+                loop tag_stack i;
+              }
+            | None -> do {
+                let pos = Buffer.length b in
+                let txt = sprintf "%s%s" t a in
+                Buffer.add_string b (sprintf "<%s>" txt);
+                loop [(pos, txt, t) :: tag_stack] i
+              } ]
+          }
+      | Some (Etag t, i) ->
+          match tag_stack with
+          [ [(_, _, bt) :: rest] when t = bt -> do {
+              Buffer.add_string b (sprintf "</%s>" t);
+              loop rest i
+            }
+          | _ -> do {
+              Buffer.add_string b (bad "red" (sprintf "&lt;/%s&gt;" t));
+              loop tag_stack i
+            } ]
+      | Some (Atag t, i) -> do {
+          Buffer.add_string b (sprintf "<%s/>" t);
+          loop tag_stack i
+        }
+      | None ->
+          if s.[i] = '&' then
+            match check_ampersand s (i + 1) with
+            [ Some (txt, j) -> do {
+                Buffer.add_string b (bad "red" txt);
+                loop tag_stack j
+              }
+            | None -> do {
+                Buffer.add_char b '&';
+                loop tag_stack (i + 1)
+              } ]
+          else do {
+            if s.[i] = '<' && (i + 1 = String.length s || s.[i+1] <> '!')
+            then
+              Buffer.add_string b (bad "red" "&lt;")
+            else Buffer.add_char b s.[i];
+            loop tag_stack (i + 1)
+          } ]
+;
+
 value compilation_time_hook = ref (fun _ -> "");
 value compilation_time conf =
   match p_getenv conf.base_env "display_compilation_time" with
@@ -1424,11 +1638,10 @@ value hexa_string s =
   }
 ;
 
-value print_alphab_list conf crit print_elem liste =
+value print_alphab_list conf crit print_elem liste = do {
   let len = List.length liste in
-  do {
-    if len > menu_threshold then do {
-      Wserver.wprint "<p>\n";
+  if len > menu_threshold then
+    tag "p" begin
       let _ =
         List.fold_left
           (fun last e ->
@@ -1447,46 +1660,43 @@ value print_alphab_list conf crit print_elem liste =
           None liste
       in
       ();
-      Wserver.wprint "</p>\n";
-    }
-    else ();
-    Wserver.wprint "<ul>\n";
+    end
+  else ();
+  tag "ul" begin
     let _ =
       List.fold_left
-        (fun last e ->
+        (fun last e -> do {
            let t = crit e in
            let same_than_last =
              match last with
              [ Some t1 -> t = t1
              | _ -> False ]
            in
-           do {
-             if len > menu_threshold || is_number t then do {
-               match last with
-               [ Some _ ->
-                   if not same_than_last then Wserver.wprint "</ul>\n</li>\n"
-                   else ()
-               | _ -> () ];
-               if not same_than_last then do {
-                 Wserver.wprint "<li>\n";
-                 Wserver.wprint "<a id=\"i%s\">%s</a>\n" (hexa_string t) t;
-                 Wserver.wprint "<ul>\n";
-               }
-               else ();
+           if len > menu_threshold || is_number t then do {
+             match last with
+             [ Some _ ->
+                 if not same_than_last then Wserver.wprint "</ul>\n</li>\n"
+                 else ()
+             | _ -> () ];
+             if not same_than_last then do {
+               Wserver.wprint "<li>\n";
+               Wserver.wprint "<a id=\"i%s\">%s</a>\n" (hexa_string t) t;
+               Wserver.wprint "<ul>\n";
              }
              else ();
-             Wserver.wprint "<li>\n  ";
-             print_elem e;
-             Wserver.wprint "</li>\n";
-             Some t
-           })
+           }
+           else ();
+           Wserver.wprint "<li>\n  ";
+           print_elem e;
+           Wserver.wprint "</li>\n";
+           Some t
+         })
         None liste
     in
     ();
     if len > menu_threshold then Wserver.wprint "</ul>\n</li>\n" else ();
-    Wserver.wprint "</ul>\n";
-  }
-;
+  end;
+};
 
 value parent conf base p a =
   match get_public_name a with
@@ -1526,7 +1736,7 @@ value specify_homonymous conf base p =
       Wserver.wprint "%s <em>%s</em>" (p_first_name base p) (sou base nn)
   | (n, []) when sou base n <> "" -> Wserver.wprint "%s" (sou base n)
   | (_, []) ->
-      let a = aget conf base (get_key_index p) in
+      let a = pget conf base (get_key_index p) in
       let ifam =
         match get_parents a with
         [ Some ifam ->
@@ -1544,10 +1754,9 @@ value specify_homonymous conf base p =
       in
       match ifam with
       [ Some (None, None) | None ->
-          let u = uget conf base (get_key_index p) in
           let rec loop i =
-            if i < Array.length (get_family u) then
-              let fam = foi base (get_family u).(i) in
+            if i < Array.length (get_family p) then
+              let fam = foi base (get_family p).(i) in
               let conjoint = spouse (get_key_index p) fam in
               let ct = get_children fam in
               if Array.length ct > 0 then
@@ -1747,11 +1956,22 @@ value find_person_in_env conf base suff =
           in
           match person_of_key base p n occ with
           [ Some ip ->
-              let p = poi base ip in
-              if not conf.hide_names || authorized_age conf base p then Some p
+              let p = pget conf base ip in
+              if is_hidden p then None
+              else if not conf.hide_names || authorized_age conf base p then
+                Some p
               else None
           | None -> None ]
       | _ -> None ] ]
+;
+
+value person_exists conf base (fn, sn, oc) =
+  match p_getenv conf.base_env "red_if_not_exist" with
+  [ Some "off" -> True
+  | Some _ | None ->
+      match person_of_key base fn sn oc with
+      [ Some ip -> authorized_age conf base (pget conf base ip)
+      | None -> False ] ]
 ;
 
 value find_sosa_ref conf base =
@@ -1776,7 +1996,7 @@ value create_topological_sort conf base =
   [ Some "no_tsfile" ->
       let () = load_ascends_array base in
       let () = load_couples_array base in
-      Consang.topological_sort base (aget conf)
+      Consang.topological_sort base (pget conf)
   | Some "no_tstab" -> Array.create (nb_of_persons base) 0
   | _ ->
       let bfile = base_path [] (conf.bname ^ ".gwb") in
@@ -1805,7 +2025,7 @@ value create_topological_sort conf base =
           | None ->
               let () = load_ascends_array base in
               let () = load_couples_array base in
-              let tstab = Consang.topological_sort base (aget conf) in
+              let tstab = Consang.topological_sort base (pget conf) in
               do {
                 if conf.use_restrict then base_visible_write base else ();
                 match
@@ -1823,7 +2043,7 @@ value create_topological_sort conf base =
       | Refuse ->
           let () = load_ascends_array base in
           let () = load_couples_array base in
-          Consang.topological_sort base (aget conf) ] ]
+          Consang.topological_sort base (pget conf) ] ]
 ;
 
 value branch_of_sosa conf base ip n =
@@ -1836,7 +2056,7 @@ value branch_of_sosa conf base ip n =
       fun
       [ [] -> Some [(ip, sp) :: ipl]
       | [goto_fath :: nl] ->
-          match get_parents (aget conf base ip) with
+          match get_parents (pget conf base ip) with
           [ Some ifam ->
               let cpl = foi base ifam in
               if goto_fath then
@@ -2002,7 +2222,7 @@ exception Ok;
 
 value has_nephews_or_nieces conf base p =
   try
-    let a = aget conf base (get_key_index p) in
+    let a = p in
     match get_parents a with
     [ Some ifam ->
         let fam = foi base ifam in
@@ -2016,7 +2236,7 @@ value has_nephews_or_nieces conf base p =
                       if Array.length (get_children (foi base ifam)) > 0 then
                         raise Ok
                       else ())
-                   (get_family (uget conf base ip)))
+                   (get_family (pget conf base ip)))
             (get_children fam);
           False
         }
@@ -2427,14 +2647,14 @@ value dispatch_in_columns ncol list order =
          [(ref kind, ord, elem) :: rlist])
       [] list
   in
-  let (ini_list, len) =
+  let (ini_list, ini_len) =
     List.fold_left
       (fun (list, len) ((kind, _, _) as elem) ->
          ([elem :: list], len + kind_size kind.val))
       ([], 0) rlist
   in
   let len_list =
-    loop [] 0 1 0 len ini_list
+    loop [] 0 1 0 ini_len ini_list
     where rec loop rlen_list cnt col accu len list =
       if col > ncol then List.rev rlen_list
       else
@@ -2465,7 +2685,7 @@ value dispatch_in_columns ncol list order =
 value print_in_columns conf len_list list wprint_elem = do {
   begin_centered conf;
   tag "table" "width=\"95%%\" border=\"%d\"" conf.border begin
-    tag "tr" "valign=\"top\"" begin
+    tag "tr" "align=\"%s\" valign=\"top\"" conf.left begin
       let _ =
         List.fold_left
           (fun (list, first) len ->

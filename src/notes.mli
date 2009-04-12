@@ -1,5 +1,5 @@
-(* camlp4r *)
-(* $Id: notes.mli,v 5.4 2006/12/28 14:08:59 ddr Exp $ *)
+(* camlp5r *)
+(* $Id: notes.mli,v 5.6 2007/09/12 09:58:44 ddr Exp $ *)
 
 open Config;
 open Gwdb;
@@ -15,3 +15,6 @@ value print_mod_ok : config -> base -> unit;
 
 value print_misc_notes : config -> base -> unit;
 value print_misc_notes_search : config -> base -> unit;
+value print_linked_list : config -> base -> list page -> unit;
+
+value merge_possible_aliases : config -> notes_links_db -> notes_links_db;

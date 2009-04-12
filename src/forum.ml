@@ -1,5 +1,5 @@
-(* camlp4r *)
-(* $Id: forum.ml,v 5.16 2007/01/23 14:24:10 ddr Exp $ *)
+(* camlp5r *)
+(* $Id: forum.ml,v 5.21 2007/09/12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -516,7 +516,15 @@ and eval_message_text_var conf base str so =
       let s = string_with_macros conf [] str in
       let lines = Wiki.html_of_tlsw conf s in
       let s = String.concat "\n" lines in
-      let s = Wiki.syntax_links conf "NOTES" (Notes.file_path conf base) s in
+      let s =
+        let wi =
+          {Wiki.wi_mode = "NOTES"; Wiki.wi_cancel_links = conf.cancel_links;
+           Wiki.wi_file_path = Notes.file_path conf base;
+           Wiki.wi_person_exists = person_exists conf base;
+           Wiki.wi_always_show_link = conf.wizard || conf.friend}
+        in
+        Wiki.syntax_links conf wi s
+      in
       let s =
         match so with
         [ Some h ->
@@ -774,22 +782,42 @@ value print_add_ok conf base =
 
 (* Deleting a message *)
 
+value message_txt conf n =
+  transl_nth conf "message/previous message/previous messages/next message" n
+;
+
 value forum_del conf base pos =
   let fname = forum_file conf in
   MF.patch fname pos "****"
 ;
 
-value print_del_ok conf base =
+value print_del_ok conf base next_pos =
   let title _ =
     Wserver.wprint "%s" (capitale (transl conf "message deleted"))
   in
   do {
     header conf title;
     print_link_to_welcome conf True;
-    Wserver.wprint "<a href=\"%sm=FORUM\">%s</a>\n" (commd conf)
-      (capitale (transl conf "database forum"));
+    match next_pos with
+    [ Some pos ->
+        Wserver.wprint "<a href=\"%sm=FORUM;p=%s\">%s</a>\n" (commd conf)
+          (MF.string_of_pos pos) (capitale (message_txt conf 3))
+    | None ->
+        Wserver.wprint "<a href=\"%sm=FORUM\">%s</a>\n" (commd conf)
+          (capitale (transl conf "database forum")) ];
     trailer conf;
   }
+;
+
+value find_next_pos conf =
+  loop where rec loop pos =
+    let back_pos = backward_pos conf pos in
+    match get_message conf back_pos with
+    [ Some (acc, mess, _, _) ->
+        if back_pos = pos then None
+        else if acc then Some back_pos
+        else loop back_pos
+    | None -> None ]
 ;
 
 value delete_forum_message conf base pos =
@@ -801,7 +829,7 @@ value delete_forum_message conf base pos =
         try
           do {
             forum_del conf base pos;
-            print_del_ok conf base;
+            print_del_ok conf base (find_next_pos conf pos);
           }
         with
         [ Update.ModErr -> () ]
@@ -853,16 +881,7 @@ value print_valid_ok conf base pos del =
     else transl conf "message added"
   in
   let title _ = Wserver.wprint "%s" (capitale mess) in
-  let next_pos =
-    loop pos where rec loop pos =
-      let back_pos = backward_pos conf pos in
-      match get_message conf back_pos with
-      [ Some (acc, mess, _, _) ->
-          if back_pos = pos then None
-          else if acc then Some back_pos
-          else loop back_pos
-      | None -> None ]
-  in
+  let next_pos = find_next_pos conf pos in
   do {
     header conf title;
     print_link_to_welcome conf True;

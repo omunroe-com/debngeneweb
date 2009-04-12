@@ -1,5 +1,5 @@
-(* camlp4r pa_extend.cmo ./pa_html.cmo ./pa_lock.cmo *)
-(* $Id: gwd.ml,v 5.55 2007/02/24 20:08:15 ddr Exp $ *)
+(* camlp5r pa_extend.cmo ./pa_html.cmo ./pa_lock.cmo *)
+(* $Id: gwd.ml,v 5.59 2007/09/12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -1074,9 +1074,10 @@ let _ = trace_auth base_env (fun oc -> fprintf oc "\nanswer\n- date: %a\n- reque
        ar_scheme = NoAuth; ar_user = ""; ar_name = ""; ar_wizard = False;
        ar_friend = False; ar_uauth = ""; ar_can_stale = False}
   else
+    let friend = friend_passwd = "" && friend_passwd_file = "" in
     {ar_ok = True; ar_command = command; ar_passwd = "";
      ar_scheme = NoAuth; ar_user = ""; ar_name = ""; ar_wizard = False;
-     ar_friend = False; ar_uauth = ""; ar_can_stale = False}
+     ar_friend = friend; ar_uauth = ""; ar_can_stale = False}
 ;
 
 value authorization cgi from_addr request base_env passwd access_type utm
@@ -1230,6 +1231,9 @@ value make_conf cgi from_addr (addr, request) script_name contents env = do {
      user = ar.ar_user; username = ar.ar_name;
      auth_scheme = ar.ar_scheme; cgi = cgi; command = ar.ar_command;
      indep_command = (if cgi then ar.ar_command else "geneweb") ^ "?";
+     pure_xhtml =
+       try List.assoc "pure_xhtml" env = "on" with
+       [ Not_found -> False ];
      highlight =
        try List.assoc "highlight_color" base_env with
        [ Not_found -> green_color ];

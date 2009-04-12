@@ -1,5 +1,5 @@
-(* camlp4r ./pa_html.cmo ./pa_lock.cmo *)
-(* $Id: mergeInd.ml,v 5.46 2007/02/05 10:40:28 ddr Exp $ *)
+(* camlp5r ./pa_html.cmo ./pa_lock.cmo *)
+(* $Id: mergeInd.ml,v 5.52 2007/09/12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -191,9 +191,14 @@ value compatible_relation_kinds rk1 rk2 = rk1 = rk2;
 
 value compatible_accesses a1 a2 = (*a1 = a2*)True;
 
-value compatible_titles t1 t2 = t1 = t2 || t2 = [];
+value compatible_titles t1 t2 =
+  Futil.eq_lists (Futil.eq_titles eq_istr) t1 t2 || t2 = [];
 
-value compatible_strings_lists sl1 sl2 = sl2 = [] || sl1 = sl2;
+value compatible_strings_lists sl1 sl2 =
+  sl2 = [] || Futil.eq_lists eq_istr sl1 sl2;
+
+value compatible_notes base s1 s2 =
+  compatible_strings s1 s2 || sou base s1 = sou base s2;
 
 value compatible_ind base p1 p2 =
   eq_istr (get_first_name p1) (get_first_name p2) &&
@@ -218,7 +223,7 @@ value compatible_ind base p1 p2 =
   compatible_strings (get_death_place p1) (get_death_place p2) &&
   compatible_burials (get_burial p1) (get_burial p2) &&
   compatible_strings (get_burial_place p1) (get_burial_place p2) &&
-  compatible_strings (get_notes p1) (get_notes p2) 
+  compatible_notes base (get_notes p1) (get_notes p2)
 ;
 
 value compatible_fam base fam1 fam2 =
@@ -373,12 +378,14 @@ value effective_merge_ind conf base p1 p2 =
          else get_notes p1}
     in
     patch_person base p1.key_index p1;
+    delete_key base (sou base (get_first_name p2)) (sou base (get_surname p2))
+      (get_occ p2);
     let p2 = UpdateIndOk.effective_del conf base p2 in
     patch_person base p2.key_index p2;
     let s =
       let sl =
-        [p1.notes; p1.birth_src; p1.baptism_src; p1.death_src; p1.burial_src;
-         p1.psources]
+        [p1.notes; p1.occupation; p1.birth_src; p1.baptism_src; p1.death_src;
+         p1.burial_src; p1.psources]
       in
       String.concat " " (List.map (sou base) sl)
     in

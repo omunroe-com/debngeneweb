@@ -1,5 +1,5 @@
-(* camlp4r ./pa_html.cmo *)
-(* $Id: updateIndOk.ml,v 5.61 2007/02/09 14:37:30 ddr Exp $ *)
+(* camlp5r ./pa_html.cmo *)
+(* $Id: updateIndOk.ml,v 5.73 2007/09/12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -420,82 +420,50 @@ value is_witness_at_marriage base ip p =
     (Array.to_list (get_family u))
 ;
 
-value update_relation_parents base op np =
-  let op_rparents = rparents_of (get_rparents op) in
-  let np_rparents = rparents_of np.rparents in
-  let pi = np.key_index in
-  let mod_ippl = [] in
-  let mod_ippl =
-    List.fold_left
-      (fun ippl ip ->
-         if List.mem ip op_rparents then ippl
-         else
-           let p = poi base ip in
-           if not (List.mem pi (get_related p)) then
-             let p = gen_person_of_person (poi base ip) in
-             let p = {(p) with related = [pi :: p.related]} in
-             if List.mem_assoc ip ippl then ippl else [(ip, p) :: ippl]
-           else ippl)
-      mod_ippl np_rparents
-  in
-  let mod_ippl =
-    List.fold_left
-      (fun ippl ip ->
-         if List.mem ip np_rparents ||
-            np.sex = Male && is_witness_at_marriage base ip np then
-           ippl
-         else
-           let p =
-             try List.assoc ip ippl with
-             [ Not_found -> gen_person_of_person (poi base ip) ]
-           in
-           if List.mem pi p.related then
-             let p = {(p) with related = List.filter ( \<> pi) p.related} in
-             if List.mem_assoc ip ippl then ippl else [(ip, p) :: ippl]
-           else ippl)
-      mod_ippl op_rparents
-  in
-  List.iter (fun (ip, p) -> patch_person base ip p) mod_ippl
-;
-
-value effective_mod conf base sp =
+value effective_mod conf base sp = do {
   let pi = sp.key_index in
   let op = poi base pi in
   let key = sp.first_name ^ " " ^ sp.surname in
   let ofn = p_first_name base op in
   let osn = p_surname base op in
-  do {
-    if ofn = sp.first_name && osn = sp.surname && get_occ op = sp.occ then ()
-    else do {
-      let ipl = person_ht_find_all base key in
-      check_conflict conf base sp ipl;
-      rename_image_file conf base op sp;
-    };
-    if sp.first_name <> "?" && sp.surname <> "?" &&
-       (Name.lower (nominative sp.first_name) <> Name.lower ofn ||
-        Name.lower (nominative sp.surname) <> Name.lower osn)
-    then do {
-      patch_key base pi sp.first_name sp.surname sp.occ;
-      person_ht_add base key pi
-    }
-    else ();
-    check_sex_married conf base sp op;
-    let created_p = ref [] in
-    let np =
-      map_person_ps (Update.insert_person conf base sp.psources created_p)
-        (Gwdb.insert_string base) sp
-    in
-    let op_misc_names = person_misc_names base op get_titles in
-    let np = {(np) with related = get_related op} in
-    let np_misc_names = gen_person_misc_names base np (fun p -> p.titles) in
-    List.iter
-      (fun key ->
-         if List.mem key op_misc_names then () else person_ht_add base key pi)
-      np_misc_names;
-    update_relation_parents base op np;
-    np
+  let oocc = get_occ op in
+  if ofn = sp.first_name && osn = sp.surname && oocc = sp.occ then ()
+  else do {
+    let ipl = person_ht_find_all base key in
+    check_conflict conf base sp ipl;
+    rename_image_file conf base op sp;
+  };
+  let same_fn_sn =
+    Name.lower (nominative sp.first_name) = Name.lower ofn &&
+    Name.lower (nominative sp.surname) = Name.lower osn
+  in
+  if sp.first_name <> "?" && sp.surname <> "?" &&
+     (not same_fn_sn || oocc <> sp.occ)
+  then do {
+    delete_key base ofn osn oocc;
+    patch_key base pi sp.first_name sp.surname sp.occ;
+    if not same_fn_sn then patch_name base key pi else ();
   }
-;
+  else ();
+  check_sex_married conf base sp op;
+  let created_p = ref [] in
+  let np =
+    map_person_ps (Update.insert_person conf base sp.psources created_p)
+      (Gwdb.insert_string base) sp
+  in
+  let op_misc_names = person_misc_names base op get_titles in
+  let np = {(np) with related = get_related op} in
+  let np_misc_names = gen_person_misc_names base np (fun p -> p.titles) in
+  List.iter
+    (fun key ->
+       if List.mem key op_misc_names then () else person_ht_add base key pi)
+    np_misc_names;
+  let ol = rparents_of (get_rparents op) in
+  let nl = rparents_of np.rparents in
+  let pi = np.key_index in
+  Update.update_related_pointers base pi ol nl;
+  np
+};
 
 value effective_add conf base sp = do {
   let pi = Adef.iper_of_int (nb_of_persons base) in
@@ -530,6 +498,51 @@ value array_except v a =
     else loop (i + 1)
 ;
 
+value update_relations_of_related base ip old_related =
+  List.iter
+    (fun ip1 -> do {
+       let p1 = poi base ip1 in
+       let (rparents, rparents_are_different) =
+         List.fold_right
+           (fun rel (list, rad) ->
+              let (rfath, rad) =
+                match rel.r_fath with
+                [ Some ip2 ->
+                    if ip2 = ip then (None, True) else (Some ip2, rad)
+                | None -> (None, rad) ]
+              in
+              let (rmoth, rad) =
+                match rel.r_moth with
+                [ Some ip2 ->
+                    if ip2 = ip then (None, True) else (Some ip2, rad)
+                | None -> (None, rad) ]
+              in
+              if rfath = None && rmoth = None then (list, True)
+              else
+                let rel = {(rel) with r_fath = rfath; r_moth = rmoth} in
+                ([rel :: list], rad))
+           (get_rparents p1) ([], False)
+       in
+       if rparents_are_different then
+         let p = gen_person_of_person p1 in
+         patch_person base ip1 {(p) with rparents = rparents}
+       else ();
+       let families = get_family p1 in
+       for i = 0 to Array.length families - 1 do {
+         let ifam = families.(i) in
+         let fam = foi base ifam in
+         let old_witnesses = Array.to_list (get_witnesses fam) in
+         let new_witnesses = List.filter (\<> ip) old_witnesses in
+         if new_witnesses <> old_witnesses then
+           let fam = gen_family_of_family fam in
+           patch_family base ifam
+             {(fam) with witnesses = Array.of_list new_witnesses}
+         else ();
+       };
+     })
+    old_related
+;
+
 value effective_del conf base p = do {
   let none = Gwdb.insert_string base "?" in
   let empty = Gwdb.insert_string base "" in
@@ -547,6 +560,8 @@ value effective_del conf base p = do {
       patch_ascend base ip asc;
     }
   | None -> () ];
+  let old_rparents = rparents_of (get_rparents p) in
+  Update.update_related_pointers base ip old_rparents [];
   {first_name = none; surname = none; occ = 0; image = empty;
    public_name = empty; qualifiers = []; aliases = []; sex = get_sex p;
    first_names_aliases = []; surnames_aliases = []; titles = [];
@@ -615,8 +630,8 @@ value all_checks_person conf base p a u = do {
     u.family;
   List.iter
     (fun
-     [ ChangedOrderOfChildren ifam des _ ->
-         patch_descend base ifam (gen_descend_of_descend des)
+     [ ChangedOrderOfChildren ifam des _ after ->
+         patch_descend base ifam {children = after}
      | _ -> () ])
     wl.val;
   List.rev wl.val
@@ -685,20 +700,23 @@ value print_add o_conf base =
 
 value print_del conf base =
   match p_getint conf.env "i" with
-  [ Some i ->
-      let p = poi base (Adef.iper_of_int i) in
-      let k =
-        (sou base (get_first_name p), sou base (get_surname p), get_occ p,
-         get_key_index p)
-      in
-      do {
-        let p = effective_del conf base p in
-        patch_person base p.key_index p;
-        Notes.update_notes_links_db conf (NotesLinks.PgInd p.key_index) "";
-        Util.commit_patches conf base;
-        History.record conf base k "dp";
-        print_del_ok conf base [];
-      }
+  [ Some i -> do {
+      let ip = Adef.iper_of_int i in
+      let p = poi base ip in
+      let fn = sou base (get_first_name p) in
+      let sn = sou base (get_surname p) in
+      let occ = get_occ p in
+      let k = (fn, sn, occ, ip) in
+      let old_related = get_related p in
+      update_relations_of_related base ip old_related;
+      let p = effective_del conf base p in
+      patch_person base ip p;
+      delete_key base fn sn occ;
+      Notes.update_notes_links_db conf (NotesLinks.PgInd p.key_index) "";
+      Util.commit_patches conf base;
+      History.record conf base k "dp";
+      print_del_ok conf base [];
+    }
   | _ -> incorrect_request conf ]
 ;
 
@@ -725,27 +743,6 @@ value print_mod_aux conf base callback =
   [ Update.ModErr -> () ]
 ;
 
-value rec eq_istr_list l1 l2 =
-  match (l1, l2) with
-  [ ([i1 :: l1], [i2 :: l2]) -> eq_istr i1 i2 && eq_istr_list l1 l2
-  | ([], []) -> True
-  | _ -> False ]
-;
-
-value rec eq_titles tl1 tl2 =
-  match (tl1, tl2) with
-  [ ([t1 :: tl1], [t2 :: tl2]) -> eq_title t1 t2 && eq_titles tl1 tl2
-  | ([], []) -> True
-  | _ -> False ]
-and eq_title t1 t2 =
-  match (t1.t_name, t2.t_name) with
-  [ (Tname i1, Tname i2) -> eq_istr i1 i2
-  | _ ->
-      t1.t_name = t2.t_name && eq_istr t1.t_ident t2.t_ident &&
-      eq_istr t1.t_place t2.t_place && t1.t_date_start = t2.t_date_start &&
-      t1.t_date_end = t2.t_date_end && t1.t_nth = t2.t_nth ]
-;
-
 value print_mod o_conf base =
   let conf = Update.update_conf o_conf in
   let callback sp = do {
@@ -755,15 +752,15 @@ value print_mod o_conf base =
     patch_person base p.key_index p;
     let s =
       let sl =
-        [p.notes; p.birth_src; p.baptism_src; p.death_src; p.burial_src;
-         p.psources]
+        [p.notes; p.occupation; p.birth_src; p.baptism_src; p.death_src;
+         p.burial_src; p.psources]
       in
       String.concat " " (List.map (sou base) sl)
     in
     Notes.update_notes_links_db conf (NotesLinks.PgInd p.key_index) s;
     if not (eq_istr (get_surname op) p.surname) ||
-       not (eq_istr_list (get_surnames_aliases op) p.surnames_aliases) ||
-       not (eq_titles (get_titles op) p.titles)
+       not (eq_lists eq_istr (get_surnames_aliases op) p.surnames_aliases) ||
+       not (eq_lists (eq_titles eq_istr) (get_titles op) p.titles)
     then
       Update.update_misc_names_of_family base p.sex u
     else ();

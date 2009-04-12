@@ -1,4 +1,4 @@
-(* $Id: launch.ml,v 1.31 2007/01/19 01:53:16 ddr Exp $ *)
+(* $Id: launch.ml,v 1.34 2007/06/06 15:22:35 ddr Exp $ *)
 (* Copyright (c) 2006-2007 INRIA *)
 
 open Camltk;
@@ -91,7 +91,7 @@ value read_config_env () =
 value mkdir_p x =
   loop x where rec loop x =
     do  {
-      let y = Filename.dirname x;
+      let y = Filename.dirname x in
       if y <> x && String.length y < String.length x then loop y else ();
       try Unix.mkdir x 0o777 with [ Unix.Unix_error _ _ _ -> () ];
     }
@@ -320,37 +320,45 @@ and change_options state = do {
   clean_waiting_pids state;
   let (frame, gframe) = window_centering state.tk_win in
 
-  let opt2 = Frame.create frame [] in
-  let lab2 =
-    Label.create opt2 [Text (transl "Select browser language if any:")]
+  let tv2 = do {
+    let opt = Frame.create frame [] in
+    let tv = Textvariable.create () in
+    let lab =
+      Label.create opt [Text (transl "Select browser language if any:")]
+    in
+    let val1 =
+      Radiobutton.create opt [Text (transl "yes"); Value "yes"; Variable tv]
+    in
+    let val2 =
+      Radiobutton.create opt [Text (transl "no"); Value "no"; Variable tv]
+    in
+    Textvariable.set tv (if state.browser_lang then "yes" else "no");
+    pack [lab] [Side Side_Left];
+    pack [val1; val2] [Side Side_Right];
+    pack [opt] [Fill Fill_X];
+    tv
+  }
   in
-  let tv2 = Textvariable.create () in
-  let val21 =
-    Radiobutton.create opt2 [Text (transl "yes"); Value "yes"; Variable tv2]
-  in
-  let val22 =
-    Radiobutton.create opt2 [Text (transl "no"); Value "no"; Variable tv2]
-  in
-  Textvariable.set tv2 (if state.browser_lang then "yes" else "no");
-  pack [lab2] [Side Side_Left];
-  pack [val21; val22] [Side Side_Right];
-  pack [opt2] [Fill Fill_X];
 
-  let opt3 = Frame.create frame [] in
-  let lab3 = Label.create opt3 [Text (transl "HTTP Authentication:")] in
-  let tv3 = Textvariable.create () in
-  let val31 =
-    Radiobutton.create opt3
-      [Text (transl "basic"); Value "basic"; Variable tv3]
+  let tv3 = do {
+    let opt = Frame.create frame [] in
+    let lab = Label.create opt [Text (transl "HTTP Authentication:")] in
+    let tv = Textvariable.create () in
+    let val1 =
+      Radiobutton.create opt
+        [Text (transl "basic"); Value "basic"; Variable tv]
+    in
+    let val2 =
+      Radiobutton.create opt
+        [Text (transl "digest"); Value "digest"; Variable tv]
+    in
+    Textvariable.set tv (if state.digest_auth then "digest" else "basic");
+    pack [lab] [Side Side_Left];
+    pack [val1; val2] [Side Side_Right];
+    pack [opt] [Fill Fill_X];
+    tv
+  }
   in
-  let val32 =
-    Radiobutton.create opt3
-      [Text (transl "digest"); Value "digest"; Variable tv3]
-  in
-  Textvariable.set tv3 (if state.digest_auth then "digest" else "basic");
-  pack [lab3] [Side Side_Left];
-  pack [val31; val32] [Side Side_Right];
-  pack [opt3] [Fill Fill_X];
 
   let buts = do {
     let buts = Frame.create frame [] in
@@ -789,7 +797,7 @@ value main () = do {
     {config_env = config_env; tk_win = win; bin_dir = default_bin_dir;
      sys_dir = default_sys_dir; doc_dir = default_doc_dir;
      port = default_port; browser = default_browser;
-     bases_dir = default_bases_dir; browser_lang = True; digest_auth = False;
+     bases_dir = default_bases_dir; browser_lang = True; digest_auth = True;
      server_running = None; waiting_pids = []}
   in
   Encoding.system_set "utf-8";

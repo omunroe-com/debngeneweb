@@ -1,7 +1,7 @@
 %doctype;
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: perso.txt,v 5.10 2007/02/12 11:48:24 ddr Exp $ -->
+  <!-- $Id: perso.txt,v 5.15 2007/07/25 15:01:02 ddr Exp $ -->
   <!-- Copyright (c) 1998-2007 INRIA -->
   <title>%nn;
     %if;has_public_name;
@@ -15,10 +15,11 @@
   <meta http-equiv="Content-Style-Type" content="text/css"%/>
   <meta http-equiv="Content-Type" content="text/html; charset=%charset;"%/>
   <meta name="robots" content="none"%/>
-  <style type="text/css"><!--
+  <style type="text/css">
+    html { background:url('%image_prefix;/gwback.jpg') }
     .highlight { color: %highlight;; font-weight: bold }
     a.date { text-decoration: none; color: black }
-  --></style>
+  </style>
 %base_header;
 </head>
 <body%body_prop;>
@@ -313,6 +314,12 @@
       </li>%nl;
     %end;
   </ul>
+%end;
+
+%if;(not cancel_links and has_linked_pages)
+  <table style="float:%right;"><tr><td style="font-size:80%%">
+    (<a href="%prefix;m=LINKED;%access;">[linked pages]</a>)
+  </td></tr></table>
 %end;
 
 %if;(has_notes or has_linked_page.BNOTE or has_linked_page.NOTE)

@@ -1,5 +1,5 @@
-(* camlp4r ./pa_html.cmo *)
-(* $Id: notes.ml,v 5.26 2007/01/25 15:44:24 ddr Exp $ *)
+(* camlp5r ./pa_html.cmo *)
+(* $Id: notes.ml,v 5.33 2007/09/12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -93,7 +93,13 @@ value print_whole_notes conf base fnotes title s ho = do {
   let s = string_with_macros conf [] s in
   let edit_opt = Some (conf.wizard, "NOTES", fnotes) in
   let s =
-    Wiki.html_with_summary_of_tlsw conf "NOTES" file_path edit_opt s
+    let wi =
+      {Wiki.wi_mode = "NOTES"; Wiki.wi_file_path = file_path;
+       Wiki.wi_cancel_links = conf.cancel_links;
+       Wiki.wi_person_exists = person_exists conf base;
+       Wiki.wi_always_show_link = conf.wizard || conf.friend}
+    in
+    Wiki.html_with_summary_of_tlsw conf wi edit_opt s
   in
   let s =
     match ho with
@@ -124,8 +130,13 @@ value print_notes_part conf base fnotes title s cnt0 =
     let s = string_with_macros conf [] s in
     let lines = Wiki.extract_sub_part s cnt0 in
     let mode = "NOTES" in
-    let file_path = file_path conf base in
-    Wiki.print_sub_part conf conf.wizard file_path mode mode fnotes cnt0 lines;
+    let wi =
+      {Wiki.wi_mode = mode; Wiki.wi_cancel_links = conf.cancel_links;
+       Wiki.wi_file_path = file_path conf base;
+       Wiki.wi_person_exists = person_exists conf base;
+       Wiki.wi_always_show_link = conf.wizard || conf.friend}
+    in
+    Wiki.print_sub_part conf wi conf.wizard mode fnotes cnt0 lines;
     trailer conf;
   }
 ;
@@ -182,7 +193,12 @@ value notes_links_db conf base eliminate_unlinked = do {
       (fun db2 (pg, (sl, il)) ->
          let record_it =
            match pg with
-           [ NotesLinks.PgInd ip -> authorized_age conf base (poi base ip)
+           [ NotesLinks.PgInd ip ->
+               authorized_age conf base (pget conf base ip)
+           | NotesLinks.PgFam ifam ->
+               let fam = foi base ifam in
+               if is_deleted_family fam then False
+               else authorized_age conf base (pget conf base (get_father fam))
            | NotesLinks.PgNotes | NotesLinks.PgMisc _
            | NotesLinks.PgWizard _ -> True ]
          in
@@ -204,7 +220,8 @@ value notes_links_db conf base eliminate_unlinked = do {
     List.fold_left
       (fun set (pg, (sl, il)) ->
          match pg with
-         [ NotesLinks.PgInd _ | NotesLinks.PgNotes | NotesLinks.PgWizard _ ->
+         [ NotesLinks.PgInd _ | NotesLinks.PgFam _ | NotesLinks.PgNotes |
+           NotesLinks.PgWizard _ ->
              List.fold_left (fun set s -> StrSet.add s set) set sl
          | NotesLinks.PgMisc s ->
              do { Hashtbl.add misc s sl; set } ])
@@ -236,7 +253,59 @@ value notes_links_db conf base eliminate_unlinked = do {
     db2
 };
 
-value print_what_links conf base fnotes =
+value print_linked_list conf base pgl =
+  tag "ul" begin
+    List.iter
+      (fun pg ->
+         stagn "li" begin
+           match pg with
+           [ NotesLinks.PgInd ip ->
+               let p = pget conf base ip in
+               Wserver.wprint "%s%s"
+                 (Util.referenced_person_title_text conf base p)
+                 (Date.short_dates_text conf base p)
+           | NotesLinks.PgFam ifam ->
+               let fam = foi base ifam in
+               let fath = pget conf base (get_father fam) in
+               let moth = pget conf base (get_mother fam) in
+               Wserver.wprint "%s%s &amp; %s %s"
+                 (Util.referenced_person_title_text conf base fath)
+                 (Date.short_dates_text conf base fath)
+                 (Util.referenced_person_title_text conf base moth)
+                 (Date.short_dates_text conf base moth)
+           | NotesLinks.PgNotes ->
+               stagn "a" "href=\"%sm=NOTES\"" (commd conf) begin
+                 Wserver.wprint "%s" (transl_nth conf "note/notes" 1);
+               end
+           | NotesLinks.PgMisc fnotes ->
+               stagn "tt" begin
+                 Wserver.wprint "[";
+                 stag "a" "href=\"%sm=NOTES;f=%s\"" (commd conf) fnotes
+                 begin
+                   Wserver.wprint "%s" fnotes;
+                 end;
+                 Wserver.wprint "]";
+               end
+           | NotesLinks.PgWizard wizname ->
+               stagn "tt" begin
+                 stag "i" begin
+                   Wserver.wprint "%s"
+                     (transl_nth conf
+                        "wizard/wizards/friend/friends/exterior" 0);
+                 end;
+                 Wserver.wprint " ";
+                 stag "a" "href=\"%sm=WIZNOTES;v=%s\"" (commd conf)
+                   (code_varenv wizname)
+                 begin
+                   Wserver.wprint "%s" wizname;
+                 end;
+               end ];
+         end)
+      pgl;
+  end
+;
+
+value print_what_links conf base fnotes =  do {
   let title h =
     do {
       Wserver.wprint "%s " (capitale (transl conf "linked pages"));
@@ -252,56 +321,13 @@ value print_what_links conf base fnotes =
     }
   in
   let db = notes_links_db conf base False in
-  do {
-    Hutil.header conf title;
-    Hutil.print_link_to_welcome conf True;
-    try
-      let pl = List.assoc fnotes db in
-      tag "ul" begin
-        List.iter
-          (fun pg ->
-             stagn "li" begin
-               match pg with
-               [ NotesLinks.PgInd ip ->
-                   let p = poi base ip in
-                   Wserver.wprint "%s%s"
-                     (Util.referenced_person_title_text conf base p)
-                     (Date.short_dates_text conf base p)
-               | NotesLinks.PgNotes ->
-                   stagn "a" "href=\"%sm=NOTES\"" (commd conf) begin
-                     Wserver.wprint "%s" (transl_nth conf "note/notes" 1);
-                   end
-               | NotesLinks.PgMisc fnotes ->
-                   stagn "tt" begin
-                     Wserver.wprint "[";
-                     stag "a" "href=\"%sm=NOTES;f=%s\"" (commd conf) fnotes
-                     begin
-                       Wserver.wprint "%s" fnotes;
-                     end;
-                     Wserver.wprint "]";
-                   end
-               | NotesLinks.PgWizard wizname ->
-                   stagn "tt" begin
-                     stag "i" begin
-                       Wserver.wprint "%s"
-                         (transl_nth conf
-                            "wizard/wizards/friend/friends/exterior" 0);
-                     end;
-                     Wserver.wprint " ";
-                     stag "a" "href=\"%sm=WIZNOTES;v=%s\"" (commd conf)
-                       (code_varenv wizname)
-                     begin
-                       Wserver.wprint "%s" wizname;
-                     end;
-                   end ];
-             end)
-          pl;
-      end
-    with
-    [ Not_found -> () ];
-    Hutil.trailer conf;
-  }
-;
+  Hutil.header conf title;
+  Hutil.print_link_to_welcome conf True;
+  match try Some (List.assoc fnotes db) with [ Not_found -> None ] with
+  [ Some pgl -> print_linked_list conf base pgl
+  | None -> () ];
+   Hutil.trailer conf;
+};
 
 value print conf base =
   let fnotes =
@@ -390,8 +416,14 @@ value print_mod_ok conf base =
   let commit = commit_notes conf base in
   let string_filter = string_with_macros conf [] in
   let file_path = file_path conf base in
-  Wiki.print_mod_ok conf edit_mode mode fname read_string commit string_filter
-    file_path True
+  let wi =
+    {Wiki.wi_mode = mode; Wiki.wi_cancel_links = conf.cancel_links;
+     Wiki.wi_file_path = file_path;
+     Wiki.wi_person_exists = person_exists conf base;
+     Wiki.wi_always_show_link = conf.wizard || conf.friend}
+  in
+  Wiki.print_mod_ok conf wi edit_mode fname read_string commit string_filter
+    True
 ;
 
 value begin_text_without_html_tags lim s =

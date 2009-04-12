@@ -1,4 +1,4 @@
-(* $Id: wserver.ml,v 5.12 2007/01/19 01:53:18 ddr Exp $ *)
+(* $Id: wserver.ml,v 5.15 2007/09/12 09:42:26 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Printf;
@@ -7,6 +7,9 @@ value sock_in = ref "wserver.sin";
 value sock_out = ref "wserver.sou";
 value stop_server = ref "STOP_SERVER";
 value noproc = ref False;
+
+value wserver_sock = ref Unix.stdout;
+value wsocket () = wserver_sock.val;
 
 value wserver_oc = ref stdout;
 
@@ -52,9 +55,11 @@ value gen_decode strip_spaces s =
     if i < String.length s then
       let i =
         match s.[i] with
-        [ '%' when i + 2 < String.length s ->
-            let v = hexa_val s.[i + 1] * 16 + hexa_val s.[i + 2] in
-            do { s1.[i1] := Char.chr v; i + 3 }
+        [ '%' when i + 2 < String.length s -> do {
+            let v = hexa_val s.[i+1] * 16 + hexa_val s.[i+2] in
+            s1.[i1] := Char.chr v;
+            i + 3
+          }
         | '+' -> do { s1.[i1] := ' '; succ i }
         | x -> do { s1.[i1] := x; succ i } ]
       in
@@ -84,9 +89,9 @@ value decode = gen_decode True;
 
 value special =
   fun
-  [ '\000'..'\031' | '\127'..'\255' | '<' | '>' | '"' | '#' | '%' |
-    '{' | '}' | '|' | '\\' | '^' | '~' | '[' | ']' | '`' | ';' | '/' | '?' |
-    ':' | '@' | '=' | '&' ->
+  [ '\000'..'\031' | '\127'..'\255' | '<' | '>' | '"' | '#' | '%' | '{' |
+    '}' | '|' | '\\' | '^' | '~' | '[' | ']' | '`' | ';' | '/' | '?' | ':' |
+    '@' | '=' | '&' ->
       True
   | _ -> False ]
 ;
@@ -113,8 +118,8 @@ value encode s =
         | c ->
             if special c then do {
               s1.[i1] := '%';
-              s1.[i1 + 1] := hexa_digit (Char.code c / 16);
-              s1.[i1 + 2] := hexa_digit (Char.code c mod 16);
+              s1.[i1+1] := hexa_digit (Char.code c / 16);
+              s1.[i1+2] := hexa_digit (Char.code c mod 16);
               i1 + 3
             }
             else do { s1.[i1] := c; succ i1 } ]
@@ -123,85 +128,80 @@ value encode s =
     else s1
   in
   if need_code 0 then
-    let len = compute_len 0 0 in copy_code_in (String.create len) 0 0
+    let len = compute_len 0 0 in
+    copy_code_in (String.create len) 0 0
   else s
 ;
 
 value nl () = wprint "\013\010";
 
-value http answer =
+value http answer = do {
   let answer = if answer = "" then "200 OK" else answer in
-  do {
-    wprint "HTTP/1.0 %s" answer; nl ();
-  }
-;
+  wprint "HTTP/1.0 %s" answer;
+  nl ()
+};
 
 value print_exc exc =
   match exc with
-  [ Unix.Unix_error err fun_name arg ->
-      do {
-        prerr_string "\"";
-        prerr_string fun_name;
-        prerr_string "\" failed";
-        if String.length arg > 0 then do {
-          prerr_string " on \""; prerr_string arg; prerr_string "\"";
-        }
-        else ();
-        prerr_string ": ";
-        prerr_endline (Unix.error_message err);
+  [ Unix.Unix_error err fun_name arg -> do {
+      prerr_string "\"";
+      prerr_string fun_name;
+      prerr_string "\" failed";
+      if String.length arg > 0 then do {
+        prerr_string " on \"";
+        prerr_string arg;
+        prerr_string "\""
       }
+      else ();
+      prerr_string ": ";
+      prerr_endline (Unix.error_message err)
+    }
   | Out_of_memory -> prerr_string "Out of memory\n"
-  | Match_failure (file, first_char, last_char) ->
-      do {
-        prerr_string "Pattern matching failed, file ";
-        prerr_string file;
-        prerr_string ", chars ";
-        prerr_int first_char;
-        prerr_char '-';
-        prerr_int last_char;
-        prerr_char '\n';
+  | Match_failure (file, first_char, last_char) -> do {
+      prerr_string "Pattern matching failed, file ";
+      prerr_string file;
+      prerr_string ", chars ";
+      prerr_int first_char;
+      prerr_char '-';
+      prerr_int last_char;
+      prerr_char '\n'
+    }
+  | Assert_failure (file, first_char, last_char) -> do {
+      prerr_string "Assertion failed, file ";
+      prerr_string file;
+      prerr_string ", chars ";
+      prerr_int first_char;
+      prerr_char '-';
+      prerr_int last_char;
+      prerr_char '\n'
+    }
+  | x -> do {
+      prerr_string "Wserver: uncaught exception: ";
+      prerr_string (Obj.magic (Obj.field (Obj.field (Obj.repr x) 0) 0));
+      if Obj.size (Obj.repr x) > 1 then do {
+        prerr_char '(';
+        for i = 1 to Obj.size (Obj.repr x) - 1 do {
+          if i > 1 then prerr_string ", " else ();
+          let arg = Obj.field (Obj.repr x) i in
+          if not (Obj.is_block arg) then
+            prerr_int (Obj.magic arg : int)
+          else if Obj.tag arg = 252 then do {
+            prerr_char '"';
+            prerr_string (Obj.magic arg : string);
+            prerr_char '"'
+          }
+          else prerr_char '_';
+        };
+        prerr_char ')';
       }
-  | Assert_failure (file, first_char, last_char) ->
-      do {
-        prerr_string "Assertion failed, file ";
-        prerr_string file;
-        prerr_string ", chars ";
-        prerr_int first_char;
-        prerr_char '-';
-        prerr_int last_char;
-        prerr_char '\n';
-      }
-  | x ->
-      do {
-        prerr_string "Wserver: uncaught exception: ";
-        prerr_string (Obj.magic (Obj.field (Obj.field (Obj.repr x) 0) 0));
-        if Obj.size (Obj.repr x) > 1 then do {
-          prerr_char '(';
-          for i = 1 to Obj.size (Obj.repr x) - 1 do {
-            if i > 1 then prerr_string ", " else ();
-            let arg = Obj.field (Obj.repr x) i in
-            if not (Obj.is_block arg) then
-              prerr_int (Obj.magic arg : int)
-            else if Obj.tag arg = 252 then do {
-              prerr_char '"'; prerr_string (Obj.magic arg : string);
-              prerr_char '"'
-            }
-            else prerr_char '_';
-          };
-          prerr_char ')';
-        }
-        else ();
-        prerr_char '\n';
-      } ]
+      else ();
+      prerr_char '\n'
+    } ]
 ;
 
-value print_err_exc exc =
-  do { print_exc exc; flush stderr; }
-;
+value print_err_exc exc = do { print_exc exc; flush stderr };
 
-value case_unsensitive_eq s1 s2 =
-  String.lowercase s1 = String.lowercase s2
-;
+value case_unsensitive_eq s1 s2 = String.lowercase s1 = String.lowercase s2;
 
 value rec extract_param name stop_char =
   fun
@@ -220,15 +220,13 @@ value rec extract_param name stop_char =
 ;
 
 value buff = ref (String.create 80);
-value store len x =
-  do {
-    if len >= String.length buff.val then
-      buff.val := buff.val ^ String.create (String.length buff.val)
-    else ();
-    buff.val.[len] := x;
-    succ len
-  }
-;
+value store len x = do {
+  if len >= String.length buff.val then
+    buff.val := buff.val ^ String.create (String.length buff.val)
+  else ();
+  buff.val.[len] := x;
+  succ len
+};
 value get_buff len = String.sub buff.val 0 len;
 
 value get_request strm =
@@ -273,17 +271,16 @@ value get_request_and_content strm =
   let content =
     match extract_param "content-length: " ' ' request with
     [ "" -> ""
-    | x ->
+    | x -> do {
         let str = String.create (int_of_string x) in
-        do {
-          for i = 0 to String.length str - 1 do {
-            str.[i] :=
-              match strm with parser
-              [ [: `x :] -> x
-              | [: :] -> ' ' ];
-          };
-          str
-        } ]
+        for i = 0 to String.length str - 1 do {
+          str.[i] :=
+            match strm with parser
+            [ [: `x :] -> x
+            | [: :] -> ' ' ];
+        };
+        str
+      } ]
   in
   (request, content)
 ;
@@ -295,57 +292,55 @@ value string_of_sockaddr =
 ;
 value sockaddr_of_string s = Unix.ADDR_UNIX s;
 
-value treat_connection tmout callback addr fd =
-  do {
-    IFDEF NOFORK THEN ()
-    ELSIFDEF UNIX THEN
-      if tmout > 0 then
-        let spid = Unix.fork () in
-        if spid > 0 then do {
-          let _ (* : Sys.signal_behavior *) =
-             Sys.signal Sys.sigalrm
-               (Sys.Signal_handle (timeout tmout spid))
-          in ();
-          let _ = Unix.alarm tmout in ();
-          let _ = Unix.waitpid [] spid in ();
-          let _ (* : Sys.signal_behavior *) =
-            Sys.signal Sys.sigalrm Sys.Signal_default
-          in ();
-          exit 0;
-        }
-        else ()
+value treat_connection tmout callback addr fd = do {
+  IFDEF NOFORK THEN ()
+  ELSE IFDEF UNIX THEN
+    if tmout > 0 then
+      let spid = Unix.fork () in
+      if spid > 0 then do {
+        let _ (* : Sys.signal_behavior *) =
+           Sys.signal Sys.sigalrm
+             (Sys.Signal_handle (timeout tmout spid))
+        in ();
+        let _ = Unix.alarm tmout in ();
+        let _ = Unix.waitpid [] spid in ();
+        let _ (* : Sys.signal_behavior *) =
+          Sys.signal Sys.sigalrm Sys.Signal_default
+        in ();
+        exit 0;
+      }
       else ()
-    ELSE () END;
-    let (request, script_name, contents) =
-      let (request, contents) =
-        let strm =
-          let c = " " in
-          Stream.from
-            (fun _ -> if Unix.read fd c 0 1 = 1 then Some c.[0] else None)
-        in
-        get_request_and_content strm
+    else ()
+  ELSE () END END;
+  let (request, script_name, contents) =
+    let (request, contents) =
+      let strm =
+        let c = " " in
+        Stream.from
+          (fun _ -> if Unix.read fd c 0 1 = 1 then Some c.[0] else None)
       in
-      let (script_name, contents) =
-        match extract_param "GET /" ' ' request with
-        [ "" -> (extract_param "POST /" ' ' request, contents)
-        | str ->
-            try
-              let i = String.index str '?' in
-              (String.sub str 0 i,
-               String.sub str (i + 1) (String.length str - i - 1))
-            with
-            [ Not_found -> (str, "") ] ]
-      in
-      (request, script_name, contents)
+      get_request_and_content strm
     in
-    try callback (addr, request) script_name contents with
-    [ Unix.Unix_error Unix.EPIPE "write" _ -> ()
-    | Sys_error "Broken pipe" -> ()
-    | exc -> print_err_exc exc ];
-    try wflush () with _ -> ();
-    try flush stderr with _ -> ();
-  }
-;
+    let (script_name, contents) =
+      match extract_param "GET /" ' ' request with
+      [ "" -> (extract_param "POST /" ' ' request, contents)
+      | str ->
+          try
+            let i = String.index str '?' in
+            (String.sub str 0 i,
+             String.sub str (i + 1) (String.length str - i - 1))
+          with
+          [ Not_found -> (str, "") ] ]
+    in
+    (request, script_name, contents)
+  in
+  try callback (addr, request) script_name contents with
+  [ Unix.Unix_error Unix.EPIPE "write" _ -> ()
+  | Sys_error "Broken pipe" -> ()
+  | exc -> print_err_exc exc ];
+  try wflush () with _ -> ();
+  try flush stderr with _ -> ();
+};
 
 value buff = String.create 1024;
 
@@ -495,17 +490,19 @@ value accept_connection tmout max_clients callback s =
         }
       in
       do {
+        wserver_sock.val := t;
         wserver_oc.val := Unix.out_channel_of_descr t;
         treat_connection tmout callback addr t;
         cleanup ();
       }
-    ELSIFDEF UNIX THEN
+    ELSE IFDEF UNIX THEN
       match try Some (Unix.fork ()) with _ -> None with
       [ Some 0 ->
           do {
             try do {
               if max_clients = None && Unix.fork () <> 0 then exit 0 else ();
               Unix.close s;
+              wserver_sock.val := t;
               wserver_oc.val := Unix.out_channel_of_descr t;
 (*  
    j'ai l'impression que cette fermeture fait parfois bloquer le serveur...
@@ -610,14 +607,14 @@ let args = Sys.argv in
       | exc -> do { cleanup (); raise exc } ];
       cleanup ();
     }
-    END
+    END END
   }
 ;
 
 value f addr_opt port tmout max_clients g =
   match
     IFDEF NOFORK THEN None
-    ELSIFDEF WIN95 THEN
+    ELSE IFDEF WIN95 THEN
       IFDEF SYS_COMMAND THEN
         let len = Array.length Sys.argv in
         if len > 2 && Sys.argv.(len - 2) = "-wserver" then
@@ -626,11 +623,11 @@ value f addr_opt port tmout max_clients g =
       ELSE
         try Some (Sys.getenv "WSERVER") with [ Not_found -> None ]
       END
-    ELSE None END
+    ELSE None END END
   with
   [ Some s ->
       IFDEF NOFORK THEN ()
-      ELSIFDEF WIN95 THEN do {
+      ELSE IFDEF WIN95 THEN do {
         let addr = sockaddr_of_string s in
         let fd = Unix.openfile sock_in.val [Unix.O_RDONLY] 0 in
         let oc = open_out_bin sock_out.val in
@@ -638,7 +635,7 @@ value f addr_opt port tmout max_clients g =
         ignore (treat_connection tmout g addr fd);
         exit 0
       }
-      ELSE () END
+      ELSE () END END
   | None ->
       do {
         check_stopping ();
@@ -654,8 +651,8 @@ value f addr_opt port tmout max_clients g =
         Unix.bind s (Unix.ADDR_INET addr port);
         Unix.listen s 4;
         IFDEF NOFORK THEN Sys.set_signal Sys.sigpipe Sys.Signal_ignore
-        ELSIFDEF UNIX THEN let _ = Unix.nice 1 in ()
-        ELSE () END;
+        ELSE IFDEF UNIX THEN let _ = Unix.nice 1 in ()
+        ELSE () END END;
         let tm = Unix.localtime (Unix.time ()) in
         eprintf "Ready %4d-%02d-%02d %02d:%02d port"
           (1900 + tm.Unix.tm_year) (succ tm.Unix.tm_mon) tm.Unix.tm_mday
