@@ -2,7 +2,7 @@
 # postinst script for Gwsetup
 #
 
-set +e 
+set -e 
 
 # These will be used here and there below
 RCFILE=/etc/default/gwsetup
@@ -112,11 +112,5 @@ case "$1" in
     *)
 	;;
 esac
-
-# Transition of init scripts links: we don't want them in runlevels
-# 0 and 6 anymore
-if dpkg --compare-versions "$2" lt "5.01-4"; then
-	update-rc.d -f gwsetup remove
-fi
 
 #DEBHELPER#
