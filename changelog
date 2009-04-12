@@ -1,4 +1,4 @@
-geneweb (5.01-9) UNRELEASED; urgency=low
+geneweb (5.01-9) unstable; urgency=low
 
   * First upload for squeeze
   * Upgrade Standards to 3.8.1: /var/run/gwtp has been dealt with
@@ -18,8 +18,10 @@ geneweb (5.01-9) UNRELEASED; urgency=low
   * No longer use iso_639.tab for languages' names. Use
     isoquery output instead. Thanks to Tobias Quatamer for the patch
     Closes: #523161
+  * Drop upgrade code from a pre-lenny version in gwtp.prerm. That empties
+    that script which is thus removed.
 
- -- Christian Perrier <bubulle@debian.org>  Sun, 29 Mar 2009 10:51:45 +0200
+ -- Christian Perrier <bubulle@debian.org>  Sun, 12 Apr 2009 11:57:21 +0200
 
 geneweb (5.01-8) unstable; urgency=low
 
