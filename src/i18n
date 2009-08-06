@@ -1,0 +1,365 @@
+ !dates order
+ !languages
+ to see the first branch
+ to see the first relationship link
+ to try again with this number
+%1 of %2
+%d years ago
+%s access cancelled for that page
+%s cousins
+%s, it is %s of
+%s, it will be %s of
+%t already has parents
+%t died before his/her birth
+%t has incorrect title dates: %t
+%t is born after the death of his/her mother %t
+%t is born more than 2 years after the death of his/her father %t
+%t's sex is not coherent with his/her relations
+(date)
+(decimal separator)
+(french revolution month)
+(hebrew month)
+(month)
+(thousand separator)
+(week day)
+2nd cousins
+3rd cousins
+<em>Sosa number</em> relative to %t
+M/F
+Sosa
+Y/N
+a %s cousin
+a 2nd cousin
+a 3rd cousin
+a brother-in-law/a sister-in-law
+a brother/a sister/a sibling
+a cousin
+a descendant
+a grandfather/a grandmother/a grandparent
+a grandson/a granddaughter/a grandchild
+a great-grandfather/a great-grandmother/a great-grandparent
+a great-grandson/a great-granddaughter/a great-grandchild
+a great-nephew/a great-niece
+a great-uncle/a great-aunt
+a half-brother/a half-sister/a half-sibling
+a nephew/a niece
+a son-in-law/a daughter-in-law
+a son/a daughter/a child
+about (date)
+access
+add
+adoptive father/adoptive mother/adoptive parents
+adoptive son/adoptive daughter/adoptive child
+advanced request
+after
+after (date)
+age
+age at death:
+alias
+alive
+all the estates
+all the titles
+alphabetic order
+also
+an ancestor
+an uncle/an aunt
+ancestors
+ancestors (some)
+and
+anniversaries
+anniversaries of dead people
+anniversaries of marriage
+are
+at the same time
+average age at death
+back
+baptism
+baptized
+before
+before (date)
+begin
+between (date)
+birth
+birthdays
+border
+born
+branch/branches
+burial
+buried
+calendar/calendars
+cancel GeneWeb links
+candidate father/candidate mother/candidate parents
+candidate son/candidate daughter/candidate child
+cannot access base
+cannot change sex of a married person
+change children's names
+change it (the number) yourself
+changed order of children
+child/children
+children's names changed
+click
+click on "%s"
+color
+comment
+connections
+consanguinity
+continue merging
+continued
+cousins
+cousins (general term)
+create
+cremated
+database forum
+date
+days old
+death
+delete
+descendants
+died
+died young
+disappeared
+disconnect
+display by slices/slice width/overlap/total width
+divorce
+divorced
+don't group the common branches together
+don't know
+end
+engaged
+engaged%t to
+error
+estate
+exact
+executed (legally killed)
+families with encoding
+family added
+family deleted
+family modified
+family/families
+father/mother
+file
+first free number
+first name alias
+first name missing
+first name not found
+first name/first names
+for the first names by alphabetic order
+for the list ordered by the date of the last modification
+foster father/foster mother/foster parents
+foster son/foster daughter/foster child
+generation/generations
+godfather/godmother/godparents
+godson/goddaughter/godchild
+grand-parents
+great-grand-parents
+gregorian/julian/french/hebrew
+happy birthday to you!
+having as children
+here
+him/her
+history of updates
+horizontally
+husband/wife
+ident/email/subject
+if titles
+image deleted
+image received
+image/images
+in (month year)
+in (year)
+include missing spouses
+include spouses
+incompatible sexes
+incorrect date
+incorrect request
+indeed,
+index of the descendants
+index of the spouses (non descendants)
+insert
+inversion done
+invert
+invert the order of the following families
+is
+is a very young parent
+is born after his/her child
+it is the same person!
+julian day
+killed (in action)
+less than one month old
+link
+link between
+linked pages
+list/list (ancestors)
+long display
+loop in database: %s is his/her own ancestor
+main title
+male line/female line
+marriage of %t after his/her death
+marriage of %t before his/her birth
+marriage/marriages
+married
+married at age %t
+married%t to
+maximum
+merge
+merge done
+message added
+message deleted
+message/previous message/previous messages/next message
+miscellaneous notes
+missing ancestors
+modify
+months old
+moon age/new moon/first quarter/full moon/last quarter
+more than %d answers
+murdered
+name
+name %s already used by %tthis person%t
+navigation with %t as Sosa reference
+nephews and nieces
+next sibling
+no anniversary
+no birthday
+no known relationship link between %s and %s
+no match
+no mention
+no sexes check
+not divorced
+not found
+not married
+note/notes
+notes modified
+nth
+nth (cousin)
+nth (generation)
+number
+number of branches
+number of living persons:
+occupation
+of the %s generation
+on %s's side
+on (day month year)
+on (weekday day month year)
+one day old
+one month old
+one year old
+only the generation selected
+optional
+or
+parents
+person added
+person deleted
+person modified
+person/persons
+persons having the same name
+place
+population pyramid
+possible duplications
+possibly (date)
+precision
+previous sibling
+private
+public
+public name
+qualifier
+recognized son/recognized daughter/recognized child
+recognizing father/recognizing mother/recognizing parents
+relation/relations
+relationship
+relationship computing
+relationship link/relationship links
+relationship%t to
+relationships by marriage
+search/case sensitive
+see
+see above
+see further
+send
+separated
+several answers
+sex
+short display
+shortest path
+should be female
+should be male
+siblings
+since the last click
+son/daughter/child
+source/sources
+specify
+spouses not included
+starting with
+statistics
+surname alias
+surname missing
+surname not found
+surname/surnames
+surnames list
+text
+the %d first names
+the %d oldest couples perhaps still alive and engaged
+the %d oldest perhaps still alive
+the %d surnames
+the %d who lived the longest
+the %s generation
+the anniversary
+the anniversary of marriage
+the base has changed; do "back", "reload", and refill the form
+the birthday
+the children
+the day after tomorrow
+the father-in-law/the mother-in-law
+the father/the mother/a parent
+the file is temporarily locked: please try again
+the following children of %t and %t are not in order
+the grandchildren
+the grandparents
+the great-grandchildren
+the great-grandparents
+the latest %d births
+the latest %d marriages
+the latest %t deaths
+the parents
+the spouse
+the whole list
+this forum is moderated
+title/titles
+to add a child to a family, use "%s"
+to change
+to the %s generation
+to the children
+to the grandchildren
+to the grandparents
+to the great-grandchildren
+to the great-grandparents
+to the parents
+today
+tomorrow
+total
+tree
+try again
+uncles and aunts
+undefined sex for %t
+unknown person
+unspecified
+up to
+update
+use "link" instead of "create"
+user/password/cancel
+validate/delete
+version
+view source
+visualize/show/hide/summary
+warnings
+with
+witness at marriage of %s and %s
+witness/witnesses
+wizard/wizards/friend/friends
+wizard/wizards/friend/friends/exterior
+would be his/her own ancestor
+year/month/day
+years old
+you are visible/you are not visible
+you must first merge
+you must first merge the 2 families
+your message is waiting for validation
