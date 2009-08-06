@@ -1,4 +1,4 @@
-# $Id: Makefile,v 5.1 2007/09/12 09:58:44 ddr Exp $
+# $Id: Makefile,v 4.8 2002/02/14 10:19:38 ddr Exp $
 
 include ../tools/Makefile.inc
 
@@ -23,7 +23,7 @@ clean::
 test: test_dir wrappers
 
 wrappers:
-	if test "$(CAMLP5F)" = "-DWIN95"; then \
+	if test "$(CAMLP4F)" = "-DWIN95"; then \
 	  echo 'cd gw' > test/gwd.bat; \
 	  echo 'gwd' >> test/gwd.bat; \
 	  echo 'cd gw' > test/gwsetup.bat; \
@@ -67,7 +67,7 @@ setup.opt: $(OBJS:.cmo=.cmx)
 	$(OCAMLOPT) $(STATIC) unix.cmxa $(LIBUNIX) $(OBJS:.cmo=.cmx) -o setup.opt
 
 depend:
-	TOP=.. ../tools/camlp5_depend.sh $(OCAMLI) *.ml* > .depend
+	TOP=.. ../tools/camlp4_depend.sh $(OCAMLI) *.ml* > .depend
 
 always:
 

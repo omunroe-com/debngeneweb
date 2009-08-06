@@ -1,12 +1,10 @@
-(* camlp5r ./pa_html.cmo *)
-(* $Id: sendImage.ml,v 5.7 2007/09/12 09:58:44 ddr Exp $ *)
+(* camlp4r ./pa_html.cmo *)
+(* $Id: sendImage.ml,v 4.13 2004/10/04 11:18:04 ddr Exp $ *)
 
+open Gutil;
+open Util;
 open Config;
 open Def;
-open Gutil;
-open Gwdb;
-open Hutil;
-open Util;
 
 value incorrect conf = do { incorrect_request conf; raise Update.ModErr };
 
@@ -15,11 +13,9 @@ value incorrect_content_type conf base p s =
   do {
     rheader conf title;
     print_link_to_welcome conf True;
-    tag "p" begin
-      Wserver.wprint "<font size=\"-1\"><em>";
-      Wserver.wprint "Error: incorrect image content type: %s" s;
-      Wserver.wprint "</em></font>\n";
-    end;
+    Wserver.wprint "<p>\n<font size=-1><em>";
+    Wserver.wprint "Error: incorrect image content type: %s" s;
+    Wserver.wprint "</em></font>\n<p>\n";
     Wserver.wprint "<ul><li>%s</ul>\n"
       (referenced_person_title_text conf base p);
     trailer conf;
@@ -32,7 +28,7 @@ value error_too_big_image conf base p len max_len =
   do {
     rheader conf title;
     print_link_to_welcome conf True;
-    Wserver.wprint "<p>\n<font size=\"-1\"><em>";
+    Wserver.wprint "<p>\n<font size=-1><em>";
     Wserver.wprint "Error: this image is too big: %d bytes<br>\n" len;
     Wserver.wprint "Maximum authorized in this database: %d bytes<br>\n"
       max_len;
@@ -61,35 +57,35 @@ value print_send_image conf base p =
         let fn = p_first_name base p in
         let sn = p_surname base p in
         Wserver.wprint ": ";
-        Wserver.wprint "%s.%d %s" fn (get_occ p) sn
+        Wserver.wprint "%s.%d %s" fn p.occ sn
       }
     }
   in
-  let digest = Update.digest_person (UpdateInd.string_person_of base p) in
+  let digest = Update.digest_person p in
   do {
     header conf title;
-    tag "form" "method=\"post\" action=\"%s\" enctype=\"multipart/form-data\""
+    tag "form" "method=POST action=\"%s\" enctype=\"multipart/form-data\""
       conf.command
     begin
-      tag "p" begin
-        Util.hidden_env conf;
-        xtag "input" "type=\"hidden\" name=\"m\" value=\"SND_IMAGE_OK\"";
-        xtag "input" "type=\"hidden\" name=\"i\" value=\"%d\""
-          (Adef.int_of_iper (get_key_index p));
-        xtag "input" "type=\"hidden\" name=\"digest\" value=\"%s\"" digest;
-        Wserver.wprint "%s:\n" (capitale (transl conf "file"));
-        xtag "input" "\
-type=\"file\" name=\"file\" size=\"50\" maxlength=\"250\" accept=\"image/*\"";
-      end;
+      Util.hidden_env conf;
+      Wserver.wprint "<input type=hidden name=m value=SND_IMAGE_OK>\n";
+      Wserver.wprint "<input type=hidden name=i value=%d>\n"
+        (Adef.int_of_iper p.cle_index);
+      Wserver.wprint "<input type=hidden name=digest value=\"%s\">\n" digest;
+      Wserver.wprint "\n";
+      Wserver.wprint "%s:\n" (capitale (transl conf "file"));
+      Wserver.wprint "\
+<input type=file name=file size=50 maxlength=250 accept=\"image/*\">
+";
       match p_getint conf.base_env "max_images_size" with
       [ Some len ->
-          tag "p" begin
-            Wserver.wprint "(maximum authorized size = %d bytes)\n" len;
-          end
+          do {
+            Wserver.wprint "<p>\n";
+            Wserver.wprint "(maximum authorized size = %d bytes)\n" len
+          }
       | None -> () ];
-      tag "p" begin
-        xtag "input" "type=\"submit\" value=\"Ok\"";
-      end;
+      Wserver.wprint "<p>\n";
+      Wserver.wprint "<input type=submit value=Ok>\n";
     end;
     trailer conf
   }
@@ -98,10 +94,10 @@ type=\"file\" name=\"file\" size=\"50\" maxlength=\"250\" accept=\"image/*\"";
 value print conf base =
   match p_getint conf.env "i" with
   [ Some ip ->
-      let p = poi base (Adef.iper_of_int ip) in
+      let p = base.data.persons.get ip in
       let fn = p_first_name base p in
       let sn = p_surname base p in
-      if sou base (get_image p) <> "" || fn = "?" || sn = "?" then
+      if sou base p.image <> "" || fn = "?" || sn = "?" then
         incorrect_request conf
       else print_send_image conf base p
   | _ -> incorrect_request conf ]
@@ -120,8 +116,7 @@ value print_delete_image conf base p =
         let fn = p_first_name base p in
         let sn = p_surname base p in
         let occ =
-          if fn = "?" || sn = "?" then Adef.int_of_iper (get_key_index p)
-          else get_occ p
+          if fn = "?" || sn = "?" then Adef.int_of_iper p.cle_index else p.occ
         in
         Wserver.wprint ": ";
         Wserver.wprint "%s.%d %s" fn occ sn
@@ -131,16 +126,14 @@ value print_delete_image conf base p =
   do {
     header conf title;
     Wserver.wprint "\n";
-    tag "form" "method=\"post\" action=\"%s\"" conf.command begin
-      html_p conf;
+    tag "form" "method=POST action=\"%s\"" conf.command begin
       Util.hidden_env conf;
-      Wserver.wprint
-        "<input type=\"hidden\" name=\"m\" value=\"DEL_IMAGE_OK\">\n";
-      Wserver.wprint "<input type=\"hidden\" name=\"i\" value=\"%d\">\n\n"
-        (Adef.int_of_iper (get_key_index p));
+      Wserver.wprint "<input type=hidden name=m value=DEL_IMAGE_OK>\n";
+      Wserver.wprint "<input type=hidden name=i value=%d>\n\n"
+        (Adef.int_of_iper p.cle_index);
       Wserver.wprint "\n";
       html_p conf;
-      Wserver.wprint "<input type=\"submit\" value=\"Ok\">\n";
+      Wserver.wprint "<input type=submit value=Ok>\n";
     end;
     Wserver.wprint "\n";
     trailer conf
@@ -150,8 +143,8 @@ value print_delete_image conf base p =
 value print_del conf base =
   match p_getint conf.env "i" with
   [ Some ip ->
-      let p = poi base (Adef.iper_of_int ip) in
-      if sou base (get_image p) <> "" then incorrect_request conf
+      let p = base.data.persons.get ip in
+      if sou base p.image <> "" then incorrect_request conf
       else
         match auto_image_file conf base p with
         [ Some _ -> print_delete_image conf base p
@@ -297,10 +290,7 @@ value effective_send_ok conf base p file =
       move_file_to_old conf ".png" fname bfname
     else ();
     write_file (fname ^ typ) content;
-    let key =
-      (sou base (get_first_name p), sou base (get_surname p), get_occ p,
-       get_key_index p)
-    in
+    let key = (sou base p.first_name, sou base p.surname, p.occ) in
     History.record conf base key "si";
     print_sent conf base p
   }
@@ -312,13 +302,13 @@ value print_send_ok conf base =
       let s = raw_get conf "i" in
       try int_of_string s with [ Failure _ -> incorrect conf ]
     in
-    let p = poi base (Adef.iper_of_int ip) in
-    let digest = Update.digest_person (UpdateInd.string_person_of base p) in
+    let p = base.data.persons.get ip in
+    let digest = Update.digest_person p in
     if digest = raw_get conf "digest" then
       let file = raw_get conf "file" in
 let _ = do { Printf.eprintf "file size %d\n" (String.length file); flush stderr; } in
       effective_send_ok conf base p file
-    else Update.error_digest conf
+    else Update.error_digest conf base
   with
   [ Update.ModErr -> () ]
 ;
@@ -351,10 +341,7 @@ value effective_delete_ok conf base p =
     else if Sys.file_exists (fname ^ ".png") then
       move_file_to_old conf ".png" fname bfname
     else incorrect conf;
-    let key =
-      (sou base (get_first_name p), sou base (get_surname p), get_occ p,
-       get_key_index p)
-    in
+    let key = (sou base p.first_name, sou base p.surname, p.occ) in
     History.record conf base key "di";
     print_deleted conf base p
   }
@@ -364,7 +351,7 @@ value print_del_ok conf base =
   try
     match p_getint conf.env "i" with
     [ Some ip ->
-        let p = poi base (Adef.iper_of_int ip) in
+        let p = base.data.persons.get ip in
         effective_delete_ok conf base p
     | None -> incorrect conf ]
   with

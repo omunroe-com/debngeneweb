@@ -1,9 +1,10 @@
-%doctype;
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
 <head>
-  <!-- $Id: perso.txt,v 5.15 2007/07/25 15:01:02 ddr Exp $ -->
-  <!-- Copyright (c) 1998-2007 INRIA -->
-  <title>%nn;
+  <!-- $Id: perso.txt,v 4.31 2004/12/14 10:04:38 ddr Exp $ -->
+  <!-- Copyright (c) 1998-2005 INRIA -->
+  <meta name="ROBOTS" content="NONE">
+  <title>
     %if;has_public_name;
       %if;has_qualifiers;%public_name; %qualifier;
       %else;%public_name; %surname;%end;
@@ -12,43 +13,20 @@
       %else;%first_name; %surname;%end;
     %end;
   </title>
-  <meta http-equiv="Content-Style-Type" content="text/css"%/>
-  <meta http-equiv="Content-Type" content="text/html; charset=%charset;"%/>
-  <meta name="robots" content="none"%/>
-  <style type="text/css">
-    html { background:url('%image_prefix;/gwback.jpg') }
-    .highlight { color: %highlight;; font-weight: bold }
-    a.date { text-decoration: none; color: black }
-  </style>
 %base_header;
 </head>
 <body%body_prop;>
 %message_to_wizard;
 
-%if;(is_male or is_female or
-     bvar.show_invisible = "on" and wizard and is_invisible)
-  <div style="float:%left;">%nn;
-  %if;is_male;
-    <img src="%image_prefix;/male.png"%wid_hei;male.png; alt="[M/F]0"%/>%nn;
-  %elseif;is_female;
-    <img src="%image_prefix;/female.png"%wid_hei;female.png; alt="[M/F]1"%/>%nn;
-  %end;
-  %if;(bvar.show_invisible = "on" and wizard and is_invisible) (x)%end;
-  </div>
+%if;is_male;
+<img src="%image_prefix;/male.png"%wid_hei;male.png;
+ alt="[M/F]0" align=left>
+%elseif;is_female;
+<img src="%image_prefix;/female.png"%wid_hei;female.png;
+ alt="[M/F]1" align=left>
 %end;
 
-%if;not cancel_links;
-  <table style="float:%right;"><tr><td>
-    %if;(referer != "")
-      <a href="%referer;"><img
-       src="%image_prefix;/left.jpg"%wid_hei;left.jpg; alt="&lt;&lt;"%/></a>
-    %end;
-    <a href="%prefix;"><img%sp;
-    src="%image_prefix;/up.jpg"%wid_hei;up.jpg; alt="^^"%/></a>
-  </td></tr></table>
-%end;
-
-<h1 style="text-align:center" class="highlight">
+<h1 align=center><font color=%highlight;>
 %if;has_public_name;
   %if;has_qualifiers;%public_name; <em>%qualifier;</em>
   %else;%public_name; %surname;%end;
@@ -62,28 +40,27 @@
     %end;
   %end;
 %end;
-</h1>
+</font></h1>
 
 %if;(has_sosa or has_qualifiers or has_aliases or has_nobility_titles or
-     has_public_name or has_surnames_aliases or has_first_names_aliases or
-     has_linked_page.HEAD)
-  <table style="width:100%%" border="%border;"><tr><td align="center">
-  <table border="%border;" cellspacing="0" cellpadding="0">
+     has_public_name or has_surnames_aliases or has_first_names_aliases)
+  <center>
+  <table border=%border; cellspacing=0 cellpadding=0>
   <tr><td>
   %if;has_sosa;
     <em>[*Sosa]:
     %if;cancel_links;%sosa;
     %else;<a href="%prefix;%sosa_link;">%sosa;</a>%end;
-    </em><br%/>
+    </em><br>
   %end;
   %foreach;qualifier;
     %if;not is_first;
       %if;has_public_name;%public_name; %qualifier;
-      %else;%first_name; %qualifier;%end;<br%/>
+      %else;%first_name; %qualifier;%end;<br>
     %end;
   %end;
   %foreach;alias;
-    <em><strong>%alias;</strong></em><br%/>
+    <em><strong>%alias;</strong></em><br>
   %end;
   %if;has_nobility_titles;
     <em>
@@ -92,100 +69,101 @@
       %end;
       %nobility_title;
     %end;
-    </em><br%/>
+    </em><br>
   %end;
-  %if;has_linked_page.HEAD;%linked_page.HEAD;<br%/>%end;
   %if;(has_public_name or has_qualifiers)
     <em>(%if;cancel_links;%first_name; %surname;
          %else;
            <a href="%prefix;m=P;v=%first_name_key;">%first_name;</a>
            <a href="%prefix;m=N;v=%surname_key;">%surname;</a>%nn;
-         %end;)</em><br%/>
+         %end;)</em><br>
   %end;
   %foreach;surname_alias;
-    <em>(%first_name; %surname_alias;)</em><br%/>
+    <em>(%first_name; %surname_alias;)</em><br>
   %end;
   %foreach;first_name_alias;
-    <em>(%first_name_alias; %surname;)</em><br%/>
+    <em>(%first_name_alias; %surname;)</em><br>
   %end;
   </td></tr>
   </table>
+  </center><p>
+%end;
+
+%if;not cancel_links;
+  <table align=right><tr><td>
+    %if;has_referer;
+      <a href="%referer;"><img
+       src="%image_prefix;/left.jpg"%wid_hei;left.jpg; alt="&lt;&lt;"></a>
+    %end;
+    <a href="%prefix;"><img
+    src="%image_prefix;/up.jpg"%wid_hei;up.jpg; alt="^^"></a>
   </td></tr></table>
-  <p></p>
 %end;
 
 %if;has_image;
-  <table border="%border;" width="90%%">
+  <table border=%border; width="90%%">
   <tr><td>
    <a href="%image_html_url;"><img
-    src="%image_url;"%image_size; style="border:0"
-    alt="[image/images]0"%/></a></td>
+    src="%image_url;"%image_size; border=0
+    alt="[image/images]0"></a>
 %end;
 %if;(has_occupation or has_birth_date or has_birth_place or
      has_baptism_date or has_baptism_place or is_dead or is_buried or
-     is_cremated or has_consanguinity or has_linked_page.OCCU)
+     is_cremated or has_consanguinity)
   %if;has_image;<td>%end;
   <ul>
-    %if;has_occupation;<li>%apply;capitalize(occupation)</li>%nl;%end;
-    %if;has_linked_page.OCCU;
-      <li>%apply;capitalize(linked_page.OCCU)</li>
-    %end;
+    %if;has_occupation;<li>%occupation;%nl;%end;
     %if;has_birth_date;
-      <li>%apply;capitalize(nth([born],sex)) %on_birth_date;
+      <li>[*born]s %on_birth_date;
       %if;birthday; ([happy birthday to you!])%end;
-      %if;has_birth_place; - %birth_place;%end;</li>
+      %if;has_birth_place; - %birth_place;%end;%nl;
     %else;
-      %if;has_birth_place;
-        <li>%apply;capitalize(nth([born],sex)) -&nbsp;%birth_place;</li>
-      %end;
+      %if;has_birth_place;<li>[*born]s -&nbsp;%birth_place;%nl;%end;
     %end;
     %if;has_baptism_date;
-      <li>%apply;capitalize(nth([baptized],sex)) %on_baptism_date;
-      %if;has_baptism_place; - %baptism_place;%end;</li>
+      <li>[*baptized]s %on_baptism_date;
+      %if;has_baptism_place; - %baptism_place;%end;%nl;
     %else;
-      %if;has_baptism_place;
-        <li>%apply;capitalize(nth([baptized],sex)) -&nbsp;%baptism_place;</li>
-      %end;
+      %if;has_baptism_place;<li>[*baptized]s -&nbsp;%baptism_place;%nl;%end;
     %end;
     %if;is_dead;
-      <li>%apply;capitalize(died)
+      <li>%died;
       %if;has_death_date; %on_death_date;%end;
-      %if;has_death_place; -&nbsp;%death_place;%end;
-      %if;has_linked_page.DEATH; %linked_page.DEATH;%end;</li>
+      %if;has_death_place; -&nbsp;%death_place;%end;%nl;
     %end;
     %if;computable_age;
-      <li>[*age]: %age;</li>
-    %end;
-    %if;computable_death_age;
-      <li>[*age at death:] %death_age;</li>%nl;
+      <li>[*age]: %age;%nl;
     %end;
     %if;is_buried;
-      <li>%apply;capitalize(nth([buried],sex))
+      <li>[*buried]s
       %if;has_burial_date; %on_burial_date;%end;
-      %if;has_burial_place; -&nbsp;%burial_place;%end;</li>
+      %if;has_burial_place; -&nbsp;%burial_place;%end;%nl;
     %end;
     %if;is_cremated;
-      <li>%apply;capitalize(nth([cremated],sex))
+      <li>[*cremated]s
       %if;has_cremation_date; %on_cremation_date;%end;
-      %if;has_cremation_place; -&nbsp;%cremation_place;%end;</li>
+      %if;has_cremation_place; -&nbsp;%cremation_place;%end;%nl;
     %end;
-    %if;(has_consanguinity and (bvar.show_consang != "no" or manitou))
-      <li>[*consanguinity]: %consanguinity;</li>%nl;
+    %if;computable_death_age;
+      <li>[*age at death:] %death_age;%nl;
+    %end;
+    %if;(has_consanguinity and cvar_show_consang != "no");
+      <li>[*consanguinity]: %consanguinity;%nl;
     %end;
   </ul>
 %end;
 %if;has_image;
-  </td></tr></table>
+  </table>
 %end;
 
 %if;has_parents;
-  <h3 class="highlight">[*parents]</h3>
+  <h3><font color=%highlight;>[*parents]</font></h3>
   <ul>
   %foreach;parent;
-    <li style="list-style-type:%if;parent.has_parents;disc%else;circle%end;">
-    %if;(cancel_links or parent.is_restricted)%parent;
+    <li type=%if;parent.has_parents;disc%else;circle%end;>
+    %if;(cancel_links or parent.is_restricted);%parent;
     %else;<a href="%prefix;%parent.access;">%parent;</a>%end;
-    %parent.title;%parent.dates;</li>%nl;
+    %parent.title;%parent.dates;%nl;
   %end;
   </ul>
 %end;
@@ -208,34 +186,44 @@
   %end;
 %end;
 
-%define;witness_relation(xxx, yyy)
-  [*witness at marriage of %s and %s:::xxx:yyy]
+%define;married_to_with_place(place)
+  %apply;married_to("<em>, place, </em>")
+%end;
+
+%define;married_to_with_date(ondate)
+  %apply;married_to(" <em>ondate</em>")
+%end;
+
+%define;married_to_with_date_and_place(ondate,place)
+  %apply;married_to(" <em>ondate, place, </em>")
 %end;
 
 %if;has_families;
-  <h3 class="highlight">[*marriage/marriages]1 [and::child/children]1</h3>
+  <h3><font color=%highlight;>[*marriage/marriages]1
+  [and::child/children]1</font></h3>
   <ul>
   %foreach;family;
-    <li style="list-style-type:%if;spouse.has_parents;disc%else;circle%end;">
-    %apply;married_to%with;
-      %if;(marriage_place = "")
-        %if;(on_marriage_date = "")
-        %else; <em>%on_marriage_date;</em>%end;
+    <li type=%if;spouse.has_parents;disc%else;circle%end;>
+    %if;(marriage_place = "")
+      %if;(on_marriage_date = "")%apply;married_to("")
+      %else;%apply;married_to_with_date(on_marriage_date)
+      %end;
+    %else;
+      %if;(on_marriage_date = "")%apply;married_to_with_place(marriage_place)
       %else;
-        %if;(on_marriage_date = "")<em>, %marriage_place;, </em>
-        %else; <em>%on_marriage_date;, %marriage_place, </em>%end;
+        %apply;married_to_with_date_and_place(on_marriage_date,marriage_place)
       %end;
     %end;
-    %if;(cancel_links or spouse.is_restricted)%spouse;
+    %if;(cancel_links or spouse.is_restricted);%spouse;
     %else;<a href="%prefix;%spouse.access">%spouse;</a>%end;
     %spouse.title;%spouse.dates;
     %if;has_witnesses;
       %sp;([witness/witnesses]w:
       %foreach;witness;
         %if;not is_first;, %end;
-        %if;(cancel_links or witness.is_restricted)%witness;
-        %else;<a href="%prefix;%witness.access">%witness;</a>%end;
-        %witness.title;%witness.dates;
+	%if;(cancel_links or witness.is_restricted);%witness;
+	%else;<a href="%prefix;%witness.access">%witness;</a>%end;
+	%witness.title;%witness.dates;
       %end;
     )%end;
     %if;has_comment; (%comment;)%end;
@@ -245,167 +233,155 @@
       , [having as children]0
       <ul>
         %foreach;child;
-          <li style="list-style-type:%if;child.has_families;disc%else;
-           circle%end;">
-          %if;(cancel_links or child.is_restricted)%child.child_name;
-          %else;
-            <a href="%prefix;%child.access;">%child.child_name;</a>%nn;
+          <li type=%if;child.has_families;disc%else;circle%end;>
+	  %if;(cancel_links or child.is_restricted);%child.child_name;
+	  %else;
+	    <a href="%prefix;%child.access;">%child.child_name;</a>
           %end;
-          %child.dates;</li>%nl;
+	  %child.dates;%nl;
         %end;
       </ul>
     %end;
-    %if;(evar.opt = "from" and wizard)<em>(%origin_file;)</em><br%/>%nl;%end;
-    </li>
+    %if;(evar_opt = "from" and wizard);<em>(%origin_file;)</em><br>%nl;%end;
   %end;
   </ul>
 %end;
 
+<!--
+%if;has_siblings;
+  <h3><font color=%highlight;>[*siblings]</font></h3>
+  <ul>
+  %foreach;father.child;
+    %if;is_self;
+      <li type=circle>
+      %child_name;%nl;
+    %else;
+      <li type=disc>
+      %if;(cancel_links or child.is_restricted);%child.child_name;
+      %else;
+        <a href="%prefix;%child.access;">%child.child_name;</a>
+      %end;
+      %child.dates;%nl;
+    %end;
+  %end;
+  </ul>
+%end;
+-->
+
 %if;has_relations;
-  <h3 class="highlight">[*relation/relations]1</h3>
+  <h3><font color=%highlight;>[*relation/relations]1</font></h3>
   <ul>
     %foreach;relation;
-      <li>%apply;capitalize(relation_type)
+      <li>%relation_type;
       %if;(has_relation_him and has_relation_her)
         %nl;
         <ul>
-        <li style="list-style-type:%if;relation_him.has_families;disc%else;
-         circle%end;">
-        %if;(cancel_links or relation_him.is_restricted)%relation_him;
+	<li type=%if;relation_him.has_families;disc%else;circle%end;>
+        %if;(cancel_links or relation_him.is_restricted);%relation_him;
         %else;<a href="%prefix;%relation_him.access">%relation_him;</a>%end;
-        %relation_him.title;%relation_him.dates;</li>%nl;
-        <li style="list-style-type:%if;relation_her.has_families;disc%else;
-         circle%end;">
-        %if;(cancel_links or relation_her.is_restricted)%relation_her;
+        %relation_him.title;%relation_him.dates;%nl;
+	<li type=%if;relation_her.has_families;disc%else;circle%end;>
+        %if;(cancel_links or relation_her.is_restricted);%relation_her;
         %else;<a href="%prefix;%relation_her.access">%relation_her;</a>%end;
-        %relation_her.title;%relation_her.dates;</li>%nl;
+        %relation_her.title;%relation_her.dates;%nl;
         </ul>
       %elseif;has_relation_him;:
-        %if;(cancel_links or relation_him.is_restricted)%relation_him;
+        %if;(cancel_links or relation_him.is_restricted);%relation_him;
         %else;<a href="%prefix;%relation_him.access">%relation_him;</a>%end;
         %relation_him.title;%relation_him.dates;%nl;
       %elseif;has_relation_her;:
-        %if;(cancel_links or relation_her.is_restricted)%relation_her;
+        %if;(cancel_links or relation_her.is_restricted);%relation_her;
         %else;<a href="%prefix;%relation_her.access">%relation_her;</a>%end;
         %relation_her.title;%relation_her.dates;%nl;
       %end;
-      </li>
     %end;
     %foreach;related;
-      <li style="list-style-type:%if;related.has_families;disc%else;
-       circle%end;">%apply;capitalize(related_type):
+      <li type=%if;related.has_families;disc%else;circle%end;>%related_type;:
       %if;cancel_links;%related;
       %else;<a href="%prefix;%related.access">%related;</a>%end;
-      %related.title;%related.dates;</li>%nl;
+      %related.title;%related.dates;%nl;
     %end;
     %foreach;witness_relation;
-      <li style="list-style-type:disc">%nn;
-        %apply;witness_relation%with;
-          %if;cancel_links;%witness_relation.father;
-          %else<a href="%prefix;%witness_relation.father.access;
-            ">%witness_relation.father;</a>%end;
-	  %witness_relation.father.title;%witness_relation.father.dates;
-        %and;
-          %if;cancel_links;%witness_relation.mother;
-          %else<a href="%prefix;%witness_relation.mother.access;
-            ">%witness_relation.mother;</a>%end;
-	  %witness_relation.mother.title;%witness_relation.mother.dates;
-        %end;
-      </li>%nl;
+      <li type=disc>%witness_relation;%nl;
     %end;
   </ul>
 %end;
 
-%if;(not cancel_links and has_linked_pages)
-  <table style="float:%right;"><tr><td style="font-size:80%%">
-    (<a href="%prefix;m=LINKED;%access;">[linked pages]</a>)
-  </td></tr></table>
-%end;
-
-%if;(has_notes or has_linked_page.BNOTE or has_linked_page.NOTE)
-  <h3><span class="highlight">[*note/notes]1</span></h3>
-  <dl><dd>
-    %if;(has_linked_page.BNOTE)
-      <p>%apply;capitalize(linked_page.BNOTE).</p>
-    %end;
-    %notes;
-    %if;(has_linked_page.NOTE)
-      <p>%apply;capitalize(linked_page.NOTE).</p>
-    %end;
-  </dd></dl>
+%if;has_notes;
+  <h3><font color=%highlight;>[*note/notes]1</font></h3>
+  <ul><li>%notes;</ul>
 %end;
 
 %if;has_sources;
   <p>
-  <em style="font-size:80%%">[*source/sources]1:<br%/>
+  <font size=-1><em>[*source/sources]1:
   %foreach;source;
-    - %source_type;: %source;<br%/>
+    <br>- %source_type;: %source;
   %end;
-  </em>
-  </p>
+  </em></font>
 %end;
 
 %if;not cancel_links;
-  <table border="%border;" width="90%%">
+  <table border=%border; width="90%%">
   <tr>
-  <td align="center">
-    <a href="%prefix;m=R;%access;"
-    class="highlight" accesskey="R">[*relationship computing] (R)</a>
+  <td align=center>
+    <a href="%prefix;m=R;%access;"><b><font
+    color=%highlight;>[*relationship computing]</font></b></a>
   </td>
-  <td align="%left;">
-    <ul style="list-style:inside">
+  <td align=left><p><br>
+    <ul>
       %if;has_parents;
         <li>
-        <a href="%prefix;m=A;%access;"
-         class="highlight">[*ancestors]</a></li>
+        <a href="%prefix;m=A;%access;"><b><font
+         color=%highlight;>[*ancestors]</font></b></a>
       %end;
       %if;has_children;
         <li>
-        <a href="%prefix;m=D;%access;"
-         class="highlight">[*descendants]</a></li>
+        <a href="%prefix;m=D;%access;"><b><font
+         color=%highlight;>[*descendants]</font></b></a>
       %end;
-      %if;(has_parents and (father.has_parents or mother.has_parents))
+      %if;(father.has_parents or mother.has_parents)
         <li>
-        <a href="%prefix;m=C;%access;"
-         class="highlight">[*cousins (general term)]</a></li>
+        <a href="%prefix;m=C;%access;"><b><font
+         color=%highlight;>[*cousins (general term)]</font></b></a>
       %else;
         %if;has_nephews_or_nieces;
           <li>
-          <a href="%prefix;m=C;v1=1;v2=2;%access;"
-           class="highlight">[*nephews and nieces]</a></li>
+          <a href="%prefix;m=C;v1=1;v2=2;%access;"><b><font
+           color=%highlight;>[*nephews and nieces]</font></b></a>
         %end;
       %end;
-      %if;has_parents;
-        %foreach;father.child;
-          %if;is_sibling_before;
-            <li>
-            <a href="%prefix;%child.access;" class="highlight">%nn;
-            %apply;capitalize(nth([previous sibling],sex))</a></li>
-          %end;
-          %if;is_sibling_after;
-            <li>
-            <a href="%prefix;%child.access;" class="highlight">%nn;
-            %apply;capitalize(nth([next sibling],sex))</a></li>
-          %end;
-        %end;
+<!-- -->
+      %foreach;father.child;
+	%if;is_sibling_before;
+	  <li>
+          <a href="%prefix;%child.access;"><b><font
+           color=%highlight;>[*previous sibling]s</font></b></a>
+	%end;
+	%if;is_sibling_after;
+	  <li>
+          <a href="%prefix;%child.access;"><b><font
+           color=%highlight;>[*next sibling]s</font></b></a>
+	%end;
       %end;
+<!-- -->
     </ul>
   </td>
   %if;wizard;
-    <td>
-      <a href="%prefix;m=U;%access;"
-       class="highlight" accesskey="U">[*update] (U)</a>
+    <td align=center>
+      <a href="%prefix;m=U;%access;"><b><font
+      color=%highlight;>[*update]</font></b></a>
     </td>
   %end;
   </tr>
   </table>
 %end;
 
-%if;(evar.opt = "misc")%misc_names;<p>%end;
+%if;(evar_opt = "misc")%misc_names;<p>%end;
 
-<div><a href="%prefix;"><img src="%image_prefix;/gwlogo.png"
- alt="..." width="64" height="72" style="border:0;float:%right;"%/></a><br%/>
-</div>
+<a href="%prefix;"><img src="%image_prefix;/gwlogo.png"
+ alt=... width=64 height=72 align=right border=0></a>
+<br>
 %copyright;
 %base_trailer;
 </body>

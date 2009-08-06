@@ -1,8 +1,7 @@
-(* $Id: consang.mli,v 5.5 2007/01/19 01:53:16 ddr Exp $ *)
-(* Copyright (c) 1998-2007 INRIA *)
+(* $Id: consang.mli,v 4.3 2004/12/14 09:30:11 ddr Exp $ *)
+(* Copyright (c) 1998-2005 INRIA *)
 
 open Def;
-open Gwdb;
 
 type anc_stat = 'a;
 
@@ -25,14 +24,9 @@ type relationship_info =
 ;
 
 exception TopologicalSortError of person;
-value topological_sort : base -> (base -> iper -> person) -> array int;
+value topological_sort : base -> (base -> iper -> ascend) -> array int;
 
 value make_relationship_info : base -> array int -> relationship_info;
 
 value relationship_and_links :
   base -> relationship_info -> bool -> iper -> iper -> (float * list int);
-
-value check_noloop : base -> (error person -> unit) -> unit;
-value check_noloop_for_person_list :
-  base -> (error person -> unit) -> list iper -> unit
-;

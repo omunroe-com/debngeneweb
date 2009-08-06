@@ -1,5 +1,5 @@
-(* $Id: ansel.ml,v 5.3 2007/01/19 01:53:16 ddr Exp $ *)
-(* Copyright (c) 1998-2007 INRIA *)
+(* $Id: ansel.ml,v 4.4 2004/12/14 09:30:10 ddr Exp $ *)
+(* Copyright (c) 1998-2005 INRIA *)
 
 value no_accent =
   fun
@@ -25,7 +25,7 @@ value no_accent =
 value of_iso_8859_1 s =
   let (len, identical) =
     loop 0 0 True where rec loop i len identical =
-      if i = String.length s then (len, identical)
+      if i == String.length s then (len, identical)
       else
         match s.[i] with
         [ 'À'..'Å' | 'Ç'.. 'Ï' | 'Ñ'..'Ö' | 'Ù'..'Ý'
@@ -38,7 +38,7 @@ value of_iso_8859_1 s =
   else
     let s' = String.create len in
     loop 0 0 where rec loop i i' =
-      if i = String.length s then s'
+      if i == String.length s then s'
       else
         let i' =
           match s.[i] with
@@ -178,8 +178,8 @@ value cedil =
 value to_iso_8859_1 s =
   let (len, identical) =
     loop 0 0 True where rec loop i len identical =
-      if i = String.length s then (len, identical)
-      else if i = String.length s - 1 then (len + 1, identical)
+      if i == String.length s then (len, identical)
+      else if i == String.length s - 1 then (len + 1, identical)
       else
         match Char.code s.[i] with
         [ 225 | 226 | 227 | 228 | 232 | 234 | 240 ->
@@ -191,8 +191,8 @@ value to_iso_8859_1 s =
   else
     let s' = String.create len in
     loop 0 0 where rec loop i i' =
-      if i = String.length s then s'
-      else if i = String.length s - 1 then
+      if i == String.length s then s'
+      else if i == String.length s - 1 then
         do { s'.[i'] := s.[i]; s' }
       else
         let i =

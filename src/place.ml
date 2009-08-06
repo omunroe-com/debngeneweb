@@ -1,16 +1,40 @@
-(* camlp5r ./pa_html.cmo *)
-(* $Id: place.ml,v 5.20 2007/09/12 09:58:44 ddr Exp $ *)
-(* Copyright (c) 1998-2007 INRIA *)
+(* camlp4r ./pa_html.cmo *)
+(* $Id: place.ml,v 4.18 2004/12/14 09:30:15 ddr Exp $ *)
+(* Copyright (c) 1998-2005 INRIA *)
 
-open Config;
 open Def;
-open Gwdb;
-open Hutil;
+open Gutil;
 open Util;
+open Config;
+
+value remove_trailing_space s =
+  loop (String.length s) where rec loop i =
+    if i = 0 then ""
+    else if ' ' = s.[i - 1] then loop (i - 1)
+    else String.sub s 0 i
+;
+
+value correct_start_point s =
+  let iend = String.length s in
+  let rec loop i =
+    if i = iend then s
+    else
+      let c = s.[i] in
+      match c with
+      [ 'a'..'z' | ''' | ' ' | '\224'..'\246' | '\248'..'\254' -> loop (i + 1)
+      | _ ->
+          if i = 0 then s
+          else
+            let prefix = remove_trailing_space (String.sub s 0 i) in
+            let rest = String.sub s i (iend - i) in
+            rest ^ " (" ^ prefix ^ ")" ]
+  in
+  loop 0
+;
 
 value fold_place inverted s =
   let rec loop iend list i ibeg =
-    if i = iend then
+    if i == iend then
       if i > ibeg then [String.sub s ibeg (i - ibeg) :: list] else list
     else
       let (list, ibeg) =
@@ -27,8 +51,8 @@ value fold_place inverted s =
       loop iend list (i + 1) ibeg
   in
   let (iend, rest) =
-    if String.length s > 0 && s.[String.length s - 1] = ')' then
-      match Mutil.rindex s '(' with
+    if String.length s > 0 && s.[String.length s - 1] == ')' then
+      match Gutil.rindex s '(' with
       [ Some i when i < String.length s - 2 ->
           let j =
             loop (i - 1) where rec loop i =
@@ -39,6 +63,7 @@ value fold_place inverted s =
     else (String.length s, [])
   in
   let list = rest @ loop iend [] 0 0 in
+  let list = List.map correct_start_point list in
   if inverted then List.rev list else list
 ;
 
@@ -58,34 +83,36 @@ value get_all conf base =
   let ht = Hashtbl.create 5003 in
   let ht_add istr p =
     let (cnt, _) =
-      try Hashtbl.find ht (istr, get_surname p) with
+      try Hashtbl.find ht (istr, p.surname) with
       [ Not_found ->
-          let cnt = (ref 0, get_key_index p) in
-          do { Hashtbl.add ht (istr, get_surname p) cnt; cnt } ]
+          let cnt = (ref 0, p.cle_index) in
+          do { Hashtbl.add ht (istr, p.surname) cnt; cnt } ]
     in
     incr cnt
+  in
+  let empty =
+    try base.func.index_of_string "" with [ Not_found -> Adef.istr_of_int 0 ]
   in
   do {
     if add_birth || add_death then
       let rec loop i =
-        if i = nb_of_persons base then ()
+        if i = base.data.persons.len then ()
         else do {
           let p = pget conf base (Adef.iper_of_int i) in
-          let pl_bi = get_birth_place p in
-          let pl_bp = get_baptism_place p in
-          let pl_de = get_death_place p in
-          let pl_bu = get_burial_place p in
-          if (not add_birth || is_empty_string pl_bi) &&
-             (not add_birth || is_empty_string pl_bp) &&
-             (not add_death || is_empty_string pl_de) &&
-             (not add_death || is_empty_string pl_bu)
+          let pl_bi = if add_birth then p.birth_place else empty in
+          let pl_bp = if add_birth then p.baptism_place else empty in
+          let pl_de = if add_death then p.death_place else empty in
+          let pl_bu = if add_death then p.burial_place else empty in
+          if pl_bi == empty && pl_bp == empty && pl_de == empty &&
+             pl_bu == empty ||
+             not (fast_auth_age conf p)
           then
             ()
           else do {
-            if not (is_empty_string pl_bi) then ht_add pl_bi p else ();
-            if not (is_empty_string pl_bp) then ht_add pl_bp p else ();
-            if not (is_empty_string pl_de) then ht_add pl_de p else ();
-            if not (is_empty_string pl_bu) then ht_add pl_bu p else ()
+            if pl_bi != empty then ht_add pl_bi p else ();
+            if pl_bp != empty then ht_add pl_bp p else ();
+            if pl_de != empty then ht_add pl_de p else ();
+            if pl_bu != empty then ht_add pl_bu p else ()
           };
           loop (i + 1)
         }
@@ -94,15 +121,16 @@ value get_all conf base =
     else ();
     if add_marriage then
       let rec loop i =
-        if i = nb_of_families base then ()
+        if i = base.data.families.len then ()
         else do {
-          let fam = foi base (Adef.ifam_of_int i) in
+          let fam = base.data.families.get i in
           if is_deleted_family fam then ()
           else
-            let pl_ma = get_marriage_place fam in
-            if not (is_empty_string pl_ma) then
-              let fath = pget conf base (get_father fam) in
-              let moth = pget conf base (get_mother fam) in
+            let pl_ma = fam.marriage_place in
+            if pl_ma <> empty then
+              let cpl = coi base fam.fam_index in
+              let fath = pget conf base (father cpl) in
+              let moth = pget conf base (mother cpl) in
               if fast_auth_age conf fath && fast_auth_age conf moth then do {
                 ht_add pl_ma fath; ht_add pl_ma moth
               }
@@ -117,23 +145,32 @@ value get_all conf base =
     let len = ref 0 in
     Hashtbl.iter
       (fun (istr_pl, _) (cnt, ip) ->
-         let s = Util.string_with_macros conf [] (sou base istr_pl) in
-         let s = fold_place inverted s in
+         let s = fold_place inverted (sou base istr_pl) in
          if s <> [] && (ini = "" || List.hd s = ini) then do {
            list.val := [(s, cnt.val, ip) :: list.val]; incr len
          }
          else ())
       ht;
     let list =
-      List.sort (fun (s1, _, _) (s2, _, _) -> compare s1 s2) list.val
+      Sort.list
+        (fun (s1, _, _) (s2, _, _) ->
+           let s1_l = List.map Name.lower s1 in
+           let s2_l = List.map Name.lower s2 in
+           if s1_l = s2_l then s1 <= s2 
+           else s1_l <= s2_l)
+        list.val
     in
     (list, len.val)
   }
 ;
 
+value print_place conf s =
+  Wserver.wprint "%s" (Util.string_with_macros conf False [] s)
+;
+
 value max_len = ref 2000;
 
-value print_html_places_surnames conf base list =
+value print_html_places_surnames conf base =
   let link_to_ind =
     match p_getenv conf.base_env "place_surname_link_to_ind" with
     [ Some "yes" -> True
@@ -141,7 +178,13 @@ value print_html_places_surnames conf base list =
   in
   do {
     Wserver.wprint "<ul>\n";
-    let print_li_place x = Wserver.wprint "<li>%s\n" x in
+    let print_li_place x =
+      do {
+        Wserver.wprint "<li>";
+        print_place conf x;
+        Wserver.wprint "\n";
+      }
+    in
     let print_ul_li_place x =
       do {
         Wserver.wprint "<ul>\n";
@@ -184,7 +227,10 @@ value print_html_places_surnames conf base list =
                 snl
             in
             let snl =
-              List.sort (fun (_, _, sn1) (_, _, sn2) -> compare sn1 sn2) snl
+              Sort.list
+                (fun (_, _, sn1) (_, _, sn2) ->
+                   Iobase.name_key sn1 <= Iobase.name_key sn2)
+                snl
             in
             let snl =
               List.fold_right
@@ -212,7 +258,7 @@ value print_html_places_surnames conf base list =
           }
       | [] -> List.iter (fun _ -> Wserver.wprint "</ul>\n") prev ]
     in
-    loop [] list
+    loop []
   }
 ;
 
@@ -225,7 +271,15 @@ value print_all_places_surnames_short conf list =
          (s, len, ip) )
       list
   in
-  let list = List.sort (fun (s1, _, _) (s2, _, _) -> compare s1 s2) list in
+  let list =
+    Sort.list
+      (fun (s1, _, _) (s2, _, _) ->
+         let s1_l = Name.lower s1 in
+         let s2_l = Name.lower s2 in
+         if s1_l = s2_l then s1 <= s2 
+         else s1_l <= s2_l)
+      list
+  in
   let list =
     List.fold_left
       (fun list (p, len, ip) ->
@@ -244,7 +298,7 @@ value print_all_places_surnames_short conf list =
       (if add_marriage then ";ma=on" else "")
   in
   do {
-    Hutil.header conf title;
+    Util.header conf title;
     print_link_to_welcome conf True;
     stag "a" "href=\"%sm=PS%s;k=\"" (commd conf) opt begin
       Wserver.wprint "%s" (transl conf "long display");
@@ -255,10 +309,11 @@ value print_all_places_surnames_short conf list =
          do {
            Wserver.wprint "<a href=\"%sm=PS%s;k=%s\">" (commd conf) opt
              (Util.code_varenv s);
-           Wserver.wprint "%s</a> (%d),\n" s len;
+           print_place conf s;
+           Wserver.wprint "</a> (%d),\n" len;
          })
       list;
-    Hutil.trailer conf
+    Util.trailer conf
   }
 ;
 
@@ -272,16 +327,24 @@ value print_all_places_surnames_long conf base list =
          | _ -> [(pl, [(len, ip)]) :: list] ])
       [] list
   in
-  let list = List.sort (fun (pl1, _) (pl2, _) -> compare pl1 pl2) list in
+  let list =
+    Sort.list
+      (fun (pl1, _) (pl2, _) ->
+         let pl1_l = List.map Name.lower pl1 in
+         let pl2_l = List.map Name.lower pl2 in
+         if pl1_l = pl2_l then pl1 <= pl2
+         else pl1_l <= pl2_l)
+      list
+  in
   let title _ =
     Wserver.wprint "%s / %s" (capitale (transl conf "place"))
       (capitale (transl_nth conf "surname/surnames" 0))
   in
   do {
-    Hutil.header conf title;
+    Util.header conf title;
     print_link_to_welcome conf True;
     if list = [] then () else print_html_places_surnames conf base list;
-    Hutil.trailer conf
+    Util.trailer conf
   }
 ;
 

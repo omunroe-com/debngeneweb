@@ -1,4 +1,4 @@
-(* $Id: main.ml,v 5.1 2006/10/15 15:39:38 ddr Exp $ *)
+(* $Id: main.ml,v 1.5 2001/12/20 19:58:12 ddr Exp $ *)
 
 open Dag2html;
 open Printf;
@@ -10,7 +10,7 @@ value version = "1.02-exp";
 value strip_spaces str =
   let start =
     loop 0 where rec loop i =
-      if i = String.length str then i
+      if i == String.length str then i
       else
         match str.[i] with
         [ ' ' | '\r' | '\n' | '\t' -> loop (i + 1)
@@ -18,13 +18,13 @@ value strip_spaces str =
   in
   let stop =
     loop (String.length str - 1) where rec loop i =
-      if i = -1 then i + 1
+      if i == -1 then i + 1
       else
         match str.[i] with
         [ ' ' | '\r' | '\n' | '\t' -> loop (i - 1)
         | _ -> i + 1 ]
   in
-  if start = 0 && stop = String.length str then str
+  if start == 0 && stop == String.length str then str
   else if start > stop then ""
   else String.sub str start (stop - start)
 ;
@@ -184,7 +184,7 @@ value print_table border hts =
         (*
             if colspan > 1 then printf " colspan=%d" colspan else ();
 *)
-if colspan = 1 && (td = TDitem "&nbsp;" || td = TDhr CenterA) then
+if colspan = 1 && (td = TDstring "&nbsp;" || td = TDhr CenterA) then
           ()
         else printf " colspan=%d" colspan;
         (**)
@@ -195,8 +195,7 @@ if colspan = 1 && (td = TDitem "&nbsp;" || td = TDhr CenterA) then
         | (RightA, _) -> printf " align=right" ];
         printf ">";
         match td with
-        [ TDitem s -> printf "%s" s
-        | TDtext s -> printf "%s" s
+        [ TDstring s -> printf "%s" s
         | TDbar _ -> printf "|"
         | TDhr align ->
             do {
@@ -206,8 +205,7 @@ if colspan = 1 && (td = TDitem "&nbsp;" || td = TDhr CenterA) then
               | RightA -> printf " width=\"50%%\" align=right"
               | _ -> () ];
               printf ">"
-            }
-        | TDnothing -> printf "&nbsp;" ];
+            } ];
         printf "</td>\n"
       }
     };
@@ -249,6 +247,7 @@ value main () =
       let t = table_of_dag phony no_optim.val invert.val no_group.val d in
       print_char_table d t
     else
+      let print_indi n = print_string n.valu in
       let t = table_of_dag phony no_optim.val invert.val no_group.val d in
       let hts = html_table_struct indi_txt vbar_txt phony d t in
       print_table border.val hts

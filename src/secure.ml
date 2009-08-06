@@ -1,5 +1,5 @@
-(* $Id: secure.ml,v 5.2 2007/01/19 01:53:17 ddr Exp $ *)
-(* Copyright (c) 1998-2007 INRIA *)
+(* $Id: secure.ml,v 4.4 2004/12/14 09:30:17 ddr Exp $ *)
+(* Copyright (c) 1998-2005 INRIA *)
 
 (* secure open; forbids to access anywhere in the machine;
    this is an extra security: the program should check for
@@ -13,9 +13,9 @@ value base_dir_r = ref Filename.current_dir_name;
 value decompose =
   loop [] where rec loop r s =
     let b = Filename.basename s in
-    if b = "" || b = Filename.current_dir_name then
+    if b = "" then
       let d = Filename.dirname s in
-      if d = "" || d = Filename.current_dir_name then r
+      if d = "" then r
       else if d = s then [d :: r]
       else loop r d
     else if b = s then [b :: r]
@@ -72,13 +72,13 @@ value check_open fname =
   with
   [ Exit ->
       do {
-        IFDEF UNIX THEN
+        ifdef UNIX then
           do {
             Printf.eprintf "*** secure rejects open %s\n"
               (String.escaped fname);
             flush stderr;
           }
-        ELSE () END;
+        else ();
         raise (Sys_error "invalid access")
       } ]
 ;

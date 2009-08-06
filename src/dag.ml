@@ -1,32 +1,17 @@
-(* camlp5r ./pa_html.cmo *)
-(* $Id: dag.ml,v 5.20 2007/09/12 09:58:44 ddr Exp $ *)
+(* camlp4r ./pa_html.cmo *)
+(* $Id: dag.ml,v 4.17 2004/12/13 16:05:16 ddr Exp $ *)
 
-DEFINE OLD;
-
-open Config;
 open Dag2html;
 open Def;
+open Config;
 open Gutil;
-open Gwdb;
-open Mutil;
-open Printf;
-open TemplAst;
 open Util;
+open Printf;
 
-module Pset =
- struct
-   type t = list iper;
-   type elt = iper;
-   value add e s = if List.mem e s then s else [e :: s];
-   value empty = [];
-   value elements s = List.rev s;
-   value mem = List.mem;
- end
-;
+module Pset = Set.Make (struct type t = iper; value compare = compare; end);
 
 (* testing *)
 
-IFDEF TESTING THEN declare
 value map_dag f d =
   let a =
     Array.map (fun d -> {pare = d.pare; valu = f d.valu; chil = d.chil}) d.dag
@@ -48,7 +33,6 @@ value tag_dag d =
        })
     d
 ;
-end END;
 
 (* input dag *)
 
@@ -66,7 +50,7 @@ value get_dag_elems conf base =
     [ (Some p, Some s) ->
         let set =
           match
-            Util.branch_of_sosa conf base (get_key_index p) (Num.of_string s)
+            Util.branch_of_sosa conf base p.cle_index (Num.of_string s)
           with
           [ Some ipsl ->
               List.fold_left (fun set (ip, _) -> Pset.add ip set) set ipsl
@@ -81,8 +65,7 @@ type sum 'a 'b =
   | Right of 'b ]
 ;
 
-value make_dag conf base set =
-  let list = Pset.elements set in
+value make_dag conf base list =
   let module O = struct type t = iper; value compare = compare; end in
   let module M = Map.Make O in
   let nodes = Array.of_list list in
@@ -95,91 +78,27 @@ value make_dag conf base set =
     Array.map
       (fun ip ->
          let pare =
-           match get_parents (pget conf base ip) with
+           match parents (aget conf base ip) with
            [ Some ifam ->
-               let c = foi base ifam in
-               let l =
-                 try [M.find (get_mother c) map] with [ Not_found -> [] ]
-               in
-               try [M.find (get_father c) map :: l] with [ Not_found -> l ]
+               let c = coi base ifam in
+               let l = try [M.find (mother c) map] with [ Not_found -> [] ] in
+               try [M.find (father c) map :: l] with [ Not_found -> l ]
            | None -> [] ]
          in
          let chil =
-           let u = pget conf base ip in
+           let u = uget conf base ip in
            Array.fold_left
              (fun chil ifam ->
-                let des = foi base ifam in
+                let des = doi base ifam in
                 Array.fold_left
                   (fun chil ip ->
                      try [M.find ip map :: chil] with [ Not_found -> chil ])
-                  chil (get_children des))
-             [] (get_family u)
+                  chil des.children)
+             [] u.family
          in
          let chil = List.rev chil in
          {pare = pare; valu = Left ip; chil = chil})
       nodes
-  in
-  let nodes =
-    loop nodes (Array.length nodes) 0 where rec loop nodes n i =
-      if i = Array.length nodes then nodes
-      else
-        match nodes.(i) with
-        [ {valu = Left ip; chil = chil} ->
-            let ifaml = Array.to_list (get_family (pget conf base ip)) in
-            let (nodes, n) =
-              loop nodes ifaml where rec loop nodes =
-                fun
-                [ [ifam :: ifaml] ->
-                    let cpl = foi base ifam in
-                    let isp = spouse ip cpl in
-                    let jdo =
-                      try Some (M.find isp map) with
-                      [ Not_found -> None ]
-                    in
-                    match jdo with
-                    [ Some jd ->
-                        let j = int_of_idag jd in
-                        if chil = [] && nodes.(j).chil = [] then
-                          (* married but no child in the dag *)
-                          let pare = [idag_of_int i; jd] in
-                          let d = {pare = pare; valu = Right n; chil = []} in
-                          let nodes = Array.append nodes [| d |] in
-                          let nd = idag_of_int n in
-                          do {
-                            nodes.(i).chil := [nd];
-                            nodes.(j).chil := [nd];
-                            (nodes, n + 1)
-                          }
-                        else if chil <> nodes.(j).chil then
-                          (* married; group their children even step ones *)
-                          do {
-                            List.iter
-                              (fun nd ->
-                                 if List.mem nd nodes.(j).chil then ()
-                                 else do {
-                                   let n = int_of_idag nd in
-                                   nodes.(j).chil := [nd :: nodes.(j).chil];
-                                   nodes.(n).pare := [jd :: nodes.(n).pare];
-                                 })
-                              chil;
-                            List.iter
-                              (fun nd ->
-                                 if List.mem nd chil then ()
-                                 else do {
-                                   let id = idag_of_int i in
-                                   let n = int_of_idag nd in
-                                   nodes.(i).chil := [nd :: chil];
-                                   nodes.(n).pare := [id :: nodes.(n).pare];
-                                 })
-                              nodes.(j).chil;
-                            loop nodes ifaml
-                          }
-                        else loop nodes ifaml
-                    | None -> loop nodes ifaml ]
-                | [] -> (nodes, n) ]
-            in
-            loop nodes n (i + 1)
-        | _ -> loop nodes n (i + 1) ]
   in
   {dag = nodes}
 ;
@@ -191,12 +110,10 @@ value image_normal_txt conf base p fname width height =
   let k = default_image_name base p in
   let r =
     sprintf "\
-<img src=\"%sm=IM;d=%d;%s;k=/%s\"%s%s border=\"0\" alt=\"%s\">"
+<img src=\"%sm=IM;d=%d;%s;k=/%s\" width=%d%s border=0 alt=\"%s\">"
       (commd conf)
       (int_of_float (mod_float s.Unix.st_mtime (float_of_int max_int))) b k
-      (if width = 0 then "" else " width=\"" ^ string_of_int width ^ "\"")
-      (if height = 0 then "" else " height=" ^ string_of_int height ^ "\"")
-      image_txt
+      width (if height = 0 then "" else " height=" ^ string_of_int height) image_txt
   in
   if conf.cancel_links then r
   else sprintf "<a href=\"%sm=IM;%s;k=/%s\">" (commd conf) b k ^ r ^ "</a>"
@@ -205,7 +122,7 @@ value image_normal_txt conf base p fname width height =
 value image_url_txt conf base url height =
   let image_txt = capitale (transl_nth conf "image/images" 0) in
   sprintf "<a href=\"%s\">" url ^
-    sprintf "<img src=\"%s\"\nheight=%d border=\"0\" alt=\"%s\">" url height
+    sprintf "<img src=\"%s\"\nheight=%d border=0 alt=\"%s\">" url height
       image_txt ^
     "</a>\n"
 ;
@@ -213,8 +130,8 @@ value image_url_txt conf base url height =
 value image_url_txt_with_size conf base url width height =
   let image_txt = capitale (transl_nth conf "image/images" 0) in
   sprintf "<a href=\"%s\">" url ^
-    sprintf "<img src=\"%s\"\nwidth=%d height=\"%d\" border=\"0\" alt=\"%s\">"
-      url width height image_txt ^
+    sprintf "<img src=\"%s\"\nwidth=%d height=%d border=0 alt=\"%s\">" url
+      width height image_txt ^
     "</a>\n"
 ;
 
@@ -223,89 +140,62 @@ value image_txt conf base p =
   [ Some "on" ->
       match image_and_size conf base p (limited_image_size 100 75) with
       [ Some (True, f, Some (wid, hei)) ->
-          "<br" ^ conf.xhs ^
-           ">\n<center><table border=\"0\"><tr align=\"left\"><td>\n" ^
+          "<br>\n<center><table border=0><tr align=left><td>\n" ^
             image_normal_txt conf base p f wid hei ^ "</table></center>\n"
       | Some (True, f, None) ->
-          "<br" ^ conf.xhs ^
-          ">\n<center><table border=\"0\"><tr align=\"left\"><td>\n" ^
-            image_normal_txt conf base p f 0 75 ^ "</table></center>\n"
+          "<br>\n<center><table border=0><tr align=left><td>\n" ^
+            image_normal_txt conf base p f 100 0 ^ "</table></center>\n"
       | Some (False, url, Some (wid, hei)) ->
-          "<br" ^ conf.xhs ^
-          ">\n<center><table border=\"0\"><tr align=\"left\"><td>\n" ^
+          "<br>\n<center><table border=0><tr align=left><td>\n" ^
             image_url_txt_with_size conf base url wid hei ^
             "</table></center>\n"
       | Some (False, url, None) ->
-          "<br" ^ conf.xhs ^
-          ">\n<center><table border=\"0\"><tr align=\"left\"><td>\n" ^
+          "<br>\n<center><table border=0><tr align=left><td>\n" ^
             image_url_txt conf base url 75 ^ "</table></center>\n"
       | _ -> "" ]
   | _ -> "" ]
 ;
 
-(* *)
-
-type item = [ Item of person and string ];
-
-value string_of_item conf base =
-  fun
-  [ Item p s ->
-      Util.referenced_person_title_text conf base p ^
-        Date.short_dates_text conf base p ^
-      (if s = "" then "" else " " ^ s) ]
-;
-
 (* Print with HTML table tags: <table> <tr> <td> *)
 
-IFDEF OLD THEN declare
 value print_table conf hts =
   do {
-    begin_centered conf;
-    Wserver.wprint "<table border=\"%d\"" conf.border;
-    Wserver.wprint " cellspacing=\"0\" cellpadding=\"0\">\n";
+    Wserver.wprint "<center><table border=%d" conf.border;
+    Wserver.wprint " cellspacing=0 cellpadding=0>\n";
     for i = 0 to Array.length hts - 1 do {
-      tag "tr" "align=\"left\"" begin
-        for j = 0 to Array.length hts.(i) - 1 do {
-          let (colspan, align, td) = hts.(i).(j) in
-          Wserver.wprint "<td";
-          if colspan = 1 && (td = TDnothing || td = TDhr CenterA) then
-            ()
-          else Wserver.wprint " colspan=\"%d\"" colspan;
-          match (align, td) with
-          [ (LeftA, TDhr LeftA) -> Wserver.wprint " align=\"%s\"" conf.left
-          | (LeftA, _) -> ()
-          | (CenterA, _) -> Wserver.wprint " align=\"center\""
-          | (RightA, _) -> Wserver.wprint " align=\"%s\"" conf.right ];
-          Wserver.wprint ">";
-          match td with
-          [ TDitem s -> Wserver.wprint "%s" s
-          | TDtext s -> Wserver.wprint "%s" s
-          | TDnothing -> Wserver.wprint "&nbsp;"
-          | TDbar None -> Wserver.wprint "|"
-          | TDbar (Some s) ->
-              Wserver.wprint
-                "<a style=\"text-decoration:none\" href=\"%s\">|</a>" s
-          | TDhr align ->
+      Wserver.wprint "<tr align=left>\n";
+      for j = 0 to Array.length hts.(i) - 1 do {
+        let (colspan, align, td) = hts.(i).(j) in
+        Wserver.wprint "<td";
+        if colspan = 1 && (td = TDstring "&nbsp;" || td = TDhr CenterA) then
+          ()
+        else Wserver.wprint " colspan=%d" colspan;
+        match (align, td) with
+        [ (LeftA, TDhr LeftA) -> Wserver.wprint " align=left"
+        | (LeftA, _) -> ()
+        | (CenterA, _) -> Wserver.wprint " align=center"
+        | (RightA, _) -> Wserver.wprint " align=right" ];
+        Wserver.wprint ">";
+        match td with
+        [ TDstring s -> Wserver.wprint "%s" s
+        | TDbar s ->
+            if s = "" then Wserver.wprint "|"
+            else Wserver.wprint "<a %s>|</a>" s
+        | TDhr align ->
+            do {
+              Wserver.wprint "<hr noshade size=1";
               match align with
-              [ LeftA ->
-                  Wserver.wprint
-                    "<hr dir=\"ltr\" width=\"50%%\" align=\"%s\"%s>" conf.left
-                      conf.xhs
-              | RightA ->
-                  Wserver.wprint
-                    "<hr dir=\"ltr\" width=\"50%%\" align=\"%s\"%s>" conf.right
-                      conf.xhs
-              | _ ->
-                  Wserver.wprint "<hr width=\"100%%\"%s>" conf.xhs ] ];
-          Wserver.wprint "</td>\n"
-        };
-      end;
+              [ LeftA -> Wserver.wprint " width=\"50%%\" align=left"
+              | RightA -> Wserver.wprint " width=\"50%%\" align=right"
+              | _ -> Wserver.wprint " width=\"100%%\"" ];
+              Wserver.wprint ">"
+            } ];
+        Wserver.wprint "</td>\n"
+      }
     };
-    Wserver.wprint "</table>\n";
-    end_centered conf;
+    Wserver.wprint "</table></center>\n"
   }
 ;
-end END;
 
 (*
  * Print without HTML table tags: using <pre>
@@ -340,9 +230,7 @@ value displayed_next_char s i =
               | _ -> Some (i, j) ]
           in
           loop1 (i + 1)
-      | c ->
-          if utf_8_db.val then Some (i, i + max 1 (Name.nbc c))
-          else Some (i, i + 1) ]
+      | _ -> Some (i, i + 1) ]
 ;
 
 value buff_store_int s blen i j =
@@ -474,14 +362,9 @@ value gen_compute_columns_sizes size_fun hts ncol =
             else do {
               let (colspan, _, td) = hts.(i).(j) in
               match td with
-              [ TDitem _ | TDtext _ | TDnothing ->
+              [ TDstring s ->
                   if colspan = curr_colspan then
-                    let len =
-                      match td with
-                      [ TDitem s -> size_fun s
-                      | TDtext s -> size_fun s
-                      | _ -> 1 ]
-                    in
+                    let len = size_fun s in
                     let currsz =
                       loop 0 col colspan where rec loop currsz col cnt =
                         if cnt = 0 then currsz
@@ -583,8 +466,7 @@ value strip_troublemakers s =
           in
           let len =
             match tag_name with
-            [ "bdo" | "br" | "font" | "img" | "span" | "table" | "td" | "tr"
-            | "center" -> len
+            [ "br" | "font" | "img" | "table" | "td" | "tr" | "center" -> len
             | _ -> buff_store_int s len i j ]
           in
           loop last_space len j
@@ -598,35 +480,13 @@ value table_strip_troublemakers hts =
   for i = 0 to Array.length hts - 1 do {
     for j = 0 to Array.length hts.(i) - 1 do {
       match hts.(i).(j) with
-      [ (colspan, align, TDitem s) ->
-          hts.(i).(j) := (colspan, align, TDitem (strip_troublemakers s))
+      [ (colspan, align, TDstring s) ->
+          hts.(i).(j) := (colspan, align, TDstring (strip_troublemakers s))
       | _ -> () ]
     }
   }
 ;
 
-value table_pre_dim conf hts =
-  do {
-    table_strip_troublemakers hts;
-    let ncol =
-      let hts0 = hts.(0) in
-      let rec loop ncol j =
-        if j = Array.length hts0 then ncol
-        else
-          let (colspan, _, _) = hts0.(j) in
-          loop (ncol + colspan) (j + 1)
-      in
-      loop 0 0
-    in
-    let min_widths_tab = compute_columns_minimum_sizes hts ncol in
-    let max_widths_tab = compute_columns_sizes hts ncol in
-    let min_wid = Array.fold_left  \+ 0 min_widths_tab in
-    let max_wid = Array.fold_left  \+ 0 max_widths_tab in
-    (min_wid, max_wid, min_widths_tab, max_widths_tab, ncol)
-  }
-;
-
-IFDEF OLD THEN declare
 value print_next_pos conf pos1 pos2 tcol =
   let doit = p_getenv conf.env "notab" = Some "on" in
   if doit then do {
@@ -661,7 +521,7 @@ value print_next_pos conf pos1 pos2 tcol =
            | _ -> [(k, v) :: env] ])
         conf.env []
     in
-    Wserver.wprint "<div style=\"text-align:right\">\n";
+    Wserver.wprint "<div align=right>\n";
     if pos1 = 0 then Wserver.wprint "&nbsp;"
     else do {
       Wserver.wprint "<a href=\"%s" (commd conf);
@@ -684,6 +544,27 @@ value print_next_pos conf pos1 pos2 tcol =
 ;
 
 (* Main print table algorithm with <pre> *)
+
+value table_pre_dim conf hts =
+  do {
+    table_strip_troublemakers hts;
+    let ncol =
+      let hts0 = hts.(0) in
+      let rec loop ncol j =
+        if j = Array.length hts0 then ncol
+        else
+          let (colspan, _, _) = hts0.(j) in
+          loop (ncol + colspan) (j + 1)
+      in
+      loop 0 0
+    in
+    let min_widths_tab = compute_columns_minimum_sizes hts ncol in
+    let max_widths_tab = compute_columns_sizes hts ncol in
+    let min_wid = Array.fold_left  \+ 0 min_widths_tab in
+    let max_wid = Array.fold_left  \+ 0 max_widths_tab in
+    (min_wid, max_wid, min_widths_tab, max_widths_tab, ncol)
+  }
+;
 
 value print_table_pre conf hts =
   let (tmincol, tcol, colminsz, colsz, ncol) = table_pre_dim conf hts in
@@ -709,7 +590,7 @@ value print_table_pre conf hts =
       [ None -> p_getint conf.env "dpos"
       | x -> x ]
     in
-    print_next_pos conf pos1 pos2 (Array.fold_left \+ 0 colsz);
+    print_next_pos conf pos1 pos2 (Array.fold_left  \+ 0 colsz);
     Wserver.wprint "<pre>\n";
     for i = 0 to Array.length hts - 1 do {
       let (stra, max_row) =
@@ -720,7 +601,7 @@ value print_table_pre conf hts =
               let (colspan, _, td) = hts.(i).(j) in
               let stra =
                 match td with
-                [ TDitem s | TDtext s ->
+                [ TDstring s ->
                     let sz =
                       loop 0 colspan where rec loop sz k =
                         if k = 0 then sz
@@ -745,7 +626,7 @@ value print_table_pre conf hts =
             in
             let outs =
               match td with
-              [ TDitem s | TDtext s ->
+              [ TDstring s ->
                   let s =
                     let k =
                       let dk = (max_row - Array.length stra.(j)) / 2 in
@@ -759,18 +640,8 @@ value print_table_pre conf hts =
                   let len = displayed_length s in
                   String.make ((sz - len) / 2) ' ' ^ s ^
                     String.make (sz - (sz + len) / 2) ' '
-              | TDnothing ->
-                  String.make ((sz - 1) / 2) ' ' ^ "&nbsp;" ^
-                    String.make (sz - (sz + 1) / 2) ' '
               | TDbar s ->
-                  let s =
-                    match s with
-                    [ None | Some "" -> "|"
-                    | Some s ->
-                        sprintf
-                          "<a style=\"text-decoration:none\" href=\"%s\">|</a>"
-                          s ]
-                  in
+                  let s = if s = "" then "|" else "<a " ^ s ^ ">|</a>" in
                   let len = displayed_length s in
                   String.make ((sz - len) / 2) ' ' ^ s ^
                     String.make (sz - (sz + len) / 2) ' '
@@ -817,14 +688,12 @@ value print_table_pre conf hts =
 
 value print_html_table conf hts =
   do {
-    if Util.p_getenv conf.env "notab" <> Some "on" then
-      tag "p" begin
-        Wserver.wprint "<div style=\"text-align:%s\"><a href=\"%s" conf.right
-          (commd conf);
-        List.iter (fun (k, v) -> Wserver.wprint "%s=%s;" k v) conf.env;
-        Wserver.wprint "notab=on;slices=on";
-        Wserver.wprint "\"><tt>//</tt></a></div>\n";
-      end
+    if Util.p_getenv conf.env "notab" <> Some "on" then do {
+      Wserver.wprint "<div align=right><a href=\"%s" (commd conf);
+      List.iter (fun (k, v) -> Wserver.wprint "%s=%s;" k v) conf.env;
+      Wserver.wprint "notab=on;slices=on";
+      Wserver.wprint "\"><tt>//</tt></a></div>\n"
+    }
     else ();
     if Util.p_getenv conf.env "notab" = Some "on" ||
        Util.p_getenv conf.env "pos2" <> None ||
@@ -834,33 +703,20 @@ value print_html_table conf hts =
     else print_table conf hts
   }
 ;
-end END;
 
-value make_tree_hts conf base elem_txt vbar_txt invert set spl d =
-  let no_group = p_getenv conf.env "nogroup" = Some "on" in
-  let spouse_on =
-    match Util.p_getenv conf.env "spouse" with
-    [ Some "on" -> True
-    | _ -> False ]
-  in
-  let bd =
-    match Util.p_getint conf.env "bd" with
-    [ Some x -> x
-    | None -> 0 ]
-  in
-  let td_prop =
-    match Util.p_getenv conf.env "td" with
-    [ Some x -> " " ^ x
-    | _ ->
-        match Util.p_getenv conf.env "color" with
-        [ None | Some "" -> ""
-        | Some x -> " style=\"background:" ^ x ^ "\"" ] ]
-  in
+value html_table_of_dag indi_txt vbar_txt phony invert no_group d =
+  let t = Dag2html.table_of_dag phony False invert no_group d in
+  if Array.length t.table = 0 then [| |]
+  else Dag2html.html_table_struct indi_txt vbar_txt phony d t
+;
+
+value make_tree_hts
+  conf base elem_txt vbar_txt spouse_on invert no_group set spl d =
   let indi_txt n =
     match n.valu with
     [ Left ip ->
         let p = pget conf base ip in
-        let txt = string_of_item conf base (elem_txt p) in
+        let txt = elem_txt p in
         let txt =
           let spouses =
             if (spouse_on && n.chil <> [] || n.pare = []) && not invert then
@@ -868,15 +724,15 @@ value make_tree_hts conf base elem_txt vbar_txt invert set spl d =
                 (fun list id ->
                    match d.dag.(int_of_idag id).valu with
                    [ Left cip ->
-                       match get_parents (pget conf base cip) with
+                       match parents (aget conf base cip) with
                        [ Some ifam ->
-                           let cpl = foi base ifam in
-                           if ip = get_father cpl then
-                             if List.mem_assoc (get_mother cpl) list then list
-                             else [(get_mother cpl, Some ifam) :: list]
-                           else if ip = get_mother cpl then
-                             if List.mem_assoc (get_father cpl) list then list
-                             else [(get_father cpl, Some ifam) :: list]
+                           let cpl = coi base ifam in
+                           if ip == (father cpl) then
+                             if List.mem_assoc (mother cpl) list then list
+                             else [((mother cpl), Some ifam) :: list]
+                           else if ip == (mother cpl) then
+                             if List.mem_assoc (father cpl) list then list
+                             else [((father cpl), Some ifam) :: list]
                            else list
                        | None -> list ]
                    | Right _ -> list ])
@@ -897,23 +753,37 @@ value make_tree_hts conf base elem_txt vbar_txt invert set spl d =
                          p ps
                    | None -> "" ]
                  in
-                 txt ^ "<br" ^ conf.xhs ^ ">\n&amp;" ^ d ^ " " ^
-                   string_of_item conf base (elem_txt ps))
+                 txt ^ "<br>\n&amp;" ^ d ^ " " ^
+                   Util.referenced_person_title_text conf base ps ^
+                   Date.short_dates_text conf base ps)
             txt spouses
         in
         txt ^ image_txt conf base p
     | Right _ -> "&nbsp;" ]
   in
+  let bd =
+    match Util.p_getint conf.env "bd" with
+    [ Some x -> x
+    | _ -> 0 ]
+  in
+  let td =
+    match Util.p_getenv conf.env "td" with
+    [ Some x -> " " ^ x
+    | _ ->
+        match Util.p_getenv conf.env "color" with
+	[ None | Some "" -> ""
+        | Some x -> " bgcolor=" ^ x ] ]
+  in
   let indi_txt n =
     let (bd, td) =
       match n.valu with
-      [ Left ip -> (bd, td_prop)
+      [ Left ip -> (bd, td)
       | _ -> (0, "") ]
     in
     if bd > 0 || td <> "" then
-      sprintf "\
-<table border=\"%d\"><tr align=\"left\"><td align=\"center\"%s>%s</table>"
-        bd td (indi_txt n)
+      sprintf
+        "<table border=%d><tr align=left><td align=center%s>%s</table>" bd td
+        (indi_txt n)
     else indi_txt n
   in
   let vbar_txt n =
@@ -926,422 +796,111 @@ value make_tree_hts conf base elem_txt vbar_txt invert set spl d =
     [ Left _ -> False
     | Right _ -> True ]
   in
-  let t = Dag2html.table_of_dag phony False invert no_group d in
-  if Array.length t.table = 0 then [| |]
-  else Dag2html.html_table_struct indi_txt vbar_txt phony d t
+  html_table_of_dag indi_txt vbar_txt phony invert no_group d
 ;
 
-IFDEF OLD THEN declare
-value print_slices_menu conf hts =
+value print_slices_menu conf base hts_opt =
   let txt n =
     Util.capitale
       (transl_nth conf "display by slices/slice width/overlap/total width" n)
   in
   let title _ = Wserver.wprint "%s" (txt 0) in
   do {
-    Hutil.header conf title;
-    Hutil.print_link_to_welcome conf True;
-    tag "form" "method=\"get\" action=\"%s\"" conf.command begin
-      html_p conf;
+    Util.header conf title;
+    Util.print_link_to_welcome conf True;
+    tag "form" "method=get action=\"%s\"" conf.command begin
       hidden_env conf;
       List.iter
         (fun (k, v) ->
            if k = "slices" then ()
            else
-             Wserver.wprint
-               "<input type=\"hidden\" name=\"%s\" value=\"%s\">\n"
+             Wserver.wprint "<input type=hidden name=\"%s\" value=\"%s\">\n"
                (decode_varenv k) (decode_varenv v))
         conf.env;
       tag "table" begin
-        tag "tr" "align=\"left\"" begin
-          tag "td" "align=\"right\"" begin
+        tag "tr" "align=left" begin
+          tag "td" "align=right" begin
             Wserver.wprint "%s\n"
               (Util.capitale
                  (transl conf "don't group the common branches together"));
-            Wserver.wprint
-              "<input type=\"checkbox\" name=\"nogroup\" value=\"on\">\n";
+            Wserver.wprint "<input type=checkbox name=nogroup value=on>\n";
           end;
         end;
-        tag "tr" "align=\"left\"" begin
-          tag "td" "align=\"right\"" begin
+        tag "tr" "align=left" begin
+          tag "td" "align=right" begin
             Wserver.wprint "%s\n" (txt 1);
-            Wserver.wprint "<input name=\"dpos\" size=\"5\" value=\"78\">\n";
+            Wserver.wprint "<input name=dpos size=5 value=78>\n";
           end;
         end;
-        tag "tr" "align=\"left\"" begin
-          tag "td" "align=\"right\"" begin
+        tag "tr" "align=left" begin
+          tag "td" "align=right" begin
             Wserver.wprint "%s\n" (txt 2);
-            Wserver.wprint
-              "<input name=\"overlap\" size=\"5\" value=\"10\">\n";
+            Wserver.wprint "<input name=overlap size=5 value=10>\n";
           end;
         end;
-        tag "tr" "align=\"left\"" begin
-          tag "td" "align=\"right\"" begin
+        tag "tr" "align=left" begin
+          tag "td" "align=right" begin
             Wserver.wprint "%s\n" (txt 3);
             let wid =
-              let (min_wid, max_wid, _, _, _) = table_pre_dim conf hts in
-              do {
-                Wserver.wprint "(%d-%d)\n" min_wid max_wid;
-                max min_wid (min max_wid 78)
-              }
+              let wid = 78 in
+              match hts_opt with
+              [ Some hts ->
+                  let (min_wid, max_wid, _, _, _) = table_pre_dim conf hts in
+                  do {
+                    Wserver.wprint "(%d-%d)\n" min_wid max_wid;
+                    max min_wid (min max_wid wid)
+                  }
+              | None -> wid ]
             in
-            Wserver.wprint "<input name=\"width\" size=\"5\" value=\"%d\">\n"
-              wid;
+            Wserver.wprint "<input name=width size=5 value=%d>\n" wid;
           end;
         end;
       end;
-      html_p conf;
-      Wserver.wprint "<input type=\"submit\" value=\"Ok\">\n";
+      Wserver.wprint "<input type=submit value=\"Ok\">\n";
     end;
-    Hutil.trailer conf
+    Util.trailer conf
   }
 ;
 
-value print_dag_page conf base page_title hts next_txt =
-  let conf =
-    let doctype =
-      (* changing doctype to transitional because use of
-         <hr width=... align=...> *)
-      match p_getenv conf.base_env "doctype" with
-      [ Some ("html-4.01" | "html-4.01-trans") -> "html-4.01-trans"
-      | _ -> "xhtml-1.0-trans" ]
-    in
-    {(conf) with base_env = [("doctype", doctype) :: conf.base_env]}
+value gen_print_dag conf base spouse_on invert set spl d =
+  let dag_elem_txt p =
+    Util.referenced_person_title_text conf base p ^
+      Date.short_dates_text conf base p
   in
-  let title _ = Wserver.wprint "%s" page_title in
-  do {
-    Hutil.header_no_page_title conf title;
-    print_html_table conf hts;
-    if next_txt <> "" then
-      tag "p" begin
-        Wserver.wprint "<a href=\"%s%s\">&gt;&gt;</a>\n" (commd conf) next_txt;
-      end
-    else ();
-    Hutil.trailer conf
-  }
-;
-end END;
-
-(* *)
-
-type dag_item = string;
-type dag_bar = string;
-
-type env 'a =
-  [ Vdag of (int * int * array int * array int * int)
-  | Vdcell of (int * Dag2html.align * Dag2html.table_data dag_item dag_bar)
-  | Vdcellp of string
-  | Vdline of int
-  | Vdlinep of (int * array (array string) * int * option int * option int)
-  | Vlazy of Lazy.t (env 'a)
-  | Vother of 'a
-  | Vnone ]
-;
-
-value get_env v env =
-  try
-    match List.assoc v env with
-    [ Vlazy l -> Lazy.force l
-    | x -> x ]
-  with
-  [ Not_found -> Vnone ]
-;
-value get_vother = fun [ Vother x -> Some x | _ -> None ];
-value set_vother x = Vother x;
-
-value rec eval_var conf page_title next_txt env xx loc =
-  fun
-  [ ["dag" :: sl] ->
-      match get_env "dag" env with
-      [ Vdag d -> eval_dag_var conf d sl
-      | _ -> raise Not_found ]
-  | ["dag_cell" :: sl] ->
-      match get_env "dag_cell" env with
-      [ Vdcell dcell -> eval_dag_cell_var conf dcell sl
-      | _ -> raise Not_found ]
-  | ["dag_cell_pre"] ->
-      match get_env "dag_cell_pre" env with
-      [ Vdcellp s -> VVstring s
-      | _ -> raise Not_found ]
-  | ["head_title"] -> VVstring page_title
-  | ["link_next"] -> VVstring next_txt
-  | _ -> raise Not_found ]
-and eval_dag_var conf (tmincol, tcol, colminsz, colsz, ncol) =
-  fun
-  [ ["max_wid"] -> VVstring (string_of_int tcol)
-  | ["min_wid"] -> VVstring (string_of_int tmincol)
-  | ["ncol"] -> VVstring (string_of_int (Array.fold_left \+ 0 colsz))
-  | _ -> raise Not_found ]
-and eval_dag_cell_var conf (colspan, align, td) =
-  fun
-  [ ["align"] ->
-      match align with
-      [ LeftA -> VVstring conf.left
-      | CenterA -> VVstring "center"
-      | RightA -> VVstring conf.right ]
-  | ["bar_link"] ->
-       VVstring (match td with [ TDbar (Some s) -> s | _ -> "" ])
-  | ["colspan"] -> VVstring (string_of_int colspan)
-  | ["is_bar"] ->
-       VVbool (match td with [ TDbar _ -> True | _ -> False ])
-  | ["is_hr_left"] ->
-       match td with
-       [ TDhr LeftA -> VVbool True
-       | _ -> VVbool False ]
-  | ["is_hr_right"] ->
-       match td with
-       [ TDhr RightA -> VVbool True
-       | _ -> VVbool False ]
-  | ["is_nothing"] -> VVbool (td = TDnothing)
-  | ["item"] ->
-      match td with
-      [ TDitem s -> VVstring s
-      | _ -> VVstring "" ]
-  | ["text"] ->
-      match td with
-      [ TDtext s -> VVstring s
-      | _ -> VVstring "" ]
-  | _ -> raise Not_found ]
-;
-
-value rec print_foreach conf hts print_ast eval_expr env () loc s sl el al =
-  match [s :: sl] with
-  [ ["dag_cell"] -> print_foreach_dag_cell conf hts print_ast env al
-  | ["dag_cell_pre"] -> print_foreach_dag_cell_pre conf hts print_ast env al
-  | ["dag_line"] -> print_foreach_dag_line conf print_ast env hts al
-  | ["dag_line_pre"] -> print_foreach_dag_line_pre conf hts print_ast env al
-  | _ -> raise Not_found ]
-and print_foreach_dag_cell_pre conf hts print_ast env al =
-  let i =
-    match get_env "dag_line" env with
-    [ Vdline i -> i
-    | _ -> raise Not_found ]
-  in
-  let (_, _, _, colsz, _) =
-    match get_env "dag" env with
-    [ Vdag d -> d
-    | _ -> raise Not_found ]
-  in
-  let (max_row, stra, row, pos1, pos2) =
-    match get_env "dag_line_pre" env with
-    [ Vdlinep x -> x
-    | _ -> raise Not_found ]
-  in
-  let rec loop pos col j =
-    if j = Array.length hts.(i) then ()
-    else do {
-      let (colspan, align, td) = hts.(i).(j) in
-      let sz =
-        loop 0 colspan where rec loop sz k =
-          if k = 0 then sz else loop (sz + colsz.(col + k - 1)) (k - 1)
-      in
-      let outs =
-        match td with
-        [ TDitem s | TDtext s ->
-            let s =
-              let k =
-                let dk = (max_row - Array.length stra.(j)) / 2 in
-                row - dk
-              in
-              if k >= 0 && k < Array.length stra.(j) then
-                let s = stra.(j).(k) in
-                if s = "&nbsp;" then " " else s
-              else try_add_vbar k (Array.length stra.(j)) hts i col
-            in
-            let len = displayed_length s in
-            String.make ((sz - len) / 2) ' ' ^ s ^
-              String.make (sz - (sz + len) / 2) ' '
-        | TDnothing -> String.make sz ' '
-        | TDbar s ->
-            let s =
-              match s with
-              [ None | Some "" -> "|"
-              | Some s ->
-                  if conf.cancel_links then "|"
-                  else
-                    sprintf
-                      "<a style=\"text-decoration:none\" href=\"%s\">|</a>" s ]
-            in
-            let len = displayed_length s in
-            String.make ((sz - len) / 2) ' ' ^ s ^
-              String.make (sz - (sz + len) / 2) ' '
-        | TDhr LeftA ->
-            let len = (sz + 1) / 2 in
-            String.make len '-' ^ String.make (sz - len) ' '
-        | TDhr RightA ->
-            let len = sz / 2 in
-            String.make (sz - len - 1) ' ' ^ String.make (len + 1) '-'
-        | TDhr CenterA -> String.make sz '-' ]
-      in
-      let clipped_outs =
-        if pos1 = None && pos2 = None then outs
-        else
-          let pos1 =
-            match pos1 with
-            [ Some pos1 -> pos1
-            | None -> pos ]
-          in
-          let pos2 =
-            match pos2 with
-            [ Some pos2 -> pos2
-            | None -> pos + sz ]
-          in
-          if pos + sz <= pos1 then ""
-          else if pos > pos2 then ""
-          else if pos2 >= pos + sz then
-            displayed_sub outs (pos1 - pos) (pos + sz - pos1)
-          else if pos1 < pos then displayed_sub outs 0 (pos2 - pos)
-          else displayed_sub outs (pos1 - pos) (pos2 - pos1)
-      in
-      if clipped_outs <> "" then do {
-        let v = Vdcellp clipped_outs in
-        let print_ast = print_ast [("dag_cell_pre", v) :: env] () in
-        List.iter print_ast al;
-      }
-      else ();
-      loop (pos + sz) (col + colspan) (j + 1)
-    }
-  in
-  loop 0 0 0
-and print_foreach_dag_cell conf hts print_ast env al =
-  let i =
-    match get_env "dag_line" env with
-    [ Vdline i -> i
-    | _ -> raise Not_found ]
-  in
-  for j = 0 to Array.length hts.(i) - 1 do {
-    let print_ast = print_ast [("dag_cell", Vdcell hts.(i).(j)) :: env] () in
-    List.iter print_ast al;
-  }
-and print_foreach_dag_line conf print_ast env hts al =
-  for i = 0 to Array.length hts - 1 do {
-    let print_ast = print_ast [("dag_line", Vdline i) :: env] () in
-    List.iter print_ast al;
-  }
-and print_foreach_dag_line_pre conf hts print_ast env al =
-  let i =
-    match get_env "dag_line" env with
-    [ Vdline i -> i
-    | _ -> raise Not_found ]
-  in
-  let (tmincol, tcol, colminsz, colsz, ncol) =
-    match get_env "dag" env with
-    [ Vdag d -> d
-    | _ -> raise Not_found ]
-  in
-  let (stra, max_row) =
-    let (stral, max_row) =
-      loop [] 1 0 0 where rec loop stral max_row col j =
-        if j = Array.length hts.(i) then (stral, max_row)
-        else
-          let (colspan, _, td) = hts.(i).(j) in
-          let stra =
-            match td with
-            [ TDitem s | TDtext s ->
-                let sz =
-                  loop 0 colspan where rec loop sz k =
-                    if k = 0 then sz
-                    else loop (sz + colsz.(col + k - 1)) (k - 1)
-                in
-                Array.of_list (displayed_strip s sz)
-            | _ -> [| |] ]
-          in
-          loop [stra :: stral] (max max_row (Array.length stra))
-            (col + colspan) (j + 1)
-    in
-    (Array.of_list (List.rev stral), max_row)
-  in
-  let pos1 = p_getint conf.env "pos1" in
-  let pos2 =
-    match p_getint conf.env "pos2" with
-    [ None -> p_getint conf.env "dpos"
-    | x -> x ]
-  in
-  for row = 0 to max_row - 1 do {
-    let v = Vdlinep (max_row, stra, row, pos1, pos2) in
-    let print_ast = print_ast [("dag_line_pre", v) :: env] () in
-    List.iter print_ast al;
-  }
-;
-
-IFDEF OLD THEN declare
-value old_print_slices_menu_or_dag_page conf base page_title hts next_txt =
-  if p_getenv conf.env "slices" = Some "on" then print_slices_menu conf hts
-  else print_dag_page conf base page_title hts next_txt
-;
-end ELSE declare
-value old_print_slices_menu_or_dag_page conf base page_title hts next_txt =
-  incorrect_request conf
-;
-end END;
-
-value print_slices_menu_or_dag_page conf base page_title hts next_txt =
-(**)
-  if p_getenv conf.env "old" = Some "on" then
-    old_print_slices_menu_or_dag_page conf base page_title hts next_txt else
-(**)
-  let conf =
-    if p_getenv conf.env "slices" = Some "on" then conf
-    else
-      let doctype =
-        (* changing doctype to transitional because use of
-           <hr width=... align=...> *)
-        match p_getenv conf.base_env "doctype" with
-        [ Some ("html-4.01" | "html-4.01-trans") -> "html-4.01-trans"
-        | _ -> "xhtml-1.0-trans" ]
-      in
-      {(conf) with base_env = [("doctype", doctype) :: conf.base_env]}
-  in
-  let env =
-    let table_pre_dim () =
-      let (tmincol, tcol, colminsz, colsz, ncol) = table_pre_dim conf hts in
-      let dcol =
-        let dcol =
-          match p_getint conf.env "width" with
-          [ Some i -> i
-          | None -> 79 ]
-        in
-        max tmincol (min dcol tcol)
-      in
-      do {
-        if tcol > tmincol then
-          for i = 0 to ncol - 1 do {
-            colsz.(i) :=
-              colminsz.(i) +
-                (colsz.(i) - colminsz.(i)) * (dcol - tmincol) / (tcol - tmincol)
-          }
-        else ();
-        Vdag (tmincol, tcol, colminsz, colsz, ncol)
-      }
-    in
-    [("dag", Vlazy (Lazy.lazy_from_fun table_pre_dim))]
-  in
-  Hutil.interp conf base "dag"
-    {Templ.eval_var = eval_var conf page_title next_txt;
-     Templ.eval_transl _ = Templ.eval_transl conf;
-     Templ.eval_predefined_apply _ = raise Not_found;
-     Templ.get_vother = get_vother; Templ.set_vother = set_vother;
-     Templ.print_foreach = print_foreach conf hts}
-     env ()
-;
-
-value make_and_print_dag conf base elem_txt vbar_txt invert set spl
-  page_title next_txt
-=
-  let d = make_dag conf base set in
-  let hts = make_tree_hts conf base elem_txt vbar_txt invert set spl d in
-  print_slices_menu_or_dag_page conf base page_title hts next_txt
-;
-
-value print conf base =
-  let set = get_dag_elems conf base in
-  let elem_txt p = Item p "" in
   let vbar_txt ip = "" in
+  let no_group = p_getenv conf.env "nogroup" = Some "on" in
+  let hts =
+    make_tree_hts conf base dag_elem_txt vbar_txt spouse_on invert no_group
+      set spl d
+  in
+  if p_getenv conf.env "slices" = Some "on" then
+    print_slices_menu conf base (Some hts)
+  else do {
+    let title _ =
+      Wserver.wprint "%s" (Util.capitale (Util.transl conf "tree"))
+    in
+    Util.header_no_page_title conf title;
+    print_html_table conf hts;
+    Util.trailer conf
+  }
+;
+
+value print_dag conf base set spl d =
+  let spouse_on =
+    match Util.p_getenv conf.env "spouse" with
+    [ Some "on" -> True
+    | _ -> False ]
+  in
   let invert =
     match Util.p_getenv conf.env "invert" with
     [ Some "on" -> True
     | _ -> False ]
   in
-  let page_title = Util.capitale (Util.transl conf "tree") in
-  make_and_print_dag conf base elem_txt vbar_txt invert set [] page_title ""
+  gen_print_dag conf base spouse_on invert set spl d
+;
+
+value print conf base =
+  let set = get_dag_elems conf base in
+  let d = make_dag conf base (Pset.elements set) in
+  print_dag conf base set [] d
 ;

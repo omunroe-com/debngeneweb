@@ -1,5 +1,4 @@
 gwc
-gwc2
 consang
 gwd
 gwu
@@ -9,6 +8,3 @@ gwu
 *.cm[ioxa]
 *.cmxa
 gwlib.ml
-update_nldb
-check_base
-compilation.ml

@@ -1,11 +1,11 @@
-# $Id: Makefile,v 5.5 2007/09/12 09:58:44 ddr Exp $
+# $Id: Makefile,v 4.18 2004/07/01 14:00:24 ddr Exp $
 
 PREFIX=/usr
 LANGDIR=$(PREFIX)/share/geneweb
 DOCDIR=$(PREFIX)/share/geneweb/doc
 MANDIR=$(PREFIX)/man/man1
 DESTDIR=distribution
-MANPAGES=ged2gwb.1 gwb2ged.1 gwc.1 gwc2.1 gwu.1 gwd.1 consang.1 gwsetup.1
+MANPAGES=ged2gwb.1 gwb2ged.1 gwc.1 gwu.1
 
 include tools/Makefile.inc
 
@@ -34,7 +34,6 @@ opt::
 install:
 	mkdir -p $(PREFIX)/bin
 	cp src/gwc $(PREFIX)/bin/gwc$(EXE)
-	cp src/gwc2 $(PREFIX)/bin/gwc2$(EXE)
 	cp src/consang $(PREFIX)/bin/consang$(EXE)
 	cp src/gwd $(PREFIX)/bin/gwd$(EXE)
 	cp src/gwu $(PREFIX)/bin/gwu$(EXE)
@@ -59,7 +58,6 @@ install:
 
 uninstall:
 	rm -f $(PREFIX)/bin/gwc$(EXE)
-	rm -f $(PREFIX)/bin/gwc2$(EXE)
 	rm -f $(PREFIX)/bin/consang$(EXE)
 	rm -f $(PREFIX)/bin/gwd$(EXE)
 	rm -f $(PREFIX)/bin/gwu$(EXE)
@@ -71,7 +69,7 @@ uninstall:
 distrib: new_distrib wrappers
 
 wrappers:
-	if test "$(CAMLP5F)" = "-DWIN95"; then \
+	if test "$(CAMLP4F)" = "-DWIN95"; then \
 	  echo 'cd gw' > $(DESTDIR)/gwd.bat; \
 	  echo 'gwd' >> $(DESTDIR)/gwd.bat; \
 	  echo 'cd gw' > $(DESTDIR)/gwsetup.bat; \
@@ -96,7 +94,7 @@ new_distrib: classical_distrib
 	mkdir $(DESTDIR)/gw/setup
 	cp setup/intro.txt $(DESTDIR)/gw/setup/.
 	mkdir $(DESTDIR)/gw/setup/lang
-	if test "$(CAMLP5F)" = "-DWIN95"; then \
+	if test "$(CAMLP4F)" = "-DWIN95"; then \
 	  cp setup/lang/intro.txt.dos $(DESTDIR)/gw/setup/lang/intro.txt; \
 	else \
 	  cp setup/lang/intro.txt $(DESTDIR)/gw/setup/lang/intro.txt; \
@@ -118,11 +116,9 @@ classical_distrib:
 	cp CHANGES $(DESTDIR)/CHANGES.txt
 	cp LICENSE $(DESTDIR)/LICENSE.txt
 	cp src/gwc $(DESTDIR)/gwc$(EXE)
-	cp src/gwc2 $(DESTDIR)/gwc2$(EXE)
 	cp src/consang $(DESTDIR)/consang$(EXE)
 	cp src/gwd $(DESTDIR)/gwd$(EXE)
 	cp src/gwu $(DESTDIR)/gwu$(EXE)
-	cp src/update_nldb $(DESTDIR)/update_nldb$(EXE)
 	cp ged2gwb/ged2gwb $(DESTDIR)/ged2gwb$(EXE)
 	cp gwb2ged/gwb2ged $(DESTDIR)/gwb2ged$(EXE)
 	mkdir $(DESTDIR)/gwtp_tmp
@@ -135,14 +131,10 @@ classical_distrib:
 	cp etc/INSTALL.htm $(DESTDIR)/.
 	cp etc/a.gwf $(DESTDIR)/.
 	mkdir $(DESTDIR)/doc
-	mkdir $(DESTDIR)/doc/wdoc
 	cp doc/*.htm $(DESTDIR)/doc/.
-	cp doc/wdoc/*.txt $(DESTDIR)/doc/wdoc/.
 	for i in de en fr it nl sv; do \
 	  mkdir $(DESTDIR)/doc/$$i; \
-	  mkdir $(DESTDIR)/doc/wdoc/$$i; \
 	  cp doc/$$i/*.htm $(DESTDIR)/doc/$$i/.; \
-	  if test -d "doc/wdoc/$$i"; then cp doc/wdoc/$$i/*.txt $(DESTDIR)/doc/wdoc/$$i/.; fi; \
 	done
 	mkdir $(DESTDIR)/doc/images
 	cp doc/images/*.jpg doc/images/gwlogo.png $(DESTDIR)/doc/images/.
@@ -152,15 +144,6 @@ classical_distrib:
 	cp hd/images/*.jpg hd/images/*.png $(DESTDIR)/images/.
 	mkdir $(DESTDIR)/etc
 	cp hd/etc/*.txt $(DESTDIR)/etc/.
-
-windows_files:
-	@for i in distribution/*.txt distribution/gw/*.txt; do \
-	  echo "========================================="; \
-	  echo $$i; \
-	  cp $$i $$i~; \
-	  sed -e 's/$$/\r/' $$i~ > $$i; \
-	  rm $$i~; \
-	done
 
 clean::
 	cd wserver; $(MAKE) clean
@@ -178,8 +161,6 @@ clean_mismatch:
 	rm src/pa_lock.cmo src/pa_html.cmo src/def.syn.cmo
 
 depend:
-	cd src; $(MAKE) pr_dep.cmo def.syn.cmo gwlib.ml
-	cd src; $(MAKE) pa_lock.cmo pa_html.cmo q_codes.cmo
 	cd wserver; $(MAKE) depend
 	cd src; $(MAKE) depend
 	cd ged2gwb; $(MAKE) depend

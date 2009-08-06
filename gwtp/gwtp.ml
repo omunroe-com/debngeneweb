@@ -1,8 +1,7 @@
-(* camlp5r ../src/pa_lock.cmo *)
-(* $Id: gwtp.ml,v 5.8 2007/09/12 09:58:44 ddr Exp $ *)
-(* Copyright (c) 1998-2007 INRIA *)
+(* camlp4r ../src/pa_lock.cmo *)
+(* $Id: gwtp.ml,v 4.24 2004/12/14 09:53:16 ddr Exp $ *)
+(* Copyright (c) 1998-2005 INRIA *)
 
-open Dbdisk;
 open Printf;
 
 value gwtp_tmp = ref (Filename.concat ".." "gwtp_tmp");
@@ -124,12 +123,11 @@ value log_open () =
   open_out_gen [Open_wronly; Open_creat; Open_append] 0o644 fname
 ;
 
-type env_val = [ Val of string | Fun of unit -> unit ];
-
-value macro env c =
-  match try Some (List.assoc c env) with [ Not_found -> None ] with
-  [ Some (Val s) -> s
-  | _ -> "%" ^ String.make 1 c ]
+value macro env =
+  fun
+  [ c ->
+      try List.assoc c env with
+      [ Not_found -> "%" ^ String.make 1 c ] ]
 ;
 
 value get_variable ic =
@@ -152,21 +150,65 @@ value template_fname env fname =
 
 value lindex s c =
   pos 0 where rec pos i =
-    if i = String.length s then None
-    else if s.[i] = c then Some i
+    if i == String.length s then None
+    else if s.[i] == c then Some i
     else pos (i + 1)
 ;
 
 value input_lexicon lang =
-  let ht = Hashtbl.create 501 in
-  do {
-    Mutil.input_lexicon lang ht
-      (fun () ->
-         open_in
-           (List.fold_right Filename.concat [gwtp_etc.val; "lang"]
-              "lexicon.txt"));
-    ht
-  }
+  let t = Hashtbl.create 501 in
+  try
+    let ic =
+      open_in
+        (List.fold_right Filename.concat [gwtp_etc.val; "lang"]
+           "lexicon.txt")
+    in
+    let derived_lang =
+      match lindex lang '-' with
+      [ Some i -> String.sub lang 0 i
+      | _ -> "" ]
+    in
+    try
+      do {
+        try
+          while True do {
+            let k =
+              find_key (input_line ic) where rec find_key line =
+                if String.length line < 4 then find_key (input_line ic)
+                else if String.sub line 0 4 <> "    " then
+                  find_key (input_line ic)
+                else line
+            in
+            let k = String.sub k 4 (String.length k - 4) in
+            let rec loop line =
+              match lindex line ':' with
+              [ Some i ->
+                  let line_lang = String.sub line 0 i in
+                  do {
+                    if line_lang = lang ||
+                       line_lang = derived_lang && not (Hashtbl.mem t k) then
+                      let v =
+                        if i + 1 = String.length line then ""
+                        else
+                          String.sub line (i + 2) (String.length line - i - 2)
+                      in
+                      Hashtbl.add t k v
+                    else ();
+                    loop (input_line ic)
+                  }
+              | None -> () ]
+            in
+            loop (input_line ic)
+          }
+        with
+        [ End_of_file -> () ];
+        close_in ic;
+        t
+      }
+    with e ->
+      do { close_in ic; raise e }
+  with
+  [ Sys_error _ -> t ]
 ;
 
 value unfreeze_lexicon =
@@ -187,40 +229,20 @@ value transl lang w =
   try Hashtbl.find lexicon w with [ Not_found -> "[" ^ w ^ "]" ]
 ;
 
-value copy_template genv (varenv, filenv) env if_env fname =
+value copy_template genv (varenv, filenv) env fname =
   let lang =
     match HttpEnv.getenv genv "lang" with
     [ Some x -> x
     | _ -> "en" ]
   in
-  let echo = ref True in
-  let (push_echo, pop_echo) =
-    let stack = ref [] in
-    (fun x -> do { stack.val := [echo.val :: stack.val]; echo.val := x; },
-     fun () ->
-       match stack.val with
-       [ [x :: l] -> do { stack.val := l; echo.val := x; }
-       | [] -> echo.val := True ])
-  in
   let ic = open_in (template_fname env fname) in
-  let rec if_expr =
-    fun
-    [ 'N' -> not (if_expr (input_char ic))
-    | c ->
-        try List.assoc c if_env with
-        [ Not_found -> do { printf "!!!!!%c!!!!!" c; True } ] ]
-  in
   do {
     try
       while True do {
         match input_char ic with
         [ '%' ->
             match input_char ic with
-            [ 'I' -> push_echo (echo.val && if_expr (input_char ic))
-            | 'E' -> pop_echo ()
-            | _ when not echo.val -> ()
-            | 's' -> print_string (cgi_script_name ())
-            | 'c' | 'e' as x ->
+            [ 'c' | 'e' as x ->
                 let (v, k) = get_binding ic in
                 try
                   if k = List.assoc v varenv then
@@ -236,19 +258,13 @@ value copy_template genv (varenv, filenv) env if_env fname =
                 let v = get_variable ic in
                 try print_string (quote_escaped (List.assoc v filenv)) with
                 [ Not_found -> () ]
-            | 'l' ->
-                print_string lang
             | 'L' ->
                 let v = get_variable ic in
                 let lang_def = transl lang " !languages" in
                 print_string (Translate.language_name v lang_def)
             | c ->
-                match
-                  try Some (List.assoc c env) with [ Not_found -> None ]
-                with
-                [ Some (Val s) -> print_string s
-                | Some (Fun f) -> f ()
-                | None -> do { print_char '%'; print_char c; } ] ]
+                try print_string (List.assoc c env) with
+                [ Not_found -> do { print_char '%'; print_char c; } ] ]
         | '[' ->
             let s =
               let c = input_char ic in
@@ -263,8 +279,8 @@ value copy_template genv (varenv, filenv) env if_env fname =
                 if alt then "[" ^ s ^ "]" else s
               else transl lang s
             in
-            if echo.val then print_string s else ()
-        | c -> if echo.val then print_char c else () ]
+            print_string s
+        | c -> print_char c ]
       }
     with
     [ End_of_file -> () ];
@@ -334,7 +350,7 @@ value remove_dir_contents dir =
 value html_escaped s =
   let s = String.escaped s in
   let rec loop i len =
-    if i = String.length s then Buff.get len
+    if i == String.length s then Buff.get len
     else
       let len =
         match s.[i] with
@@ -648,15 +664,14 @@ value make_temp env b =
     insert_file env bdir "base";
     insert_file env bdir "notes";
     insert_file env bdir "patches";
-    insert_file env bdir "particles.txt";
     flush stdout;
     let base = Iolight.input bdir in
     printf "\n";
-    printf "persons: %d\n" base.data.persons.len;
-    printf "families: %d\n\n" base.data.families.len;
+    printf "persons: %d\n" base.Def.data.Def.persons.Def.len;
+    printf "families: %d\n\n" base.Def.data.Def.families.Def.len;
     flush stdout;
     Secure.set_base_dir (Filename.dirname bdir);
-    Outbase.output bdir base;
+    Iobase.output bdir base;
     flush stdout;
   }
 ;
@@ -688,16 +703,11 @@ value copy_temp b =
   }
 ;
 
-value printf_link_to_main env b tok =
-  let lang =
-    match HttpEnv.getenv env "lang" with
-    [ Some x -> x
-    | _ -> "en" ]
-  in
+value printf_link_to_main b tok =
   do {
     printf "<p><hr><div align=right>\n";
-    printf "<a href=\"%s?m=MAIN;b=%s;t=%s;lang=%s\">%s</a></div>\n"
-      (cgi_script_name ()) b tok lang (transl lang "main page");
+    printf "<a href=\"%s?m=MAIN;b=%s;t=%s\">main page</a></div>\n"
+      (cgi_script_name ()) b tok;
   }
 ;
 
@@ -727,7 +737,7 @@ value ged2gwb b =
     Filename.concat gwtp_tmp.val b ^ " > " ^
     Filename.concat gwtp_tmp.val (b ^ ".log")
   in
-  let _ = Sys.command comm in ()
+  let r = Sys.command comm in ()
 ;
 
 value move_gedcom_to_old b =
@@ -768,7 +778,7 @@ value send_gedcom_file str env b tok f fname =
     flush stdout;
     move_gedcom_to_old b;
     printf "</pre>\n";
-    printf_link_to_main env b tok;
+    printf_link_to_main b tok;
     printf "</body>\n";
     flush stdout;
   }
@@ -791,7 +801,10 @@ value gwtp_upload_gedcom str env b tok =
     printf "content-type: text/html";
     crlf ();
     crlf ();
-    copy_template env ([], []) [('b', Val b); ('t', Val tok)] [] "send_gedcom";
+    copy_template env ([], [])
+      [('s', cgi_script_name ()); ('b', b); ('t', tok)] "send_gedcom";
+    printf_link_to_main b tok;
+    printf "</body>\n";
   }
 ;
 
@@ -816,7 +829,7 @@ value gwtp_print_log str env b tok =
     [ End_of_file -> () ];
     printf "</pre>\n";
     close_in ic;
-    printf_link_to_main env b tok;
+    printf_link_to_main b tok;
     printf "</body>\n";
   }  
 ;
@@ -862,7 +875,7 @@ value gwtp_print_accesses of_wizards str env b tok =
       with
       [ Sys_error _ -> printf "[nothing]\n" ];
     printf "</pre>\n";
-    printf_link_to_main env b tok;
+    printf_link_to_main b tok;
     printf "</body>\n";
   }  
 ;
@@ -899,7 +912,7 @@ value send_file str env b tok f fname =
         } ];
     flush stdout;
     printf "</pre>\n";
-    printf_link_to_main env b tok;
+    printf_link_to_main b tok;
     printf "</body>\n";
   }
   else do {
@@ -916,7 +929,7 @@ value send_file str env b tok f fname =
     else
       printf "You selected the file <b>%s</b> instead of <b>base</b>\n" fname;
     printf "</body>\n";
-    printf_link_to_main env b tok;
+    printf_link_to_main b tok;
   }
 ;
 
@@ -1015,7 +1028,7 @@ value gwtp_setconf str env b tok =
     set_base_conf b varenv;
     set_base_files b filenv;
     printf "Configuration changed\n";
-    printf_link_to_main env b tok;
+    printf_link_to_main b tok;
     printf "</body>\n";
   }
 ;
@@ -1027,7 +1040,10 @@ value gwtp_upload str env b tok =
     printf "content-type: text/html";
     crlf ();
     crlf ();
-    copy_template env ([], []) [('b', Val b); ('t', Val tok)] [] "send";
+    copy_template env ([], [])
+      [('s', cgi_script_name ()); ('b', b); ('t', tok)] "send";
+    printf_link_to_main b tok;
+    printf "</body>\n";
   }
 ;
 
@@ -1040,50 +1056,44 @@ value gwtp_download str env b tok =
     crlf ();
     crlf ();
     if Sys.file_exists bdir then do {
-      let print_directory () =
-        let dh = Unix.opendir bdir in
-        do {
-          printf "<ul>\n";
-          try
-            while True do {
-              let f = Unix.readdir dh in
-              let st = Unix.stat (Filename.concat bdir f) in
-              if st.Unix.st_kind = Unix.S_REG &&
-                 f.[String.length f - 1] <> '~'
-              then do {
-                printf "<li><tt>";
-                printf "<a href=\"%s?m=RECV;b=%s;t=%s;f=/%s\">%s</a>"
-                  (cgi_script_name ()) b tok f f;
-                let sz = string_of_int st.Unix.st_size in
-                printf "%t%s bytes"
-                  (fun oc ->
-                     for i = 1 to 25 - String.length sz - String.length f do {
-                       fprintf oc "&nbsp;"
-                     })
-                  sz;
-                printf "</tt>\n";
-              }
-              else ()
-            }
-          with
-          [ End_of_file -> Unix.closedir dh ];
-          printf "</ul>\n";
-        }
-      in
+      let dh = Unix.opendir bdir in
       copy_template env ([], [])
-        [('b', Val b); ('t', Val tok); ('d', Fun print_directory)] []
-        "recv";
+        [('s', cgi_script_name ()); ('b', b); ('t', tok)] "recv";
+      printf "<ul>\n";
+      try
+        while True do {
+          let f = Unix.readdir dh in
+          let st = Unix.stat (Filename.concat bdir f) in
+          if st.Unix.st_kind == Unix.S_REG &&
+             f.[String.length f - 1] <> '~' then
+             do {
+            printf "<li><tt>";
+            printf "<a href=\"%s?m=RECV;b=%s;t=%s;f=/%s\">%s</a>"
+              (cgi_script_name ()) b tok f f;
+            let sz = string_of_int st.Unix.st_size in
+            printf "%t%s bytes"
+              (fun oc ->
+                 for i = 1 to 25 - String.length sz - String.length f do {
+                   fprintf oc "&nbsp;"
+                 })
+              sz;
+            printf "</tt>\n";
+          }
+          else ()
+        }
+      with
+      [ End_of_file -> Unix.closedir dh ];
+      printf "</ul>\n";
     }
-    else do {
+    else
       printf "
 <head><title>Gwtp - download %s</title></head>
 <body>
 <h1 align=center>Gwtp - download %s</h1>
 <p>Your database does not exist or is empty.
 " b b;
-      printf_link_to_main env b tok;
-      printf "</body>\n";
-    }
+    printf_link_to_main b tok;
+    printf "</body>\n";
   }
 ;
 
@@ -1093,22 +1103,57 @@ value gwtp_config str env b tok =
     printf "content-type: text/html";
     crlf ();
     crlf ();
-    copy_template env (varenv, filenv) [('b', Val b); ('t', Val tok)] []
-      "conf";
+    copy_template env (varenv, filenv)
+      [('s', cgi_script_name ()); ('b', b); ('t', tok)] "conf";
+    printf_link_to_main b tok;
+    printf "</body>\n";
   }
 ;
 
 value gwtp_main str env b tok =
+  let gwtp_comm = cgi_script_name () in
+  let config_exists =
+    Sys.file_exists (Filename.concat gwtp_dst.val (b ^ ".gwf"))
+  in
   do {
     printf "content-type: text/html";
     crlf ();
     crlf ();
-    copy_template env ([], [])
-      [('b', Val b); ('t', Val tok); ('w', Val gw_site.val)]
-      [('c', Sys.file_exists (Filename.concat gwtp_dst.val (b ^ ".gwf")));
-       ('g', Sys.file_exists (Filename.concat gwtp_etc.val "ged2gwb"));
-       ('w', gw_site.val <> "")]
-      "main";
+    printf "\
+<head><title>Gwtp - %s</title></head>
+<body>
+<h1 align=center>Gwtp - %s</h1>
+<ul>
+" b b;
+    if config_exists then do {
+      if no_upload.val then ()
+      else if
+        Sys.file_exists (Filename.concat gwtp_etc.val "ged2gwb")
+      then do {
+        printf "<li>Upload from\n<ul>\n";
+        printf "<li><a href=\"%s?m=UPL;b=%s;t=%s\">database files</a>\n"
+          gwtp_comm b tok;
+        printf "<li><a href=\"%s?m=UPG;b=%s;t=%s\">gedcom</a>\n"
+          gwtp_comm b tok;
+        printf "</ul>\n";
+      }
+      else
+        printf "<li><a href=\"%s?m=UPL;b=%s;t=%s\">Upload</a>\n" gwtp_comm b
+          tok;
+      printf "<li><a href=\"%s?m=DNL;b=%s;t=%s\">Download</a>\n" gwtp_comm b
+        tok;
+    }
+    else ();
+    printf "<li><a href=\"%s?m=CNF;b=%s;t=%s\">Configuration</a>\n" gwtp_comm
+      b tok;
+    printf "</ul>\n";
+    if gw_site.val <> "" && config_exists then do {
+      printf "<p>\n<ul>\n";
+      printf "<li><a href=\"%s%s\">Browse</a>\n" gw_site.val b;
+      printf "</ul>\n";
+    }
+    else ();
+    printf "</body>\n";
   }
 ;
 

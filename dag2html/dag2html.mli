@@ -1,4 +1,4 @@
-(* $Id: dag2html.mli,v 5.0 2005/12/13 11:51:26 ddr Exp $ *)
+(* $Id: dag2html.mli,v 1.4 2001/08/24 04:54:09 ddr Exp $ *)
 
 type dag 'a = { dag : mutable array (node 'a) }
 and node 'a =
@@ -17,19 +17,12 @@ and ghost_id = 'x
 ;
 
 type align = [ LeftA | CenterA | RightA ];
-type table_data 'a 'b =
-  [ TDitem of 'a
-  | TDtext of string
-  | TDhr of align
-  | TDbar of option 'b
-  | TDnothing ]
-;
-type html_table_line 'a 'b = array (int * align * table_data 'a 'b);
-type html_table 'a 'b = array (html_table_line 'a 'b);
+type table_data = [ TDstring of string | TDhr of align | TDbar of string ];
+type html_table = array (array (int * align * table_data));
 
 value html_table_struct :
-  (node 'a -> 'b) -> (node 'a -> 'c) -> (node 'a -> bool) ->
-    dag 'a -> table idag -> array (array (int * align * table_data 'b 'c));
+  (node 'a -> string) -> (node 'a -> string) -> (node 'a -> bool) ->
+    dag 'a -> table idag -> array (array (int * align * table_data));
 
 value table_of_dag :
   (node 'a -> bool) -> bool -> bool -> bool -> dag 'a -> table idag;

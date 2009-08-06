@@ -1,5 +1,5 @@
-(* $Id: btree.ml,v 5.2 2007/01/19 01:53:16 ddr Exp $ *)
-(* Copyright (c) 1998-2007 INRIA *)
+(* $Id: btree.ml,v 4.2 2004/12/14 09:30:10 ddr Exp $ *)
+(* Copyright (c) 1998-2005 INRIA *)
 
 module type OrderedType = sig type t = 'a; value compare : t -> t -> int; end;
 
@@ -54,7 +54,7 @@ module Make (Ord : OrderedType) =
     value rec add x data =
       fun
       [ Empty -> Node Empty x data Empty 1
-      | Node l v d r h ->
+      | Node l v d r h as t ->
           let c = Ord.compare x v in
           if c = 0 then Node l x data r h
           else if c < 0 then bal (add x data l) v d r
@@ -94,7 +94,7 @@ module Make (Ord : OrderedType) =
     value rec remove x =
       fun
       [ Empty -> Empty
-      | Node l v d r h ->
+      | Node l v d r h as t ->
           let c = Ord.compare x v in
           if c = 0 then merge l r
           else if c < 0 then bal (remove x l) v d r

@@ -1,5 +1,5 @@
-(* $Id: wserver.mli,v 5.5 2007/05/24 15:03:22 ddr Exp $ *)
-(* Copyright (c) 1998-2007 INRIA *)
+(* $Id: wserver.mli,v 4.10 2004/12/14 09:30:21 ddr Exp $ *)
+(* Copyright (c) 1998-2005 INRIA *)
 
 (* module [Wserver]: elementary web service *)
 
@@ -20,15 +20,11 @@ value f :
        If [maxc] is [Some n], maximum [n] clients can be treated at the
        same time; [None] means no limit. See the example below. *)
 
-value wprint : format4 'a unit string unit -> 'a;
+value wprint : format 'a out_channel unit -> 'a;
     (* To be called to print page contents. *)
 
 value wflush : unit -> unit;
     (* To flush page contents print. *)
-
-value wrap_string : ref (string -> string);
-    (* To specify a function which may transform the string printed by
-       [sprint] below. *)
 
 value http : string -> unit;
     (* [Wserver.http answer] sends the http header where [answer]
@@ -42,12 +38,7 @@ value encode : string -> string;
 
 value decode : string -> string;
     (* [Wserver.decode s] does the inverse job than [Wserver.code],
-       restoring the initial string. The heading and trailing spaces
-       are stripped. *)
-
-value gen_decode : bool -> string -> string;
-    (* Like above but heading and trailing spaces are stripped
-       only if bool parameter is True. [decode] = [gen_decode True]. *)
+       restoring the initial string. *)
 
 value extract_param : string -> char -> list string -> string;
     (* [extract_param name stopc request] can be used to extract some
@@ -59,18 +50,8 @@ value extract_param : string -> char -> list string -> string;
 
 value get_request_and_content : Stream.t char -> (list string * string);
 
-value wsocket : unit -> Unix.file_descr;
-
 value sock_in : ref string;
 value sock_out : ref string;
-    (* Names of the files used in windows implementation to communicate
-       http requests and html answers. Default "wserver.sin" and
-       "wserver.sou". Can have relative or absolute paths. *)
-value stop_server : ref string;
-    (* Name of the file whose presence tells the server to stop (at least
-       one request is necessary to unfreeze the server to make it check
-       that this file exits. Default "STOP_SERVER". Can have relative
-       or absolute path. *)
 value noproc : ref bool;
 
 (* Example:

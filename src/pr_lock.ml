@@ -1,6 +1,6 @@
-(* camlp5r q_MLast.cmo pa_extfun.cmo *)
-(* $Id: pr_lock.ml,v 5.3 2007/09/12 09:58:44 ddr Exp $ *)
-(* Copyright (c) 1998-2007 INRIA *)
+(* camlp4r q_MLast.cmo pa_extfun.cmo *)
+(* $Id: pr_lock.ml,v 4.3 2004/12/14 09:30:16 ddr Exp $ *)
+(* Copyright (c) 1998-2005 INRIA *)
 
 open Pcaml;
 open Spretty;

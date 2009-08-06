@@ -1,11 +1,8 @@
-(* $Id: updateInd.mli,v 5.4 2007/01/19 01:53:17 ddr Exp $ *)
-(* Copyright (c) 1998-2007 INRIA *)
+(* $Id: updateInd.mli,v 4.1 2004/12/14 09:30:18 ddr Exp $ *)
+(* Copyright (c) 1998-2005 INRIA *)
 
 open Config;
 open Def;
-open Gwdb;
-
-value string_person_of : base -> person -> gen_person Update.key string;
 
 value print_update_ind :
   config -> base -> gen_person Update.key string -> string -> unit

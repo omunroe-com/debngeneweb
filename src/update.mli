@@ -1,9 +1,8 @@
-(* $Id: update.mli,v 5.10 2007/03/05 20:23:51 ddr Exp $ *)
-(* Copyright (c) 1998-2007 INRIA *)
+(* $Id: update.mli,v 4.7 2004/12/14 09:30:17 ddr Exp $ *)
+(* Copyright (c) 1998-2005 INRIA *)
 
-open Config;
 open Def;
-open Gwdb;
+open Config;
 
 exception ModErr;
 type create_info = (option date * string * death * option date * string);
@@ -14,33 +13,30 @@ value infer_death : config -> option date -> death;
 value print_same_name : config -> base -> person -> unit;
 
 value insert_person :
-  config -> base -> string -> ref (list (gen_person iper istr)) -> key ->
-    Adef.iper
+  config -> base -> string -> ref (list person) -> key -> Adef.iper
 ;
-value add_misc_names_for_new_persons :
-  base -> list (gen_person iper istr) -> unit
-;
-value update_misc_names_of_family : base -> sex -> gen_union ifam -> unit;
+value insert_string : base -> string -> Adef.istr;
+value add_misc_names_for_new_persons : base -> list person -> unit;
+value update_misc_names_of_family : base -> person -> union -> unit;
 value delete_topological_sort_v : config -> base -> unit;
 value delete_topological_sort : config -> base -> unit;
 
-value update_related_pointers :
-  base -> iper -> list iper -> list iper -> unit;
-
 value print_return : config -> unit;
-value print_error : config -> base -> CheckItem.base_error -> unit;
-value print_warnings : config -> base -> list CheckItem.base_warning -> unit;
-value error : config -> base -> CheckItem.base_error -> 'a;
+value print_error : config -> base -> Gutil.base_error -> unit;
+value print_warnings : config -> base -> list Gutil.base_warning -> unit;
+value error : config -> base -> Gutil.base_error -> 'a;
 
-value error_locked : config -> unit;
-value error_digest : config -> unit;
+value error_locked : config -> base -> unit;
+value error_digest : config -> base -> 'a;
 
-value digest_person : gen_person key string -> Digest.t;
-value digest_family :
-  (gen_family key string * gen_couple key * gen_descend key) -> Digest.t;
+value digest_person : person -> Digest.t;
+value digest_family : family -> couple -> descend -> Digest.t;
 
 value reconstitute_date : config -> string -> option date;
+value print_date : config -> base -> string -> string -> option date -> unit;
 
+value print_src : config -> string -> string -> unit;
 value print_someone : config -> base -> person -> unit;
+value print : config -> base -> person -> unit;
 
 value update_conf : config -> config;

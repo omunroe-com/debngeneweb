@@ -1,10 +1,9 @@
-(* camlp5r *)
-(* $Id: image.ml,v 5.7 2007/09/12 09:58:44 ddr Exp $ *)
-(* Copyright (c) 1998-2007 INRIA *)
+(* camlp4r *)
+(* $Id: image.ml,v 4.11 2004/12/14 09:30:12 ddr Exp $ *)
+(* Copyright (c) 1998-2005 INRIA *)
 
-open Config;
-open Hutil;
 open Util;
+open Config;
 
 value content cgi t len fname =
   do {
@@ -29,7 +28,7 @@ value print_image_type cgi fname itype =
       do {
         content cgi itype len fname;
         let rec loop len =
-          if len = 0 then ()
+          if len == 0 then ()
           else do {
             let olen = min (String.length buf) len in
             really_input ic buf 0 olen;
@@ -85,18 +84,16 @@ value print conf base =
 
 value print_html conf base =
   do {
-    Util.html conf;
-    nl ();
-    Wserver.wprint "<html xmlns=\"http://www.w3.org/1999/xhtml\">\n";
-    Wserver.wprint "<head>\n";
+    Util.html1 conf;
+    Wserver.wprint "<html>\n<head>\n";
     Wserver.wprint "  <title>%s</title>\n"
       (Util.transl_nth conf "image/images" 0);
     Wserver.wprint "</head>\n<body>\n";
     Wserver.wprint "<img src=\"%s" (commd conf);
-    Mutil.list_iter_first
+    Gutil.list_iter_first
       (fun first (k, v) ->
-         let v = if k = "m" then "IM" else v in
-         Wserver.wprint "%s%s=%s" (if first then "" else ";") k v)
+	 let v = if k = "m" then "IM" else v in
+	 Wserver.wprint "%s%s=%s" (if first then "" else ";") k v)
       conf.env;
     Wserver.wprint "\">\n</body>\n</html>";
   }

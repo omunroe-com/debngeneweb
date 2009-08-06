@@ -1,11 +1,11 @@
-(* $Id: def.mli,v 5.21 2007/09/05 13:16:45 ddr Exp $ *)
-(* Copyright (c) 1998-2007 INRIA *)
+(* $Id: def.mli,v 4.11 2004/12/14 09:30:11 ddr Exp $ *)
+(* Copyright (c) 1998-2005 INRIA *)
 
 type choice 'a 'b = [ Left of 'a | Right of 'b ];
 
 type iper = Adef.iper;
 type ifam = Adef.ifam;
-
+type istr = Adef.istr;
 type cdate = Adef.cdate;
 type codate = Adef.codate;
 
@@ -28,8 +28,7 @@ and precision = Adef.precision ==
 ;
 
 type relation_kind =
-  [ Married | NotMarried | Engaged | NoSexesCheckNotMarried | NoMention
-  | NoSexesCheckMarried ]
+  [ Married | NotMarried | Engaged | NoSexesCheck | NoMention ]
 ;
 
 type divorce = [ NotDivorced | Divorced of codate | Separated ];
@@ -51,12 +50,12 @@ type access = [ IfTitles | Public | Private ];
 
 type gen_title_name 'string = [ Tmain | Tname of 'string | Tnone ];
 type gen_title 'string =
-  { t_name : gen_title_name 'string;
-    t_ident : 'string;
-    t_place : 'string;
-    t_date_start : codate;
-    t_date_end : codate;
-    t_nth : int }
+  { t_name : mutable gen_title_name 'string;
+    t_ident : mutable 'string;
+    t_place : mutable 'string;
+    t_date_start : mutable codate;
+    t_date_end : mutable codate;
+    t_nth : mutable int }
 ;
 
 type relation_type =
@@ -64,100 +63,159 @@ type relation_type =
 ;
 
 type gen_relation 'person 'string =
-  { r_type : relation_type;
-    r_fath : option 'person;
-    r_moth : option 'person;
-    r_sources : 'string }
+  { r_type : mutable relation_type;
+    r_fath : mutable option 'person;
+    r_moth : mutable option 'person;
+    r_sources : mutable 'string }
 ;
 
 type sex = [ Male | Female | Neuter ];
 
+(* The types "gen_person" and "gen_family" can be extended preserving
+   backward compatibility if:
+      1/ the extensions take place at the end of the record type
+      2/ the types of the new fields are implemented by "int" (e.g. "int",
+         "bool", "istr"), or by a sum type having at least a constructor
+         without parameter (e.g. the type "option" which has "None", the
+         type "list" has "[]"); does not work with arrays and strings!
+   If these conditions are respected, old databases can be read with
+   new version of this "def.mli"; the values of the missing fields have
+   the value implemented as "0" (0, False, None, [], and so on). *)
+
 (* person *)
 
 type gen_person 'person 'string =
-  { first_name : 'string;
-    surname : 'string;
-    occ : int;
-    image : 'string;
-    public_name : 'string;
-    qualifiers : list 'string;
-    aliases : list 'string;
-    first_names_aliases : list 'string;
-    surnames_aliases : list 'string;
-    titles : list (gen_title 'string);
-    rparents : list (gen_relation 'person 'string);
-    related : list iper;
-    occupation : 'string;
-    sex : sex;
-    access : access;
-    birth : codate;
-    birth_place : 'string;
-    birth_src : 'string;
-    baptism : codate;
-    baptism_place : 'string;
-    baptism_src : 'string;
-    death : death;
-    death_place : 'string;
-    death_src : 'string;
-    burial : burial;
-    burial_place : 'string;
-    burial_src : 'string;
-    notes : 'string;
-    psources : 'string;
-    key_index : iper }
+  { first_name : mutable 'string;
+    surname : mutable 'string;
+    occ : mutable int;
+    image : mutable 'string;
+    public_name : mutable 'string;
+    qualifiers : mutable list 'string;
+    aliases : mutable list 'string;
+    first_names_aliases : mutable list 'string;
+    surnames_aliases : mutable list 'string;
+    titles : mutable list (gen_title 'string);
+    rparents : mutable list (gen_relation 'person 'string);
+    related : mutable list iper;
+    occupation : mutable 'string;
+    sex : mutable sex;
+    access : mutable access;
+    birth : mutable codate;
+    birth_place : mutable 'string;
+    birth_src : mutable 'string;
+    baptism : mutable codate;
+    baptism_place : mutable 'string;
+    baptism_src : mutable 'string;
+    death : mutable death;
+    death_place : mutable 'string;
+    death_src : mutable 'string;
+    burial : mutable burial;
+    burial_place : mutable 'string;
+    burial_src : mutable 'string;
+    notes : mutable 'string;
+    psources : mutable 'string;
+    cle_index : mutable iper }
 ;
 
 type gen_ascend 'family =
-  { parents : option 'family;
-    consang : Adef.fix }
+  { parents : mutable option 'family;
+    consang : mutable Adef.fix }
 ;
 
 type gen_union 'family =
-  { family : array 'family }
+  { family : mutable array 'family }
 ;
 
 (* family *)
 
 type gen_family 'person 'string =
-  { marriage : codate;
-    marriage_place : 'string;
-    marriage_src : 'string;
-    witnesses : array 'person;
-    relation : relation_kind;
-    divorce : divorce;
-    comment : 'string;
-    origin_file : 'string;
-    fsources : 'string;
-    fam_index : ifam }
+  { marriage : mutable codate;
+    marriage_place : mutable 'string;
+    marriage_src : mutable 'string;
+    witnesses : mutable array 'person;
+    relation : mutable relation_kind;
+    divorce : mutable divorce;
+    comment : mutable 'string;
+    origin_file : mutable 'string;
+    fsources : mutable 'string;
+    fam_index : mutable ifam }
 ;
 
 type gen_couple 'person = Adef.gen_couple 'person;
 
 type gen_descend 'person =
-  { children : array 'person }
+  { children : mutable array 'person }
 ;
 
-type error 'person =
-  [ AlreadyDefined of 'person
-  | OwnAncestor of 'person
-  | BadSexOfMarriedPerson of 'person ]
+(* database *)
+
+type person = gen_person iper istr;
+type ascend = gen_ascend ifam;
+type union = gen_union ifam;
+
+type family = gen_family iper istr;
+type couple = gen_couple iper;
+type descend = gen_descend iper;
+
+type relation = gen_relation iper istr;
+type title = gen_title istr;
+
+type notes =
+  { nread : mutable int -> string;
+    norigin_file : mutable string }
 ;
 
-type warning 'person 'descend 'title =
-  [ BirthAfterDeath of 'person
-  | IncoherentSex of 'person and int and int
-  | ChangedOrderOfChildren of ifam and 'descend and array iper and array iper
-  | ChildrenNotInOrder of ifam and 'descend and 'person and 'person
-  | DeadTooEarlyToBeFather of 'person and 'person
-  | IncoherentAncestorDate of 'person and 'person
-  | MarriageDateAfterDeath of 'person
-  | MarriageDateBeforeBirth of 'person
-  | MotherDeadAfterChildBirth of 'person and 'person
-  | ParentBornAfterChild of 'person and 'person
-  | ParentTooYoung of 'person and dmy
-  | TitleDatesError of 'person and 'title
-  | UndefinedSex of 'person
-  | YoungForMarriage of 'person and dmy ]
+type cache 'a =
+  { array : mutable unit -> array 'a;
+    get : mutable int -> 'a;
+    len : mutable int;
+    clear_array : unit -> unit }
 ;
 
-type rn_mode = [ RnAll | Rn1Ln | RnDeg ];
+type istr_iper_index =
+  { find : istr -> list iper;
+    cursor : string -> istr;
+    next : istr -> istr }
+;
+
+type visible_cache =
+  { v_write : mutable unit -> unit;
+    v_get : mutable (person -> bool) -> int -> bool }
+;
+
+type base_data =
+  { persons : cache person;
+    ascends : cache ascend;
+    unions : cache union;
+    visible : visible_cache;
+    families : cache family;
+    couples : cache couple;
+    descends : cache descend;
+    strings : cache string;
+    bnotes : notes }
+;
+
+type base_func =
+  { persons_of_name : string -> list iper;
+    strings_of_fsname : string -> list istr;
+    index_of_string : string -> istr;
+    persons_of_surname : istr_iper_index;
+    persons_of_first_name : istr_iper_index;
+    patch_person : iper -> person -> unit;
+    patch_ascend : iper -> ascend -> unit;
+    patch_union : iper -> union -> unit;
+    patch_family : ifam -> family -> unit;
+    patch_couple : ifam -> couple -> unit;
+    patch_descend : ifam -> descend -> unit;
+    patch_string : istr -> string -> unit;
+    patch_name : string -> iper -> unit;
+    commit_patches : unit -> unit;
+    commit_notes : string -> unit;
+    patched_ascends : unit -> list iper;
+    cleanup : unit -> unit }
+;
+
+type base =
+  { data : base_data;
+    func : base_func }
+;

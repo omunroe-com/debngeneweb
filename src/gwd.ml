@@ -1,13 +1,12 @@
-(* camlp5r pa_extend.cmo ./pa_html.cmo ./pa_lock.cmo *)
-(* $Id: gwd.ml,v 5.59 2007/09/12 09:58:44 ddr Exp $ *)
-(* Copyright (c) 1998-2007 INRIA *)
+(* camlp4r pa_extend.cmo ./pa_html.cmo ./pa_lock.cmo *)
+(* $Id: gwd.ml,v 4.69 2004/12/14 09:53:21 ddr Exp $ *)
+(* Copyright (c) 1998-2005 INRIA *)
 
 open Config;
 open Def;
 open Gutil;
-open Mutil;
-open Printf;
 open Util;
+open Printf;
 
 value green_color = "#2f6400";
 value selected_addr = ref None;
@@ -16,7 +15,7 @@ value redirected_addr = ref None;
 value wizard_passwd = ref "";
 value friend_passwd = ref "";
 value wizard_just_friend = ref False;
-value only_addresses = ref [];
+value only_address = ref "";
 value cgi = ref False;
 value default_lang = ref "fr";
 value setup_link = ref False;
@@ -26,20 +25,18 @@ value log_file = ref "";
 value log_flags =
   [Open_wronly; Open_append; Open_creat; Open_text; Open_nonblock]
 ;
-IFDEF UNIX THEN
-value max_clients = ref None
-END;
+ifdef UNIX then
+value max_clients = ref None;
 value robot_xcl = ref None;
 value auth_file = ref "";
 value daemon = ref False;
 value login_timeout = ref 1800;
 value conn_timeout = ref 120;
 value trace_failed_passwd = ref False;
-value use_auth_digest_scheme = ref False;
 
 value log_oc () =
   if log_file.val <> "" then
-    try open_out_gen log_flags 0o644 log_file.val with
+    try Secure.open_out_gen log_flags 0o644 log_file.val with
     [ Sys_error _ -> do { log_file.val := ""; stderr } ]
   else stderr
 ;
@@ -52,7 +49,7 @@ value is_multipart_form =
     let rec loop i =
       if i >= String.length content_type then False
       else if i >= String.length s then True
-      else if content_type.[i] = Char.lowercase s.[i] then loop (i + 1)
+      else if content_type.[i] == Char.lowercase s.[i] then loop (i + 1)
       else False
     in
     loop 0
@@ -113,31 +110,26 @@ value log oc tm conf from gauth request script_name contents =
   }
 ;
 
-type auth_report =
-  { ar_ok : bool; ar_command : string; ar_passwd : string;
-    ar_scheme : auth_scheme_kind; ar_user : string; ar_name : string;
-    ar_wizard : bool; ar_friend : bool; ar_uauth : string;
-    ar_can_stale : bool }
-;
-
-value log_passwd_failed ar oc tm from request base_file = do {
+value log_passwd_failed passwd uauth oc tm from request base_file =
   let referer = Wserver.extract_param "referer: " '\n' request in
   let user_agent = Wserver.extract_param "user-agent: " '\n' request in
-  let tm = Unix.localtime tm in fprintf_date oc tm;
-  fprintf oc " (%d)" (Unix.getpid ());
-  fprintf oc " %s_%s" base_file ar.ar_passwd;
-  fprintf oc " => failed (%s)" ar.ar_user;
-  if trace_failed_passwd.val then
-    fprintf oc " (%s)" (String.escaped ar.ar_uauth)
-  else ();
-  fprintf oc "\n";
-  fprintf oc "  From: %s\n" from;
-  fprintf oc "  Agent: %s\n" user_agent;
-  if referer <> "" then fprintf oc "  Referer: %s\n" referer else ();
-};
+  do {
+    let tm = Unix.localtime tm in fprintf_date oc tm;
+    fprintf oc " (%d)" (Unix.getpid ());
+    fprintf oc " %s_%s" base_file passwd;
+    fprintf oc " => failed";
+    if trace_failed_passwd.val then
+      fprintf oc " (%s)" (String.escaped uauth)
+    else ();
+    fprintf oc "\n";
+    fprintf oc "  From: %s\n" from;
+    fprintf oc "  Agent: %s\n" user_agent;
+    if referer <> "" then fprintf oc "  Referer: %s\n" referer else ();
+  }
+;
 
 value copy_file fname =
-  match Util.open_etc_file fname with
+  match try Some (Secure.open_in fname) with [ Sys_error _ -> None ] with
   [ Some ic ->
       do {
         try
@@ -145,30 +137,14 @@ value copy_file fname =
         with _ ->
           ();
         close_in ic;
-        True
       }
-  | None -> False ]
+  | None -> () ]
 ;
 
 value http answer =
   do {
     Wserver.http answer;
     Wserver.wprint "Content-type: text/html; charset=iso-8859-1";
-  }
-;
-
-value robots_txt () =
-  let oc = log_oc () in
-  do {
-    Printf.fprintf oc "Robot request\n";
-    flush_log oc;
-    Wserver.http "";
-    Wserver.wprint "Content-type: text/plain"; Util.nl (); Util.nl ();
-    if copy_file "robots" then ()
-    else do {
-      Wserver.wprint "User-Agent: *"; nl ();
-      Wserver.wprint "Disallow: /"; nl ();
-    }
   }
 ;
 
@@ -184,7 +160,7 @@ value refuse_log from cgi =
     Util.nl ();
     Util.nl ();
     Wserver.wprint "Your access has been disconnected by administrator.\n";
-    let _ : bool = copy_file "refuse" in ();
+    copy_file "refuse.txt";
   }
 ;
 
@@ -193,12 +169,8 @@ value only_log from cgi =
   do {
     let tm = Unix.localtime (Unix.time ()) in
     fprintf_date oc tm;
-    fprintf oc " Connection refused from %s " from;
-    fprintf oc "(only ";
-    list_iter_first
-      (fun first s -> fprintf oc "%s%s" (if not first then "," else "") s)
-      only_addresses.val;
-    fprintf oc ")\n";
+    fprintf oc " Connection refused from %s (only %s)\n" from
+      only_address.val;
     flush_log oc;
     if not cgi then http "" else ();
     Wserver.wprint "Content-type: text/html; charset=iso-8859-1";
@@ -225,7 +197,7 @@ value refuse_auth conf from auth auth_type =
 
 value index_from c s =
   loop where rec loop i =
-    if i = String.length s then i else if s.[i] = c then i else loop (i + 1)
+    if i == String.length s then i else if s.[i] == c then i else loop (i + 1)
 ;
 
 value index c s = index_from c s 0;
@@ -239,13 +211,58 @@ value rec extract_assoc key =
 ;
 
 value input_lexicon lang =
-  let ht = Hashtbl.create 501 in
-  let fname = Filename.concat "lang" "lex_utf8.txt" in
-  do {
-    Mutil.input_lexicon lang ht
-      (fun () -> Secure.open_in (Util.search_in_lang_path fname));
-    ht
-  }
+  let t = Hashtbl.create 501 in
+  try
+    let ic =
+      Secure.open_in
+        (Util.search_in_lang_path (Filename.concat "lang" "lexicon.txt"))
+    in
+    let derived_lang =
+      match Gutil.lindex lang '-' with
+      [ Some i -> String.sub lang 0 i
+      | _ -> "" ]
+    in
+    try
+      do {
+        try
+          while True do {
+            let k =
+              find_key (input_line ic) where rec find_key line =
+                if String.length line < 4 then find_key (input_line ic)
+                else if String.sub line 0 4 <> "    " then
+                  find_key (input_line ic)
+                else line
+            in
+            let k = String.sub k 4 (String.length k - 4) in
+            let rec loop line =
+              match Gutil.lindex line ':' with
+              [ Some i ->
+                  let line_lang = String.sub line 0 i in
+                  do {
+                    if line_lang = lang ||
+                       line_lang = derived_lang && not (Hashtbl.mem t k) then
+                      let v =
+                        if i + 1 = String.length line then ""
+                        else
+                          String.sub line (i + 2) (String.length line - i - 2)
+                      in
+                      Hashtbl.add t k v
+                    else ();
+                    loop (input_line ic)
+                  }
+              | None -> () ]
+            in
+            loop (input_line ic)
+          }
+        with
+        [ End_of_file -> () ];
+        close_in ic;
+        t
+      }
+    with e ->
+      do { close_in ic; raise e }
+  with
+  [ Sys_error _ -> t ]
 ;
 
 value alias_lang lang =
@@ -259,7 +276,7 @@ value alias_lang lang =
         let lang =
           try
             let rec loop line =
-              match Mutil.lindex line '=' with
+              match Gutil.lindex line '=' with
               [ Some i ->
                   if lang = String.sub line 0 i then
                     String.sub line (i + 1) (String.length line - i - 1)
@@ -276,7 +293,7 @@ value alias_lang lang =
 
 value rec cut_at_equal i s =
   if i = String.length s then (s, "")
-  else if s.[i] = '=' then
+  else if s.[i] == '=' then
     (String.sub s 0 i, String.sub s (succ i) (String.length s - succ i))
   else cut_at_equal (succ i) s
 ;
@@ -339,13 +356,13 @@ value print_renamed conf new_n =
   | None ->
       let title _ = Wserver.wprint "%s -&gt; %s" conf.bname new_n in
       do {
-        Hutil.header conf title;
+        Util.header conf title;
         let link = link () in
         tag "ul" begin
           Util.html_li conf;
           tag "a" "href=\"%s\"" link begin Wserver.wprint "%s" link; end;
         end;
-        Hutil.trailer conf;
+        Util.trailer conf;
       } ]
 ;
 
@@ -381,14 +398,14 @@ value print_redirected conf from request new_addr =
     | None ->
         let title _ = Wserver.wprint "Address changed" in
         do {
-          Hutil.header conf title;
+          Util.header conf title;
           Wserver.wprint "Use the following address:\n<p>\n";
           tag "ul" begin
             Util.html_li conf;
             stag "a" "href=\"%s\"" link begin Wserver.wprint "%s" link; end;
             Wserver.wprint "\n";
           end;
-          Hutil.trailer conf;
+          Util.trailer conf;
         } ]
   }
 ;
@@ -396,22 +413,21 @@ value print_redirected conf from request new_addr =
 value propose_base conf =
   let title _ = Wserver.wprint "Base" in
   do {
-    Hutil.header conf title;
+    Util.header conf title;
     tag "ul" begin
       Util.html_li conf;
-      Wserver.wprint "<form method=\"get\" action=\"%s\">\n"
-        conf.indep_command;
-      Wserver.wprint "<input name=\"b\" size=\"40\"> =&gt;\n";
-      Wserver.wprint "<input type=\"submit\" value=\"Ok\">\n";
+      Wserver.wprint "<form method=get action=\"%s\">\n" conf.indep_command;
+      Wserver.wprint "<input name=b size=40> =&gt;\n";
+      Wserver.wprint "<input type=submit value=\"Ok\">\n";
     end;
-    Hutil.trailer conf;
+    Util.trailer conf;
   }
 ;
 
 value general_welcome conf =
   match Util.open_etc_file "index" with
   [ Some ic ->
-      let env = [('w', fun _ -> Hutil.link_to_referer conf)] in
+      let env = [('w', fun _ -> Util.link_to_referer conf)] in
       do {
         Util.html conf;
         Util.nl ();
@@ -420,140 +436,73 @@ value general_welcome conf =
   | None -> propose_base conf ]
 ;
 
-value nonce_private_key =
-  Lazy.lazy_from_fun
-    (fun () ->
-       let cnt_dir = Filename.concat Util.cnt_dir.val "cnt" in
-       let fname = Filename.concat cnt_dir "gwd_private.txt" in
-       let k =
-         match try Some (open_in fname) with [ Sys_error _ -> None ] with
-         [ Some ic -> do {
-             let s =
-               try
-                 loop (input_line ic) where rec loop s =
-                   if s = "" || s.[0] = '#' then loop (input_line ic)
-                   else s
-               with
-               [ End_of_file -> "" ]
-             in
-             close_in ic;
-             s
-           }
-         | None -> "" ]
-       in
-       if k = "" then do {
-         Random.self_init ();
-         let k = Random.bits () in
-         let oc = open_out fname in
-         fprintf oc "\
-# Gwd key for better password protection in communication.\n\
-# Changing it makes all users receive their login window again.\n\
-# Generated by program but can be modified by hand to any value.\n";
-         fprintf oc "\n%d\n" k;
-         close_out oc;
-         string_of_int k
-       }
-       else k)
-;
-value digest_nonce tm = Lazy.force nonce_private_key;
-
-value trace_auth base_env f = do {
-  if List.mem_assoc "trace_auth" base_env then do {
-    let oc =
-      open_out_gen [Open_wronly; Open_append; Open_creat] 0o777
-        "trace_auth.txt"
-    in
-    f oc;
-    close_out oc
-  }
-  else ();
-};
-
-value unauth_server conf ar =  do {
-  let typ = if ar.ar_passwd = "w" then "Wizard" else "Friend" in
-  Wserver.wprint "HTTP/1.0 401 Unauthorized"; Util.nl ();
-  if use_auth_digest_scheme.val then
-    let nonce = digest_nonce conf.ctime in
-let _ = let tm = Unix.localtime (Unix.time ()) in trace_auth conf.base_env (fun oc -> fprintf oc "\n401 unauthorized\n- date: %a\n- request:\n%t- passwd: %s\n- nonce: \"%s\"\n- can_stale: %b\n" fprintf_date tm (fun oc -> List.iter (fun s -> fprintf oc "  * %s\n" s) conf.request) ar.ar_passwd nonce ar.ar_can_stale) in
-    Wserver.wprint
-      "WWW-Authenticate: Digest realm=\"%s %s\"%s%s,qop=\"auth\"" typ
-      conf.bname (if nonce = "" then "" else sprintf ",nonce=\"%s\"" nonce)
-      (if ar.ar_can_stale then ",stale=true" else "")
-  else
+value unauth_server conf passwd =
+  let typ = if passwd = "w" then "Wizard" else "Friend" in
+  do {
+    Wserver.wprint "HTTP/1.0 401 Unauthorized"; Util.nl ();
     Wserver.wprint "WWW-Authenticate: Basic realm=\"%s %s\"" typ conf.bname;
-  Util.nl ();
-  Util.nl ();
-  let url =
-    conf.bname ^ "?" ^
-      List.fold_left
-        (fun s (k, v) ->
-           if s = "" then k ^ "=" ^ v else s ^ ";" ^ k ^ "=" ^ v)
-        "" (conf.henv @ conf.senv @ conf.env)
-  in
-  let txt i = transl_nth conf "wizard/wizards/friend/friends/exterior" i in
-  let typ = txt (if ar.ar_passwd = "w" then 0 else 2) in
-  let title h =
-    Wserver.wprint
-      (fcapitale (ftransl conf "%s access cancelled for that page"))
-      (if not h then "<em>" ^ typ ^ "</em>" else typ)
-  in
-  Hutil.header_without_http conf title;
-  tag "h1" begin title False; end;
-  tag "dl" begin
-    let (alt_bind, alt_access) =
-      if ar.ar_passwd = "w" then (";w=f", txt 2) else (";w=w", txt 0)
+    Util.nl ();
+    Util.nl ();
+    let url =
+      conf.bname ^ "?" ^
+        List.fold_left
+          (fun s (k, v) ->
+             if s = "" then k ^ "=" ^ v else s ^ "&" ^ k ^ "=" ^ v)
+          "" conf.env
     in
-    tag "dd" begin
-      tag "ul" begin
-        tag "li" begin
-          Wserver.wprint "%s : <a href=\"%s%s\">%s</a>"
-            (transl conf "access") url alt_bind alt_access;
-        end;
-        tag "li" begin
-          Wserver.wprint "%s : <a href=\"%s\">%s</a>"
-            (transl conf "access") url (txt 4);
-        end;
-      end;
-    end;
-  end;
-  Hutil.trailer conf;
-};
+    Wserver.wprint "\
+<html><head>
+<title>%s access failed for database %s</title>
+</head>
+" typ conf.bname;
+    Wserver.wprint "<body><h1>%s access failed for database %s</h1>"
+      typ conf.bname;
+    Wserver.wprint "Return to <a href=\"%s\">welcome page</a>\n" url;
+    Wserver.wprint "</body></html>\n";
+  }
+;
 
-value gen_match_auth_file test_user_and_password auth_file =
+value match_auth_file auth_file uauth =
   if auth_file = "" then None
   else
-    let aul = read_gen_auth_file auth_file in
-    loop aul where rec loop =
-      fun
-      [ [au :: aul] ->
-          if test_user_and_password au then
-            let s =
+    let auth_file = Util.base_path [] auth_file in
+    match try Some (Secure.open_in auth_file) with [ Sys_error _ -> None ] with
+    [ Some ic ->
+        try
+          let rec loop () =
+            let line = input_line ic in
+            let sauth = line in
+            let (sauth, i) =
               try
-                let i = String.index au.au_info ':' in
-                String.sub au.au_info 0 i
+                let i = String.index sauth ':' in
+                let i =
+                  try String.index_from sauth (i + 1) ':' with
+                  [ Not_found -> String.length sauth ]
+                in
+                (String.sub sauth 0 i, i)
               with
-              [ Not_found -> "" ]
+              [ Not_found -> (uauth ^ "a" (* <> auth *), String.length sauth) ]
             in
-            let username =
-              try
-                let i = String.index s '/' in
-                let len = String.length s in
-                String.sub s 0 i ^ String.sub s (i + 1) (len - i - 1)
-              with
-              [ Not_found -> s ]
-            in
-            Some username
-          else loop aul
-      | [] -> None ]
-;
-
-value basic_match_auth_file uauth =
-  gen_match_auth_file (fun au -> au.au_user ^ ":" ^ au.au_passwd = uauth)
-;
-
-value digest_match_auth_file asch =
-  gen_match_auth_file
-    (fun au -> is_that_user_and_password asch au.au_user au.au_passwd)
+            if uauth = sauth then
+              do {
+                close_in ic;
+                let username =
+                  if i = String.length line then ""
+                  else
+                    try
+                      let j = String.index_from line (i + 1) ':' in
+                      String.sub line (i + 1) (j - i - 1)
+                    with
+                    [ Not_found -> "" ]
+                in
+                Some username
+              }
+            else loop ()
+          in
+          loop ()
+        with
+        [ End_of_file -> do { close_in ic; None } ]
+    | None -> None ]
 ;
 
 value match_simple_passwd sauth uauth =
@@ -566,9 +515,9 @@ value match_simple_passwd sauth uauth =
       | None -> sauth = uauth ] ]
 ;
 
-value basic_match_auth passwd auth_file uauth =
+value match_auth passwd auth_file uauth =
   if passwd <> "" && match_simple_passwd passwd uauth then Some ""
-  else basic_match_auth_file uauth auth_file
+  else match_auth_file auth_file uauth
 ;
 
 type access_type =
@@ -695,7 +644,7 @@ value set_token utm from_addr base_file acc user =
 
 value index_not_name s =
   loop 0 where rec loop i =
-    if i = String.length s then i
+    if i == String.length s then i
     else
       match s.[i] with
       [ 'a'..'z' | 'A'..'Z' | '0'..'9' | '-' -> loop (i + 1)
@@ -709,10 +658,10 @@ value print_request_failure cgi msg =
     Util.nl (); Util.nl ();
     Wserver.wprint "<head><title>Request failure</title></head>\n";
     Wserver.wprint "\
-<body bgcolor=\"white\">
-<h1 align=\"center\"><font color=\"red\">Request failure</font></h1>
+<body bgcolor=white>
+<h1 align=center><font color=red>Request failure</font></h1>
 The request could not be completed.<p>\n";
-    Wserver.wprint "<em><font size=\"-1\">Internal message: %s</font></em>\n"
+    Wserver.wprint "<em><font size=-1>Internal message: %s</font></em>\n"
       msg;
     Wserver.wprint "</body>\n";
   }    
@@ -756,7 +705,7 @@ value http_preferred_language request =
     let s = String.lowercase v in
     let list =
       loop [] 0 0 where rec loop list i len =
-        if i = String.length s then List.rev [Buff.get len :: list]
+        if i == String.length s then List.rev [Buff.get len :: list]
         else if s.[i] = ',' then loop [Buff.get len :: list] (i + 1) 0
         else loop list (i + 1) (Buff.store len s.[i])
     in
@@ -775,352 +724,7 @@ value http_preferred_language request =
     loop list
 ;
 
-value allowed_denied_titles key extra_line env base_env () =
-  if p_getenv env "all_titles" = Some "on" then []
-  else
-    try
-      let fname = List.assoc key base_env in
-      if fname = "" then []
-      else
-        let ic = Secure.open_in (Filename.concat (Secure.base_dir ()) fname) in
-        loop StrSet.empty where rec loop set =
-          let (line, eof) =
-            try (input_line ic, False) with [ End_of_file -> ("", True) ]
-          in
-          let set =
-            let line = if eof then extra_line else line in
-            if line = "" || line.[0] = ' ' || line.[0] = '#' then set
-            else
-              let line =
-                match
-                  try Some (String.index line '/') with
-                  [ Not_found -> None ]
-                with
-                [ Some i ->
-                    let len = String.length line in
-                    let tit = String.sub line 0 i in
-                    let pla = String.sub line (i + 1) (len - i - 1) in
-                    (if tit = "*" then tit else Name.lower tit) ^ "/" ^
-                    (if pla = "*" then pla else Name.lower pla)
-                | None -> Name.lower line ]
-              in
-              StrSet.add line set
-          in
-          if eof then do {
-            close_in ic;
-            StrSet.elements set
-          }
-          else loop set
-    with
-    [ Not_found | Sys_error _ -> [] ]
-;
-
-value allowed_titles env =
-  let extra_line =
-    try List.assoc "extra_title" env with
-    [ Not_found -> "" ]
-  in
-  allowed_denied_titles "allowed_titles_file" extra_line env
-;
-
-value denied_titles = allowed_denied_titles "denied_titles_file" "";
-
-value start_with s i p =
-  i + String.length p <= String.length s &&
-  String.sub s i (String.length p) = p
-;
-
-value parse_digest s =
-  let rec parse_main =
-    parser
-    [ [: s = ident; _ = spaces; kvl = key_eq_val_list :] ->
-        if s = "Digest" then kvl else []
-    | [: :] -> [] ]
-  and ident =
-    parser
-    [ [: `('A'..'Z' | 'a'..'z' as c); len = ident_kont (Buff.store 0 c) :] ->
-        Buff.get len ]
-  and ident_kont len =
-    parser
-    [ [: `('A'..'Z' | 'a'..'z' as c); s :] -> ident_kont (Buff.store len c) s
-    | [: :] -> len ]
-  and spaces =
-    parser
-    [ [: `' '; a = spaces :] -> a
-    | [: :] -> () ]
-  and key_eq_val_list =
-    parser
-    [ [: kv = key_eq_val; kvl = key_eq_val_list_kont :] -> [kv :: kvl]
-    | [: :] -> [] ]
-  and key_eq_val_list_kont =
-    parser
-    [ [: `','; _ = spaces; kv = key_eq_val; kvl = key_eq_val_list_kont :] ->
-        [kv :: kvl]
-    | [: :] -> [] ]
-  and key_eq_val =
-    parser
-    [ [: k = ident; `'='; v = val_or_str :] -> (k, v) ]
-  and val_or_str =
-    parser
-    [ [: `'"'; v = string 0; _ = spaces :] -> v
-    | [: v = any_val 0; _ = spaces :] -> v ]
-  and string len =
-    parser
-    [ [: `'"' :] -> Buff.get len
-    | [: `c; s :] -> string (Buff.store len c) s ]
-  and any_val len =
-    parser
-    [ [: `('a'..'z' | 'A'..'Z' | '0'..'9' | '-' as c); s :] ->
-        any_val (Buff.store len c) s
-    | [: :] -> Buff.get len ]
-  in
-  parse_main (Stream.of_string s)
-;
-
-value basic_authorization cgi from_addr request base_env passwd access_type
-    utm base_file command =
-  let wizard_passwd =
-    try List.assoc "wizard_passwd" base_env with
-    [ Not_found -> wizard_passwd.val ]
-  in
-  let wizard_passwd_file =
-    try List.assoc "wizard_passwd_file" base_env with [ Not_found -> "" ]
-  in
-  let friend_passwd =
-    try List.assoc "friend_passwd" base_env with
-    [ Not_found -> friend_passwd.val ]
-  in
-  let friend_passwd_file =
-    try List.assoc "friend_passwd_file" base_env with [ Not_found -> "" ]
-  in
-  let passwd1 =
-    let auth = Wserver.extract_param "authorization: " '\r' request in
-    if auth = "" then ""
-    else
-      let s = "Basic " in
-      if start_with auth 0 s then
-        let i = String.length s in
-        Base64.decode (String.sub auth i (String.length auth - i))
-      else ""
-  in
-  let uauth = if passwd = "w" || passwd = "f" then passwd1 else passwd in
-  let (ok, wizard, friend, username) =
-    if not cgi && (passwd = "w" || passwd = "f") then
-      if passwd = "w" then
-        if wizard_passwd = "" && wizard_passwd_file = "" then
-          (True, True, friend_passwd = "", "")
-        else
-          match basic_match_auth wizard_passwd wizard_passwd_file uauth with
-          [ Some username -> (True, True, False, username)
-          | None -> (False, False, False, "") ]
-      else if passwd = "f" then
-        if friend_passwd = "" && friend_passwd_file = "" then
-          (True, False, True, "")
-        else
-          match basic_match_auth friend_passwd friend_passwd_file uauth with
-          [ Some username -> (True, False, True, username)
-          | None -> (False, False, False, "") ]
-      else assert False
-    else if wizard_passwd = "" && wizard_passwd_file = "" then
-      (True, True, friend_passwd = "", "")
-    else
-       match basic_match_auth wizard_passwd wizard_passwd_file uauth with
-       [ Some username -> (True, True, False, username)
-       | _ ->
-            if friend_passwd = "" && friend_passwd_file = "" then
-              (True, False, True, "")
-            else
-              match
-                basic_match_auth friend_passwd friend_passwd_file uauth
-              with
-              [ Some username -> (True, False, True, username)
-              | None -> (True, False, False, "") ] ]
-  in
-  let user =
-    match lindex uauth ':' with
-    [ Some i ->
-        let s = String.sub uauth 0 i in
-        if s = wizard_passwd || s = friend_passwd then "" else s
-    | None -> "" ]
-  in
-  let (command, passwd) =
-    if access_type = ATset then
-      if wizard then
-        let pwd_id = set_token utm from_addr base_file 'w' user in
-        if cgi then (command, pwd_id)
-        else (base_file ^ "_" ^ pwd_id, "")
-      else if friend then
-        let pwd_id = set_token utm from_addr base_file 'f' user in
-        if cgi then (command, pwd_id)
-        else (base_file ^ "_" ^ pwd_id, "")
-      else if cgi then (command, "")
-      else (base_file, "")
-    else
-      if cgi then (command, passwd)
-      else if passwd = "" then (base_file, "")
-      else (base_file ^ "_" ^ passwd, passwd)
-  in
-  let auth_scheme =
-    if not wizard && not friend then NoAuth
-    else
-      let realm =
-        if wizard then "Wizard " ^ base_file else "Friend " ^ base_file
-      in
-        let (u, p) =
-          match lindex passwd1 ':' with
-          [ Some i ->
-              let u = String.sub passwd1 0 i in
-              let p =
-                String.sub passwd1 (i + 1) (String.length passwd1 - i - 1)
-              in
-              (u, p)
-          | None -> ("", passwd) ]
-        in
-        HttpAuth (Basic {bs_realm = realm; bs_user = u; bs_pass = p})
-  in
-  {ar_ok = ok; ar_command = command; ar_passwd = passwd;
-   ar_scheme = auth_scheme; ar_user = user; ar_name = username;
-   ar_wizard = wizard; ar_friend = friend; ar_uauth = uauth;
-   ar_can_stale = False}
-;
-
-value bad_nonce_report command passwd_char =
-  {ar_ok = False; ar_command = command; ar_passwd = passwd_char;
-   ar_scheme = NoAuth; ar_user = ""; ar_name = "";
-   ar_wizard = False; ar_friend = False; ar_uauth = "";
-   ar_can_stale = True}
-;
-
-value test_passwd ds nonce command wf_passwd wf_passwd_file passwd_char wiz =
-  let asch = HttpAuth (Digest ds) in
-  if wf_passwd <> "" &&
-     is_that_user_and_password asch ds.ds_username wf_passwd
-  then
-    if ds.ds_nonce <> nonce then bad_nonce_report command passwd_char
-    else
-      {ar_ok = True; ar_command = command ^ "_" ^ passwd_char;
-       ar_passwd = passwd_char; ar_scheme = asch; ar_user = ds.ds_username;
-       ar_name = ""; ar_wizard = wiz; ar_friend = not wiz; ar_uauth = "";
-       ar_can_stale = False}
-  else
-    match digest_match_auth_file asch wf_passwd_file with
-    [ Some username ->
-        if ds.ds_nonce <> nonce then bad_nonce_report command passwd_char
-        else
-          {ar_ok = True; ar_command = command ^ "_" ^ passwd_char;
-           ar_passwd = passwd_char; ar_scheme = asch;
-           ar_user = ds.ds_username; ar_name = username;
-           ar_wizard = wiz; ar_friend = not wiz; ar_uauth = "";
-           ar_can_stale = False}
-    | None ->
-        {ar_ok = False; ar_command = command; ar_passwd = passwd_char;
-         ar_scheme = asch; ar_user = ds.ds_username; ar_name = "";
-         ar_wizard = False; ar_friend = False; ar_uauth = "";
-         ar_can_stale = False} ]
-;
-
-value digest_authorization cgi request base_env passwd utm base_file command =
-  let wizard_passwd =
-    try List.assoc "wizard_passwd" base_env with
-    [ Not_found -> wizard_passwd.val ]
-  in
-  let wizard_passwd_file =
-    try List.assoc "wizard_passwd_file" base_env with [ Not_found -> "" ]
-  in
-  let friend_passwd =
-    try List.assoc "friend_passwd" base_env with
-    [ Not_found -> friend_passwd.val ]
-  in
-  let friend_passwd_file =
-    try List.assoc "friend_passwd_file" base_env with [ Not_found -> "" ]
-  in
-  let command = if cgi then command else base_file in
-  if wizard_passwd = "" && wizard_passwd_file = "" then
-    {ar_ok = True; ar_command = command; ar_passwd = "";
-     ar_scheme = NoAuth; ar_user = ""; ar_name = "";
-     ar_wizard = True; ar_friend = friend_passwd = ""; ar_uauth = "";
-     ar_can_stale = False}
-  else if passwd = "w" || passwd = "f" then
-    let auth = Wserver.extract_param "authorization: " '\r' request in
-    if start_with auth 0 "Digest " then
-      (* W3C - RFC 2617 - Jun 1999 *)
-      let meth =
-        match Wserver.extract_param "GET " ' ' request with
-        [ "" -> "POST"
-        | s -> "GET" ]
-      in
-let _ = trace_auth base_env (fun oc -> fprintf oc "\nauth = \"%s\"\n" auth) in
-      let digenv = parse_digest auth in
-      let get_digenv s = try List.assoc s digenv with [ Not_found -> "" ] in
-      let ds =
-        {ds_username = get_digenv "username"; ds_realm = get_digenv "realm";
-         ds_nonce = get_digenv "nonce"; ds_meth = meth;
-         ds_uri = get_digenv "uri"; ds_qop = get_digenv "qop";
-         ds_nc = get_digenv "nc"; ds_cnonce = get_digenv "cnonce";
-         ds_response = get_digenv "response"}
-      in
-      let nonce = digest_nonce utm in
-let _ = trace_auth base_env (fun oc -> fprintf oc "\nanswer\n- date: %a\n- request:\n%t- passwd: %s\n- nonce: \"%s\"\n- meth: \"%s\"\n- uri: \"%s\"\n" fprintf_date (Unix.localtime utm) (fun oc -> List.iter (fun s -> fprintf oc "  * %s\n" s) request) passwd nonce ds.ds_meth ds.ds_uri) in
-      if passwd = "w" then
-        test_passwd ds nonce command wizard_passwd wizard_passwd_file "w"
-          True
-      else if passwd = "f" then
-        test_passwd ds nonce command friend_passwd friend_passwd_file "f"
-          False
-      else
-        failwith (sprintf "not impl (2) %s %s" auth meth)
-    else
-      {ar_ok = False; ar_command = command; ar_passwd = passwd;
-       ar_scheme = NoAuth; ar_user = ""; ar_name = ""; ar_wizard = False;
-       ar_friend = False; ar_uauth = ""; ar_can_stale = False}
-  else
-    let friend = friend_passwd = "" && friend_passwd_file = "" in
-    {ar_ok = True; ar_command = command; ar_passwd = "";
-     ar_scheme = NoAuth; ar_user = ""; ar_name = ""; ar_wizard = False;
-     ar_friend = friend; ar_uauth = ""; ar_can_stale = False}
-;
-
-value authorization cgi from_addr request base_env passwd access_type utm
-    base_file command =
-  match access_type with
-  [ ATwizard user ->
-      let (command, passwd) =
-        if cgi then (command, passwd)
-        else if passwd = "" then (base_file, "")
-        else (base_file ^ "_" ^ passwd, passwd)
-      in
-      let auth_scheme = TokenAuth {ts_user = user; ts_pass = passwd} in
-      {ar_ok = True; ar_command = command; ar_passwd = passwd;
-       ar_scheme = auth_scheme; ar_user = user; ar_name = "";
-       ar_wizard = True; ar_friend = False; ar_uauth = "";
-       ar_can_stale = False}
-  | ATfriend user ->
-      let (command, passwd) =
-        if cgi then (command, passwd)
-        else if passwd = "" then (base_file, "")
-        else (base_file ^ "_" ^ passwd, passwd)
-      in
-      let auth_scheme = TokenAuth {ts_user = user; ts_pass = passwd} in
-      {ar_ok = True; ar_command = command; ar_passwd = passwd;
-       ar_scheme = auth_scheme; ar_user = user; ar_name = "";
-       ar_wizard = False; ar_friend = True; ar_uauth = "";
-       ar_can_stale = False}
-  | ATnormal ->
-      let (command, passwd) =
-        if cgi then (command, "") else (base_file, "")
-      in
-      {ar_ok = True; ar_command = command; ar_passwd = passwd;
-       ar_scheme = NoAuth; ar_user = ""; ar_name = ""; ar_wizard = False;
-       ar_friend = False; ar_uauth = ""; ar_can_stale = False}
-  | ATnone | ATset ->
-      if use_auth_digest_scheme.val then
-        digest_authorization cgi request base_env passwd utm base_file command
-      else
-        basic_authorization cgi from_addr request base_env passwd access_type
-          utm base_file command ]
-;
-
-value make_conf cgi from_addr (addr, request) script_name contents env = do {
+value make_conf cgi from_addr (addr, request) script_name contents env =
   let utm = Unix.time () in
   let tm = Unix.localtime utm in
   let (command, base_file, passwd, env, access_type) =
@@ -1143,7 +747,7 @@ value make_conf cgi from_addr (addr, request) script_name contents env = do {
       let has_passwd = List.mem_assoc "w" env in
       let (x, env) = extract_assoc "w" env in
       if has_passwd then
-        (x, env, if x = "w" || x = "f" || x = "" then ATnone else ATset)
+        (x, env, if x = "w" || x = "f" then ATnone else ATset)
       else
         let passwd =
           if ip = String.length base_passwd then ""
@@ -1153,7 +757,17 @@ value make_conf cgi from_addr (addr, request) script_name contents env = do {
         in
         let access_type =
           match passwd with
-          [ "" | "w" | "f" -> ATnone
+          [ "" ->
+             if not cgi then ATnone
+             else
+               let mode = try Sys.getenv "GW_MODE" with [ Not_found -> "" ] in
+               let r_user = try Sys.getenv "REMOTE_USER" with [ Not_found -> "" ] in
+               match (mode, r_user) with
+               [ (_, "") -> ATnone
+               | ("F", u) -> ATfriend u
+               | ("W", u) -> ATwizard u
+               | _ -> ATnone ]                  
+          | "w" | "f" -> ATnone
           | _ -> get_token True utm from_addr base_passwd ]
         in
         (passwd, env, access_type)
@@ -1176,146 +790,205 @@ value make_conf cgi from_addr (addr, request) script_name contents env = do {
     | (x, env) -> ("", [("opt", x) :: env]) ]
   in
   let (threshold_test, env) = extract_assoc "threshold" env in
-  if threshold_test <> "" then
-    RelationLink.threshold.val := int_of_string threshold_test
-  else ();
-  let (sleep, env) =
-    let (x, env) = extract_assoc "sleep" env in
-    (if x = "" then 0 else int_of_string x, env)
-  in
-  let base_env = read_base_env cgi base_file in
-  let default_lang =
-    try
-      let x = List.assoc "default_lang" base_env in
-      if x = "" then default_lang.val else x
-    with
-    [ Not_found -> default_lang.val ]
-  in
-  let lexicon = input_lexicon (if lang = "" then default_lang else lang) in
-  let ar =
-    authorization cgi from_addr request base_env passwd access_type utm
-      base_file command
-  in
-  let wizard_just_friend =
-    if wizard_just_friend.val then True
-    else
-      try List.assoc "wizard_just_friend" base_env = "yes" with
-      [ Not_found -> False ]
-  in
-  let is_rtl =
-    try Hashtbl.find lexicon " !dir" = "rtl" with [ Not_found -> False ]
-  in
-  let manitou =
-    try
-      ar.ar_wizard && ar.ar_user <> "" &&
-      p_getenv env "manitou" <> Some "off" &&
-      List.assoc "manitou" base_env = ar.ar_user
-    with
-    [ Not_found -> False ]
-  in
-  let supervisor =
-    try
-      ar.ar_wizard && ar.ar_user <> "" &&
-      List.assoc "supervisor" base_env = ar.ar_user
-    with
-    [ Not_found -> False ]
-  in
-  let wizard_just_friend = if manitou then False else wizard_just_friend in
-  let conf =
-    {from = from_addr;
-     manitou = manitou;
-     supervisor = supervisor;
-     wizard = ar.ar_wizard && not wizard_just_friend;
-     friend = ar.ar_friend || wizard_just_friend && ar.ar_wizard;
-     just_friend_wizard = ar.ar_wizard && wizard_just_friend;
-     user = ar.ar_user; username = ar.ar_name;
-     auth_scheme = ar.ar_scheme; cgi = cgi; command = ar.ar_command;
-     indep_command = (if cgi then ar.ar_command else "geneweb") ^ "?";
-     pure_xhtml =
-       try List.assoc "pure_xhtml" env = "on" with
-       [ Not_found -> False ];
-     highlight =
-       try List.assoc "highlight_color" base_env with
-       [ Not_found -> green_color ];
-     lang = if lang = "" then default_lang else lang;
-     default_lang = default_lang;
-     multi_parents =
-       try List.assoc "multi_parents" base_env = "yes" with
-       [ Not_found -> False ];
-     can_send_image =
-       try List.assoc "can_send_image" base_env <> "no" with
-       [ Not_found -> True ];
-     public_if_titles =
-       try List.assoc "public_if_titles" base_env = "yes" with
-       [ Not_found -> False ];
-     public_if_no_date =
-       try List.assoc "public_if_no_date" base_env = "yes" with
-       [ Not_found -> False ];
-     cancel_links =
-       match Util.p_getenv env "cgl" with
-       [ Some "on" -> True
-       | _ -> False ];
-     setup_link = setup_link.val;
-     access_by_key =
-       try List.assoc "access_by_key" base_env = "yes" with
-       [ Not_found -> ar.ar_wizard && ar.ar_friend ];
-     private_years =
-       try int_of_string (List.assoc "private_years" base_env) with
-       [ Not_found | Failure _ -> 150 ];
-     hide_names =
-       if ar.ar_wizard || ar.ar_friend then False
-       else
-         try List.assoc "hide_private_names" base_env = "yes" with
+  do {
+    if threshold_test <> "" then
+      RelationLink.threshold.val := int_of_string threshold_test
+    else ();
+    let (sleep, env) =
+      let (x, env) = extract_assoc "sleep" env in
+      (if x = "" then 0 else int_of_string x, env)
+    in
+    let base_env = read_base_env cgi base_file in
+    let default_lang =
+      try
+        let x = List.assoc "default_lang" base_env in
+        if x = "" then default_lang.val else x
+      with
+      [ Not_found -> default_lang.val ]
+    in
+    let lexicon = input_lexicon (if lang = "" then default_lang else lang) in
+    let wizard_passwd =
+      try List.assoc "wizard_passwd" base_env with
+      [ Not_found -> wizard_passwd.val ]
+    in
+    let wizard_passwd_file =
+      try List.assoc "wizard_passwd_file" base_env with [ Not_found -> "" ]
+    in
+    let friend_passwd =
+      try List.assoc "friend_passwd" base_env with
+      [ Not_found -> friend_passwd.val ]
+    in
+    let friend_passwd_file =
+      try List.assoc "friend_passwd_file" base_env with [ Not_found -> "" ]
+    in
+    let wizard_just_friend =
+      if wizard_just_friend.val then True
+      else
+        try List.assoc "wizard_just_friend" base_env = "yes" with
+        [ Not_found -> False ]
+    in
+    let passwd1 =
+      let auth = Wserver.extract_param "authorization: " '\r' request in
+      if auth = "" then ""
+      else
+        let i = String.length "Basic " in
+        Base64.decode (String.sub auth i (String.length auth - i))
+    in
+    let uauth = if passwd = "w" || passwd = "f" then passwd1 else passwd in
+    let (ok, wizard, friend, username) =
+      match access_type with
+      [ ATwizard user -> (True, True, False, "")
+      | ATfriend user -> (True, False, True, "")
+      | ATnormal -> (True, False, False, "")
+      | ATnone | ATset ->
+          if not cgi && (passwd = "w" || passwd = "f") then
+            if passwd = "w" then
+              if wizard_passwd = "" && wizard_passwd_file = "" then
+                (True, True, friend_passwd = "", "")
+              else
+                match match_auth wizard_passwd wizard_passwd_file uauth with
+                [ Some username -> (True, True, False, username)
+                | None -> (False, False, False, "") ]
+            else if passwd = "f" then
+              if friend_passwd = "" && friend_passwd_file = "" then
+                (True, False, True, "")
+              else
+                match match_auth friend_passwd friend_passwd_file uauth with
+                [ Some username -> (True, False, True, username)
+                | None -> (False, False, False, "") ]
+            else assert False
+          else if wizard_passwd = "" && wizard_passwd_file = "" then
+            (True, True, friend_passwd = "", "")
+          else
+             match match_auth wizard_passwd wizard_passwd_file uauth with
+             [ Some username -> (True, True, False, username)
+             | _ ->
+                  if friend_passwd = "" && friend_passwd_file = "" then
+                    (True, False, True, "")
+                  else
+                  match match_auth friend_passwd friend_passwd_file uauth with
+                    [ Some username -> (True, False, True, username)
+                  | None -> (True, False, False, "") ] ] ]
+    in
+    let user =
+      match lindex uauth ':' with
+      [ Some i ->
+          let s = String.sub uauth 0 i in
+          if s = wizard_passwd || s = friend_passwd then "" else s
+      | None ->
+          match access_type with
+          [ ATwizard user -> user
+          | ATfriend user -> user
+          | _ -> "" ] ]
+    in
+    let (command, passwd) =
+      match access_type with
+      [ ATset ->
+          if wizard then
+            let pwd_id = set_token utm from_addr base_file 'w' user in
+            if cgi then (command, pwd_id) else (base_file ^ "_" ^ pwd_id, "")
+          else if friend then
+            let pwd_id = set_token utm from_addr base_file 'f' user in
+            if cgi then (command, pwd_id) else (base_file ^ "_" ^ pwd_id, "")
+          else if cgi then (command, "")
+          else (base_file, "")
+      | ATnormal -> if cgi then (command, "") else (base_file, "")
+      | _ ->
+          if cgi then (command, passwd)
+          else if passwd = "" then (base_file, "")
+          else (base_file ^ "_" ^ passwd, passwd) ]
+    in
+    let passwd1 =
+      match lindex passwd1 ':' with
+      [ Some i -> String.sub passwd1 (i + 1) (String.length passwd1 - i - 1)
+      | None -> passwd ]
+    in
+    let cancel_links =
+      match Util.p_getenv env "cgl" with
+      [ Some "on" -> True
+      | _ -> False ]
+    in
+    let conf =
+      {from = from_addr;
+       wizard = wizard && not wizard_just_friend;
+       friend = friend || wizard_just_friend && wizard;
+       just_friend_wizard = wizard && wizard_just_friend;
+       user = user; username = username;
+       passwd = passwd1; cgi = cgi; command = command;
+       indep_command = (if cgi then command else "geneweb") ^ "?";
+       highlight =
+         try List.assoc "highlight_color" base_env with
+         [ Not_found -> green_color ];
+       lang = if lang = "" then default_lang else lang;
+       default_lang = default_lang;
+       multi_parents =
+         try List.assoc "multi_parents" base_env = "yes" with
          [ Not_found -> False ];
-     use_restrict =
-       if ar.ar_wizard || ar.ar_friend then False
-       else
-         try List.assoc "use_restrict" base_env = "yes" with
+       can_send_image =
+         try List.assoc "can_send_image" base_env <> "no" with
+         [ Not_found -> True ];
+       public_if_titles =
+         try List.assoc "public_if_titles" base_env = "yes" with
          [ Not_found -> False ];
-     no_image =
-       if ar.ar_wizard || ar.ar_friend then False
-       else
-         try List.assoc "no_image_for_visitor" base_env = "yes" with
+       public_if_no_date =
+         try List.assoc "public_if_no_date" base_env = "yes" with
          [ Not_found -> False ];
-     bname = base_file; env = env; senv = [];
-     henv =
-       (if not cgi then []
-        else if ar.ar_passwd = "" then [("b", base_file)]
-        else [("b", base_file ^ "_" ^ ar.ar_passwd)]) @
-         (if lang = "" then [] else [("lang", lang)]) @
-         (if from = "" then [] else [("opt", from)]);
-     base_env = base_env;
-     allowed_titles = Lazy.lazy_from_fun (allowed_titles env base_env);
-     denied_titles = Lazy.lazy_from_fun (denied_titles env base_env);
-     request = request; lexicon = lexicon;
-     xhs =
-       match p_getenv base_env "doctype" with
-       [ Some "html-4.01" -> ""
-       | _ -> " /" ];
-     charset = "utf-8";
-     is_rtl = is_rtl;
-     left = if is_rtl then "right" else "left";
-     right = if is_rtl then "left" else "right";
-     auth_file =
-       try
-         let x = List.assoc "auth_file" base_env in
-         if x = "" then auth_file.val else Util.base_path [] x
-       with
-       [ Not_found -> auth_file.val ];
-     border =
-       match Util.p_getint env "border" with
-       [ Some i -> i
-       | None -> 0 ];
-     n_connect = None;
-     today =
-       {day = tm.Unix.tm_mday; month = succ tm.Unix.tm_mon;
-        year = tm.Unix.tm_year + 1900; prec = Sure; delta = 0};
-     today_wd = tm.Unix.tm_wday;
-     time = (tm.Unix.tm_hour, tm.Unix.tm_min, tm.Unix.tm_sec);
-     ctime = utm}
-  in
-  (conf, sleep, ar)
-};
+       cancel_links = cancel_links;
+       setup_link = setup_link.val;
+       access_by_key =
+         try List.assoc "access_by_key" base_env = "yes" with
+         [ Not_found -> False ];
+       private_years =
+         try int_of_string (List.assoc "private_years" base_env) with
+         [ Not_found | Failure _ -> 150 ];
+       hide_names =
+         if wizard || friend then False
+         else
+           try List.assoc "hide_private_names" base_env = "yes" with
+           [ Not_found -> False ];
+       use_restrict =
+         if wizard || friend then False
+         else
+           try List.assoc "use_restrict" base_env = "yes" with
+           [ Not_found -> False ];
+       no_image =
+         if wizard || friend then False
+         else
+           try List.assoc "no_image_for_visitor" base_env = "yes" with
+           [ Not_found -> False ];
+       bname = base_file; env = env; senv = [];
+       henv =
+         (if not cgi then []
+          else if passwd = "" then [("b", base_file)]
+          else [("b", base_file ^ "_" ^ passwd)]) @
+           (if lang = "" then [] else [("lang", lang)]) @
+           (if from = "" then [] else [("opt", from)]);
+       base_env = base_env; request = request; lexicon = lexicon;
+       charset =
+         try Hashtbl.find lexicon " !charset" with
+         [ Not_found -> "iso-8859-1" ];
+       is_rtl =
+         try Hashtbl.find lexicon " !dir" = "rtl" with [ Not_found -> False ];
+       auth_file =
+         try
+           let x = List.assoc "auth_file" base_env in
+           if x = "" then auth_file.val else Util.base_path [] x
+         with
+         [ Not_found -> auth_file.val ];
+       border =
+         match Util.p_getint env "border" with
+         [ Some i -> i
+         | None -> 0 ];
+       today =
+         {day = tm.Unix.tm_mday; month = succ tm.Unix.tm_mon;
+          year = tm.Unix.tm_year + 1900; prec = Sure; delta = 0};
+       today_wd = tm.Unix.tm_wday;
+       time = (tm.Unix.tm_hour, tm.Unix.tm_min, tm.Unix.tm_sec);
+       ctime = utm}
+    in
+    (conf, sleep, if not ok then Some (passwd, uauth) else None)
+  }
+;
 
 value log_and_robot_check conf auth from request script_name contents =
   if conf.cgi && log_file.val = "" && robot_xcl.val = None then ()
@@ -1331,8 +1004,7 @@ value log_and_robot_check conf auth from request script_name contents =
               [ Some (cnt, sec) ->
                   let s = "suicide" in
                   let suicide = Util.p_getenv conf.env s <> None in
-                  conf.n_connect :=
-                    Some (Robot.check oc tm from cnt sec conf suicide)
+                  Robot.check oc tm from cnt sec conf.cgi suicide
               | _ -> () ];
               if conf.cgi && log_file.val = "" then ()
               else log oc tm conf from auth request script_name contents;
@@ -1390,9 +1062,9 @@ value auth_err request auth_file =
 value no_access conf =
   let title _ = Wserver.wprint "Error" in
   do {
-    Hutil.rheader conf title;
+    Util.rheader conf title;
     Wserver.wprint "No access to this database in CGI mode\n";
-    Hutil.trailer conf;
+    Util.trailer conf;
   }
 ;
 
@@ -1431,18 +1103,20 @@ value conf_and_connection cgi from (addr, request) script_name contents env =
                 if x = "" then "GeneWeb service" else "database " ^ conf.bname
               in
               refuse_auth conf from auth auth_type
-        | (_, _, ({ar_ok = False} as ar)) ->
+        | (_, _, Some (passwd, uauth)) ->
             if is_robot from then Robot.robot_error cgi from 0 0
             else do {
               let tm = Unix.time () in
               lock_wait Srcfile.adm_file "gwd.lck" with
-              [ Accept -> do {
+              [ Accept ->
                   let oc = log_oc () in
-                  log_passwd_failed ar oc tm from request conf.bname;
-                  flush_log oc;
-                }
+                  do {
+                    log_passwd_failed passwd uauth oc tm from request
+                      conf.bname;
+                    flush_log oc;
+                  }
               | Refuse -> () ];
-              unauth_server conf ar;
+              unauth_server conf passwd;
             }
         | _ ->
             match mode with
@@ -1457,10 +1131,9 @@ value conf_and_connection cgi from (addr, request) script_name contents env =
                  [ Some n when n <> "" -> print_renamed conf n
                  | _ ->
                      do {
-                       Request.treat_request_on_base conf
+                       Family.treat_request_on_base conf
                          (log_file.val, log_oc, flush_log);
-                       if conf.manitou && sleep > 0 then Unix.sleep sleep
-                       else ();
+                       if sleep > 0 then Unix.sleep sleep else ();
                      } ] ] ]
       } ]
 ;
@@ -1468,20 +1141,20 @@ value conf_and_connection cgi from (addr, request) script_name contents env =
 value chop_extension name =
   loop (String.length name - 1) where rec loop i =
     if i < 0 then name
-    else if name.[i] = '.' then String.sub name 0 i
-    else if name.[i] = '/' then name
-    else if name.[i] = '\\' then name
+    else if name.[i] == '.' then String.sub name 0 i
+    else if name.[i] == '/' then name
+    else if name.[i] == '\\' then name
     else loop (i - 1)
 ;
 
 value match_strings regexp s =
   loop 0 0 where rec loop i j =
-    if i = String.length regexp && j = String.length s then True
-    else if i = String.length regexp then False
-    else if j = String.length s then False
+    if i == String.length regexp && j == String.length s then True
+    else if i == String.length regexp then False
+    else if j == String.length s then False
     else if regexp.[i] = s.[j] then loop (i + 1) (j + 1)
     else if regexp.[i] = '*' then
-      if i + 1 = String.length regexp then True
+      if i + 1 == String.length regexp then True
       else if regexp.[i + 1] = s.[j] then loop (i + 2) (j + 1)
       else loop i (j + 1)
     else False
@@ -1525,9 +1198,9 @@ value image_request cgi script_name env =
 ;
 
 value strip_quotes s =
-  let i0 = if String.length s > 0 && s.[0] = '"' then 1 else 0 in
+  let i0 = if String.length s > 0 && s.[0] == '"' then 1 else 0 in
   let i1 =
-    if String.length s > 0 && s.[String.length s - 1] = '"' then
+    if String.length s > 0 && s.[String.length s - 1] == '"' then
       String.length s - 1
     else String.length s
   in
@@ -1536,14 +1209,14 @@ value strip_quotes s =
 
 value extract_multipart boundary str =
   let rec skip_nl i =
-    if i < String.length str && str.[i] = '\r' then skip_nl (i + 1)
-    else if i < String.length str && str.[i] = '\n' then i + 1
+    if i < String.length str && str.[i] == '\r' then skip_nl (i + 1)
+    else if i < String.length str && str.[i] == '\n' then i + 1
     else i
   in
   let next_line i =
     let i = skip_nl i in
     let rec loop s i =
-      if i = String.length str || str.[i] = '\n' || str.[i] = '\r' then
+      if i == String.length str || str.[i] == '\n' || str.[i] == '\r' then
         (s, i)
       else loop (s ^ String.make 1 str.[i]) (i + 1)
     in
@@ -1551,7 +1224,7 @@ value extract_multipart boundary str =
   in
   let boundary = "--" ^ boundary in
   let rec loop i =
-    if i = String.length str then []
+    if i == String.length str then []
     else
       let (s, i) = next_line i in
       if s = boundary then
@@ -1612,12 +1285,10 @@ value connection cgi (addr, request) script_name contents =
           Unix.string_of_inet_addr iaddr ]
   in
   do {
-    if not cgi && script_name = "robots.txt" then robots_txt ()
-    else if excluded from then refuse_log from cgi
+    if excluded from then refuse_log from cgi
     else
       let accept =
-        if only_addresses.val = [] then True
-        else List.mem from only_addresses.val
+        if only_address.val = "" then True else only_address.val = from
       in
       if not accept then only_log from cgi
       else
@@ -1635,23 +1306,21 @@ value connection cgi (addr, request) script_name contents =
 ;
 
 value null_reopen flags fd =
-  IFDEF UNIX THEN do {
+  ifdef UNIX then do {
     let fd2 = Unix.openfile "/dev/null" flags 0 in
     Unix.dup2 fd2 fd;
     Unix.close fd2;
   }
-  ELSE () END
+  else ()
 ;
 
-IFDEF SYS_COMMAND THEN
-value wserver_auto_call = ref False
-END;
+ifdef SYS_COMMAND then
+value wserver_auto_call = ref False;
 
 value geneweb_server () =
   let auto_call =
-    IFDEF SYS_COMMAND THEN wserver_auto_call.val
-    ELSE try let _ = Sys.getenv "WSERVER" in True with [ Not_found -> False ]
-    END
+    ifdef SYS_COMMAND then wserver_auto_call.val
+    else try let _ = Sys.getenv "WSERVER" in True with [ Not_found -> False ]
   in
   do {
     if not auto_call then do {
@@ -1661,7 +1330,7 @@ value geneweb_server () =
         | None -> try Unix.gethostname () with _ -> "computer" ]
       in
       eprintf "GeneWeb %s - " Version.txt;
-      eprintf "Copyright (c) 1998-2007 INRIA\n";
+      eprintf "Copyright (c) 1998-2005 INRIA\n";
       if not daemon.val then do {
         eprintf "Possible addresses:";
         eprintf "
@@ -1689,38 +1358,12 @@ Type %s to stop the service
     }
     else ();
     Wserver.f selected_addr.val selected_port.val conn_timeout.val
-      (IFDEF UNIX THEN max_clients.val ELSE None END) (connection False)
+      (ifdef UNIX then max_clients.val else None) (connection False)
   }
 ;
 
-IFDEF UNIX THEN
-value cgi_timeout tmout _ =
-  let nl () = Wserver.wprint "\013\010" in
-  do {
-    Wserver.wprint "HTTP/1.0 200 OK"; nl ();
-    Wserver.wprint "Content-type: text/html; charset=iso-8859-1";
-    nl (); nl ();
-    Wserver.wprint "<head><title>Time out</title></head>\n";
-    Wserver.wprint "<body><h1>Time out</h1>\n";
-    Wserver.wprint "Computation time > %d second(s)\n" tmout;
-    Wserver.wprint "</body>\n";
-    Wserver.wflush ();
-    exit 0;
-  }
-END;
-
-IFDEF UNIX THEN
-value manage_cgi_timeout tmout =
-  if tmout > 0 then
-    let _ = Sys.signal Sys.sigalrm (Sys.Signal_handle (cgi_timeout tmout)) in
-    let _ = Unix.alarm tmout in
-    ()
-  else ()
-END;
-
 value geneweb_cgi addr script_name contents =
   do {
-    IFDEF UNIX THEN manage_cgi_timeout conn_timeout.val ELSE () END;
     try Unix.mkdir (Filename.concat Util.cnt_dir.val "cnt") 0o755 with
     [ Unix.Unix_error _ _ _ -> () ];
     let add k x request =
@@ -1781,10 +1424,7 @@ value arg_parse_in_file fname speclist anonfun errmsg =
   | _ -> () ]
 ;
 
-module G =
-  Grammar.GMake
-    (struct type te = (string * string); value lexer = Plexer.gmake (); end)
-;
+module G = Grammar.Make (struct value lexer = Plexer.make (); end);
 value robot_xcl_arg = G.Entry.create "robot_xcl arg";
 GEXTEND G
   robot_xcl_arg:
@@ -1820,25 +1460,33 @@ value slashify s =
   }
 ;
 
+value mkdir_p x =
+  loop x where rec loop x =
+    do  {
+      let y = Filename.dirname x;
+      if y <> x && String.length y < String.length x then loop y else ();
+      try Unix.mkdir x 0o755 with [ Unix.Unix_error _ _ _ -> () ];
+    }
+;
+
 value make_cnt_dir x =
   do {
     mkdir_p x;
-    IFDEF WIN95 THEN do {
+    ifdef WIN95 then do {
       Wserver.sock_in.val := Filename.concat x "gwd.sin";
       Wserver.sock_out.val := Filename.concat x "gwd.sou";
     }
-    ELSE () END;
+    else ();
     Util.cnt_dir.val := x;
   }
 ;
 
 value main () =
   do {
-    IFDEF WIN95 THEN do {
-      Wserver.sock_in.val := "gwd.sin";
-      Wserver.sock_out.val := "gwd.sou";
+    ifdef WIN95 then do {
+      Wserver.sock_in.val := "gwd.sin"; Wserver.sock_out.val := "gwd.sou";
     }
-    ELSE () END;
+    else ();
     let usage =
       "Usage: " ^ Filename.basename Sys.argv.(0) ^
       " [options] where options are:"
@@ -1867,10 +1515,6 @@ value main () =
           string_of_int selected_port.val ^ "); > 1024 for normal users.");
        ("-setup_link", Arg.Set setup_link,
         "\n       Display a link to local gwsetup in bottom of pages.");
-       ("-allowed_tags",
-        Arg.String (fun x -> Util.allowed_tags_file.val := x), "\
-<file>
-       HTML tags which are allowed to be displayed. One tag per line in file.");
        ("-wizard", Arg.String (fun x -> wizard_passwd.val := x), "\
 <passwd>
        Set a wizard password: access to all dates and updating.");
@@ -1882,15 +1526,12 @@ value main () =
         "<lang>\n       Set a default language (default: fr).");
        ("-blang", Arg.Set choose_browser_lang,
         "\n       Select the user browser language if any.");
-       ("-only",
-        Arg.String (fun x -> only_addresses.val := [x :: only_addresses.val]),
+       ("-only", Arg.String (fun x -> only_address.val := x),
         "<address>\n       Only inet address accepted.");
        ("-auth", Arg.String (fun x -> auth_file.val := x), "\
 <file>
        Authorization file to restrict access. The file must hold lines
        of the form \"user:password\".");
-       ("-digest", Arg.Set use_auth_digest_scheme, "\n       \
-        Use Digest authorization scheme (more secure on passwords)");
        ("-log", Arg.String (fun x -> log_file.val := x),
         "<file>\n       Redirect log trace to this file.");
        ("-robot_xcl", Arg.String robot_exclude_arg, "\
@@ -1905,11 +1546,11 @@ value main () =
 s)"); ("-redirect", Arg.String (fun x -> redirected_addr.val := Some x), "\
 <addr>
        Send a message to say that this service has been redirected to <addr>");
-       ("-trace_failed_passwd", Arg.Set trace_failed_passwd, "\n       \
-Print the failed passwords in log (except if option -digest is set) ");
+       ("-trace_failed_passwd", Arg.Set trace_failed_passwd,
+        "\n       Print the failed passwords in log");
        ("-nolock", Arg.Set Lock.no_lock_flag,
         "\n       Do not lock files before writing.") ::
-       IFDEF UNIX THEN
+       ifdef UNIX then
          [("-max_clients", Arg.Int (fun x -> max_clients.val := Some x), "\
 <num>
        Max number of clients treated at the same time (default: no limit)
@@ -1917,20 +1558,17 @@ Print the failed passwords in log (except if option -digest is set) ");
           ("-conn_tmout", Arg.Int (fun x -> conn_timeout.val := x),
            "<sec>\n       Connection timeout (default " ^
              string_of_int conn_timeout.val ^ "s; 0 means no limit)");
-          ("-daemon", Arg.Set daemon, "\n       Unix daemon mode.");
-          ("-chwd", Arg.String (fun s -> Doc.notify_change_wdoc.val := s),
-           "<comm>\n       Call command when wdoc changed")]
-       ELSE
+          ("-daemon", Arg.Set daemon, "\n       Unix daemon mode.")]
+       else
          [("-noproc", Arg.Set Wserver.noproc,
            "\n       Do not launch a process at each request.") ::
-          IFDEF SYS_COMMAND THEN
+          ifdef SYS_COMMAND then
             [("-wserver", Arg.String (fun _ -> wserver_auto_call.val := True),
               "\n       (internal feature)")]
-          ELSE [] END]
-       END]
+          else []]]
     in
     let anonfun s = raise (Arg.Bad ("don't know what to do with " ^ s)) in
-    IFDEF UNIX THEN
+    ifdef UNIX then
       default_lang.val :=
         let s = try Sys.getenv "LANG" with [ Not_found -> "" ] in
         if List.mem s Version.available_languages then s
@@ -1940,7 +1578,7 @@ Print the failed passwords in log (except if option -digest is set) ");
             let s = String.sub s 0 2 in
             if List.mem s Version.available_languages then s else "en"
           else "en"
-    ELSE () END;
+    else ();
     arg_parse_in_file (chop_extension Sys.argv.(0) ^ ".arg") speclist anonfun
       usage;
     Argl.parse speclist anonfun usage;
@@ -1960,12 +1598,8 @@ Print the failed passwords in log (except if option -digest is set) ");
       List.iter (fun d -> Util.add_doc_path (Filename.concat d "doc"))
         (List.rev (Secure.lang_path ()))
     else ();
-    if Util.cnt_dir.val = Filename.current_dir_name then
-      Util.cnt_dir.val := Secure.base_dir ()
+    if Util.cnt_dir.val = "" then Util.cnt_dir.val := Secure.base_dir ()
     else ();
-    Wserver.stop_server.val :=
-      List.fold_left Filename.concat Util.cnt_dir.val ["cnt"; "STOP_SERVER"]
-    ;
     let (query, cgi) =
       try (Sys.getenv "QUERY_STRING", True) with
       [ Not_found -> ("", cgi.val) ]
@@ -1998,7 +1632,7 @@ Print the failed passwords in log (except if option -digest is set) ");
 ;
 
 value test_eacces_bind err fun_name =
-  IFDEF UNIX THEN
+  ifdef UNIX then
     if err = Unix.EACCES && fun_name = "bind" then
       try
         do {
@@ -2013,7 +1647,7 @@ number greater than 1024.
       with
       [ Not_found -> False ]
     else False
-  ELSE False END
+  else False
 ;
 
 value print_exc exc =

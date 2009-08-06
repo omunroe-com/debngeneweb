@@ -1,4 +1,4 @@
-# $Id: Makefile,v 5.1 2007/09/12 09:58:44 ddr Exp $
+# $Id: Makefile,v 4.1 2001/05/14 12:38:04 ddr Exp $
 
 include ../tools/Makefile.inc
 
@@ -8,6 +8,6 @@ all:: $(OBJS)
 opt:: $(OBJS:.cmo=.cmx)
 
 depend:
-	TOP=.. ../tools/camlp5_depend.sh $(OCAMLI) *.ml* > .depend
+	TOP=.. ../tools/camlp4_depend.sh $(OCAMLI) *.ml* > .depend
 
 include .depend

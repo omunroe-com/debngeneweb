@@ -1,27 +1,28 @@
-(* $Id: fpla.ml,v 5.8 2007/01/19 01:53:16 ddr Exp $ *)
-(* Copyright (c) 1998-2007 INRIA *)
+(* $Id: fpla.ml,v 4.5 2004/12/14 09:30:12 ddr Exp $ *)
+(* Copyright (c) 1998-2005 INRIA *)
 (* First Parentless Ancestor *)
 
-open Gwdb;
+open Gutil;
+open Def;
 open Printf;
 
 value make_table base =
-  let _ = load_ascends_array base in
-  let _ = load_couples_array base in
-  let fpla = Array.create (nb_of_persons base) None in
-  let cnt = ref (nb_of_persons base) in
+  let _ = base.data.ascends.array () in
+  let _ = base.data.couples.array () in
+  let fpla = Array.create base.data.ascends.len None in
+  let cnt = ref base.data.ascends.len in
   do {
     while cnt.val > 0 do {
       Array.iteri
         (fun i v ->
-           if v = None then
+           if v == None then
              let ip = Adef.iper_of_int i in
-             match get_parents (poi base ip) with
+             match (aoi base ip).parents with
              [ Some ifam ->
                  let cpl = coi base ifam in
                  match
-                   (fpla.(Adef.int_of_iper (get_father cpl)),
-                    fpla.(Adef.int_of_iper (get_mother cpl)))
+                   (fpla.(Adef.int_of_iper (father cpl)),
+                    fpla.(Adef.int_of_iper (mother cpl)))
                  with
                  [ (Some (m, k), Some (n, l)) ->
                      do {
@@ -55,7 +56,7 @@ value first_parentless_ancestor base =
       (fun (i, s) ->
          let p = poi base (Adef.iper_of_int i) in
          do {
-           printf "Sosa %d  \t%s.%d %s\n" s (p_first_name base p) (get_occ p)
+           printf "Sosa %d  \t%s.%d %s\n" s (p_first_name base p) p.occ
              (p_surname base p);
            flush stdout;
          })
@@ -68,10 +69,11 @@ value usage = "usage: " ^ Sys.argv.(0) ^ " <base>";
 value speclist = [];
 
 value main () =
+  let cnt = ref 0 in
   do {
     Argl.parse speclist (fun s -> bname.val := s) usage;
     Secure.set_base_dir (Filename.dirname bname.val);
-    let base = Gwdb.open_base bname.val in
+    let base = Iobase.input bname.val in
     first_parentless_ancestor base
   }
 ;

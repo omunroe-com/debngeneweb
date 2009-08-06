@@ -1,6 +1,6 @@
-(* camlp5r pa_extend.cmo q_MLast.cmo *)
-(* $Id: pa_lock.ml,v 5.3 2007/09/12 09:58:44 ddr Exp $ *)
-(* Copyright (c) 1998-2007 INRIA *)
+(* camlp4r pa_extend.cmo q_MLast.cmo *)
+(* $Id: pa_lock.ml,v 4.1 2004/12/14 09:30:14 ddr Exp $ *)
+(* Copyright (c) 1998-2005 INRIA *)
 
 EXTEND
   Pcaml.expr: LEVEL "top"

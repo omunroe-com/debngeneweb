@@ -1,15 +1,38 @@
-(* camlp5r ./pa_html.cmo *)
-(* $Id: cousins.ml,v 5.17 2007/09/12 09:58:44 ddr Exp $ *)
-(* Copyright (c) 1998-2007 INRIA *)
+(* camlp4r ./pa_html.cmo *)
+(* $Id: cousins.ml,v 4.13 2004/12/14 09:30:11 ddr Exp $ *)
+(* Copyright (c) 1998-2005 INRIA *)
 
-open Config;
 open Def;
 open Gutil;
-open Gwdb;
-open Hutil;
 open Util;
+open Config;
 
+value default_max_lev = 5;
 value default_max_cnt = 2000;
+
+(* Utilities *)
+
+value max_ancestor_level conf base ip max_lev =
+  let x = ref 0 in
+  let mark = Array.create base.data.persons.len False in
+  let rec loop niveau ip =
+    if mark.(Adef.int_of_iper ip) then ()
+    else do {
+      mark.(Adef.int_of_iper ip) := True;
+      x.val := max x.val niveau;
+      if x.val = max_lev then ()
+      else
+        match parents (aget conf base ip) with
+        [ Some ifam ->
+            let cpl = coi base ifam in
+            do {
+              loop (succ niveau) (father cpl); loop (succ niveau) (mother cpl)
+            }
+        | _ -> () ]
+    }
+  in
+  do { loop 0 ip; x.val }
+;
 
 value brother_label conf x =
   match x with
@@ -19,7 +42,7 @@ value brother_label conf x =
   | 4 -> transl conf "3rd cousins"
   | n ->
       Printf.sprintf (ftransl conf "%s cousins")
-        (transl_nth conf "nth (cousin)" (n - 1)) ]
+        (transl_nth conf "*nth (cousin)*" (n - 1)) ]
 ;
 
 value rec except x =
@@ -31,13 +54,13 @@ value rec except x =
 value children_of base u =
   List.fold_right
     (fun ifam list ->
-       let des = foi base ifam in
-       Array.to_list (get_children des) @ list)
-    (Array.to_list (get_family u)) []
+       let des = doi base ifam in
+       Array.to_list des.children @ list)
+    (Array.to_list u.family) []
 ;
 
 value siblings_by conf base iparent ip =
-  let list = children_of base (pget conf base iparent) in
+  let list = children_of base (uget conf base iparent) in
   except ip list
 ;
 
@@ -52,17 +75,18 @@ value merge_siblings l1 l2 =
   List.rev l
 ;
 
-value siblings conf base ip =
-  match get_parents (pget conf base ip) with
+value siblings conf base p =
+  let ip = p.cle_index in
+  match parents (aget conf base ip) with
   [ Some ifam ->
-      let cpl = foi base ifam in
+      let cpl = coi base ifam in
       let fath_sib =
-        List.map (fun ip -> (ip, (get_father cpl, Male)))
-          (siblings_by conf base (get_father cpl) ip)
+        List.map (fun ip -> (ip, ((father cpl), Male)))
+          (siblings_by conf base (father cpl) ip)
       in
       let moth_sib =
-        List.map (fun ip -> (ip, (get_mother cpl, Female)))
-          (siblings_by conf base (get_mother cpl) ip)
+        List.map (fun ip -> (ip, ((mother cpl), Female)))
+          (siblings_by conf base (mother cpl) ip)
       in
       merge_siblings fath_sib moth_sib
   | None -> [] ]
@@ -73,11 +97,11 @@ value rec has_desc_lev conf base lev u =
   else
     List.exists
       (fun ifam ->
-         let des = foi base ifam in
+         let des = doi base ifam in
          List.exists
-           (fun ip -> has_desc_lev conf base (lev - 1) (pget conf base ip))
-           (Array.to_list (get_children des)))
-      (Array.to_list (get_family u))
+           (fun ip -> has_desc_lev conf base (lev - 1) (uget conf base ip))
+           (Array.to_list des.children))
+      (Array.to_list u.family)
 ;
 
 value br_inter_is_empty b1 b2 =
@@ -85,6 +109,30 @@ value br_inter_is_empty b1 b2 =
 ;
 
 (* Algorithms *)
+
+value print_choice conf base p niveau_effectif =
+  tag "form" "method=get action=\"%s\"" conf.command begin
+    Util.hidden_env conf;
+    Wserver.wprint "<input type=hidden name=m value=C>\n";
+    wprint_hidden_person conf base "" p;
+    tag "select" "name=v1" begin
+      let rec boucle i =
+        if i > niveau_effectif then ()
+        else do {
+          Wserver.wprint "  <option value=%d%s> %s\n" i
+            (if i == 2 then " selected" else "")
+            (capitale (brother_label conf i));
+          boucle (succ i)
+        }
+      in
+      boucle 1;
+    end;
+    Wserver.wprint "<input type=submit value=\"Ok\">\n";
+    Wserver.wprint "<br>\n";
+    Wserver.wprint "<input type=checkbox name=csp value=on> %s\n"
+      (capitale (transl conf "include spouses"));
+  end
+;
 
 value cnt = ref 0;
 
@@ -117,8 +165,8 @@ value give_access conf base ia_asex p1 b1 p2 b2 =
       if first then
         Wserver.wprint "%s"
           (gen_person_title_text reference std_access conf base p2)
-      else Wserver.wprint "<br%s>%s" conf.xhs (person_title_text conf base p2);
-      Wserver.wprint "%s &amp; %s%s" (Date.short_dates_text conf base p2)
+      else Wserver.wprint "<br>%s" (person_title_text conf base p2);
+      Wserver.wprint "%s & %s%s" (Date.short_dates_text conf base p2)
         (gen_person_title_text (reference_sp sp) std_access conf base sp)
         (Date.short_dates_text conf base sp)
     }
@@ -129,17 +177,17 @@ value give_access conf base ia_asex p1 b1 p2 b2 =
   then
     print_nospouse ()
   else
-    let u = Array.to_list (get_family p2) in
+    let u = Array.to_list (uget conf base p2.cle_index).family in
     match u with
     [ [] -> print_nospouse ()
     | _ ->
         let _ =
           List.fold_left
             (fun a ifam ->
-               let cpl = foi base ifam in
+               let cpl = coi base ifam in
                let sp =
-                 if get_sex p2 = Female then pget conf base (get_father cpl)
-                 else pget conf base (get_mother cpl)
+                 if p2.sex = Female then pget conf base (father cpl)
+                 else pget conf base (mother cpl)
                in
                let _ = print_spouse sp a in
                False)
@@ -154,12 +202,13 @@ value rec print_descend_upto conf base max_cnt ini_p ini_br lev children =
     List.iter
       (fun (ip, ia_asex, rev_br) ->
          let p = pget conf base ip in
-         let br = List.rev [(ip, get_sex p) :: rev_br] in
+         let u = uget conf base ip in
+         let br = List.rev [(ip, p.sex) :: rev_br] in
          let is_valid_rel = br_inter_is_empty ini_br br in
-         if is_valid_rel && cnt.val < max_cnt && has_desc_lev conf base lev p
+         if is_valid_rel && cnt.val < max_cnt && has_desc_lev conf base lev u
          then do {
            if lev <= 2 then do {
-             Wserver.wprint "<li>\n";
+             html_li conf;
              if lev = 1 then do {
                give_access conf base ia_asex ini_p ini_br p br; incr cnt
              }
@@ -169,20 +218,19 @@ value rec print_descend_upto conf base max_cnt ini_p ini_br lev children =
                    (transl_nth conf "child/children" 1)
                    (person_title_text conf base p)
                in
-               Wserver.wprint "%s" (capitale (Util.translate_eval s));
+               Wserver.wprint "%s" (capitale s);
                Wserver.wprint ":"
-             }
+             };
+             Wserver.wprint "\n"
            }
            else ();
            let children =
              List.map
-               (fun ip ->
-                  (ip, ia_asex, [(get_key_index p, get_sex p) :: rev_br]))
-               (children_of base p)
+               (fun ip -> (ip, ia_asex, [(p.cle_index, p.sex) :: rev_br]))
+               (children_of base u)
            in
            print_descend_upto conf base max_cnt ini_p ini_br (lev - 1)
-             children;
-           if lev <= 2 then Wserver.wprint "</li>\n" else ()
+             children
          }
          else ())
       children;
@@ -192,14 +240,14 @@ value rec print_descend_upto conf base max_cnt ini_p ini_br lev children =
 ;
 
 value sibling_has_desc_lev conf base lev (ip, _) =
-  has_desc_lev conf base lev (pget conf base ip)
+  has_desc_lev conf base lev (uget conf base ip)
 ;
 
 value print_cousins_side_of conf base max_cnt a ini_p ini_br lev1 lev2 =
-  let sib = siblings conf base (get_key_index a) in
+  let sib = siblings conf base a in
   if List.exists (sibling_has_desc_lev conf base lev2) sib then do {
     if lev1 > 1 then do {
-      Wserver.wprint "<li>\n";
+      html_li conf;
       Wserver.wprint "%s:\n"
         (capitale
            (cftransl conf "on %s's side"
@@ -208,7 +256,6 @@ value print_cousins_side_of conf base max_cnt a ini_p ini_br lev1 lev2 =
     else ();
     let sib = List.map (fun (ip, ia_asex) -> (ip, ia_asex, [])) sib in
     print_descend_upto conf base max_cnt ini_p ini_br lev2 sib;
-    if lev1 > 1 then Wserver.wprint "</li>\n" else ();
     True
   }
   else False
@@ -226,7 +273,7 @@ value print_cousins_lev conf base max_cnt p lev1 lev2 =
       loop first_sosa False where rec loop sosa some =
         if cnt.val < max_cnt && Num.gt last_sosa sosa then
           let some =
-            match Util.branch_of_sosa conf base (get_key_index p) sosa with
+            match Util.branch_of_sosa conf base p.cle_index sosa with
             [ Some ([(ia, _) :: _] as br) ->
                 print_cousins_side_of conf base max_cnt (pget conf base ia) p
                   br lev1 lev2 ||
@@ -237,10 +284,9 @@ value print_cousins_lev conf base max_cnt p lev1 lev2 =
         else some
     in
     if some then ()
-    else
-      stagn "li" begin
-        Wserver.wprint "%s\n" (capitale (transl conf "no match"));
-      end;
+    else do {
+      html_li conf; Wserver.wprint "%s\n" (capitale (transl conf "no match"))
+    };
     if lev1 > 1 then Wserver.wprint "</ul>\n" else ()
   }
 ;
@@ -250,24 +296,24 @@ value print_cousins_lev conf base max_cnt p lev1 lev2 =
 value print_cousins conf base p lev1 lev2 =
   let title h =
     let txt_fun = if h then gen_person_text_no_html else gen_person_text in
-    if lev1 = lev2 then
+    if lev1 == lev2 then
       let s =
         transl_a_of_gr_eq_gen_lev conf
           (brother_label conf lev1) (txt_fun raw_access conf base p)
       in
-      Wserver.wprint "%s" (capitale (Util.translate_eval s))
-    else if lev1 = 2 && lev2 = 1 then
+      Wserver.wprint "%s" (capitale s)
+    else if lev1 == 2 && lev2 == 1 then
       let s =
         transl_a_of_b conf (transl conf "uncles and aunts")
           (txt_fun raw_access conf base p)
       in
-      Wserver.wprint "%s" (capitale (Util.translate_eval s))
-    else if lev1 = 1 && lev2 = 2 then
+      Wserver.wprint "%s" (capitale s)
+    else if lev1 == 1 && lev2 == 2 then
       let s =
         transl_a_of_gr_eq_gen_lev conf
           (transl conf "nephews and nieces") (txt_fun raw_access conf base p)
       in
-      Wserver.wprint "%s" (capitale (Util.translate_eval s))
+      Wserver.wprint "%s" (capitale s)
     else
       Wserver.wprint "%s %d / %s %d" (capitale (transl conf "ancestors")) lev1
         (capitale (transl conf "descendants")) lev2
@@ -280,13 +326,52 @@ value print_cousins conf base p lev1 lev2 =
     header conf title;
     cnt.val := 0;
     print_cousins_lev conf base max_cnt p lev1 lev2;
-    tag "p" begin
-      if cnt.val >= max_cnt then Wserver.wprint "etc...\n"
-      else if cnt.val > 1 then
-        Wserver.wprint "%s: %d %s.\n" (capitale (transl conf "total")) cnt.val
-          (Util.translate_eval ("@(c)" ^ transl_nth conf "person/persons" 1))
+    if cnt.val >= max_cnt then Wserver.wprint "etc...\n"
+    else if cnt.val > 1 then
+      Wserver.wprint "%s: %d %s.\n" (capitale (transl conf "total")) cnt.val
+        (nominative (transl_nth_def conf "person/persons" 2 1))
+    else ();
+    trailer conf
+  }
+;
+
+value print_menu conf base p effective_level =
+  let title h =
+    let txt_fun = if h then gen_person_text_no_html else gen_person_text in
+    let s =
+      transl_a_of_gr_eq_gen_lev conf
+        (transl conf "cousins (general term)")
+        (txt_fun raw_access conf base p)
+    in
+    Wserver.wprint "%s" (capitale s)
+  in
+  do {
+    header conf title;
+    tag "ul" begin
+      html_li conf;
+      print_choice conf base p effective_level;
+      html_li conf;
+      Wserver.wprint "<a href=\"%s%s;m=C;v1=2;v2=1\">%s</a>\n" (commd conf)
+        (acces conf base p) (capitale (transl conf "uncles and aunts"));
+      if has_nephews_or_nieces conf base p then do {
+        html_li conf;
+        Wserver.wprint "<a href=\"%s%s;m=C;v1=1;v2=2\">%s</a>\n" (commd conf)
+          (acces conf base p) (capitale (transl conf "nephews and nieces"))
+      }
       else ();
     end;
+    match p.death with
+    [ NotDead | DontKnowIfDead when conf.wizard || conf.friend ->
+        do {
+          html_p conf;
+          tag "ul" begin
+            html_li conf;
+            Wserver.wprint "<a href=\"%s%s;m=C;t=AN" (commd conf)
+              (acces conf base p);
+            Wserver.wprint "\">%s</a>\n" (capitale (transl conf "birthdays"));
+          end
+        }
+    | _ -> () ];
     trailer conf
   }
 ;
@@ -296,11 +381,11 @@ value sosa_of_persons conf base =
     fun
     [ [] -> n
     | [ip :: list] ->
-        loop (if get_sex (pget conf base ip) = Male then 2 * n else 2 * n + 1)
+        loop (if (pget conf base ip).sex = Male then 2 * n else 2 * n + 1)
           list ]
 ;
 
-value print_anniv conf base p dead_people level =
+value print_anniv conf base p level =
   let module S = Map.Make (struct type t = iper; value compare = compare; end)
   in
   let s_mem x m =
@@ -316,12 +401,12 @@ value print_anniv conf base p dead_people level =
       let set = S.add ip (up_sosa, down_br) set in
       if n = 0 then set
       else
-        let u = get_family (pget conf base ip) in
+        let u = (uget conf base ip).family in
         let down_br = [ip :: down_br] in
         let rec loop set i =
           if i = Array.length u then set
           else
-            let chil = get_children (foi base u.(i)) in
+            let chil = (doi base u.(i)).children in
             let set =
               loop set 0 where rec loop set i =
                 if i = Array.length chil then set
@@ -343,7 +428,7 @@ value print_anniv conf base p dead_people level =
            value leq (_, lev1, _) (_, lev2, _) = lev1 <= lev2;
          end)
     in
-    let a = P.add (get_key_index p, 0, 1) P.empty in
+    let a = P.add (p.cle_index, 0, 1) P.empty in
     let rec loop set a =
       if P.is_empty a then set
       else
@@ -352,13 +437,13 @@ value print_anniv conf base p dead_people level =
         if n >= level then set
         else
           let a =
-            match get_parents (pget conf base ip) with
+            match parents (aget conf base ip) with
             [ Some ifam ->
-                let cpl = foi base ifam in
+                let cpl = coi base ifam in
                 let n = n + 1 in
                 let up_sosa = 2 * up_sosa in
-                let a = P.add (get_father cpl, n, up_sosa) a in
-                P.add (get_mother cpl, n, up_sosa + 1) a
+                let a = P.add ((father cpl), n, up_sosa) a in
+                P.add ((mother cpl), n, up_sosa + 1) a
             | None -> a ]
           in
           loop set a
@@ -368,14 +453,14 @@ value print_anniv conf base p dead_people level =
   let set =
     S.fold
       (fun ip (up_sosa, down_br) set ->
-         let u = get_family (pget conf base ip) in
+         let u = (uget conf base ip).family in
          let set = S.add ip (up_sosa, down_br, None) set in
          if Array.length u = 0 then set
          else
            let rec loop set i =
              if i = Array.length u then set
              else
-               let cpl = foi base u.(i) in
+               let cpl = coi base u.(i) in
                let c = spouse ip cpl in
                loop (S.add c (up_sosa, down_br, Some ip) set) (i + 1)
            in
@@ -404,28 +489,21 @@ value print_anniv conf base p dead_people level =
   in
   let mode () =
     do {
-      xtag "input" "type=\"hidden\" name=\"m\" value=\"C\"";
-      xtag "input" "type=\"hidden\" name=\"i\" value=\"%d\""
-        (Adef.int_of_iper (get_key_index p));
-      xtag "input" "type=\"hidden\" name=\"t\" value=\"%s\""
-        (if dead_people then "AD" else "AN")
+      Wserver.wprint "<input type=hidden name=m value=C>\n";
+      Wserver.wprint "<input type=hidden name=i value=%d>\n"
+        (Adef.int_of_iper p.cle_index);
+      Wserver.wprint "<input type=hidden name=t value=AN>\n"
     }
   in
   match p_getint conf.env "v" with
-  [ Some i -> Birthday.gen_print conf base i f_scan dead_people
-  | _ ->
-      if dead_people then
-        Birthday.gen_print_menu_dead conf base f_scan mode
-      else
-        Birthday.gen_print_menu_birth conf base f_scan mode ]
+  [ Some i -> Birthday.gen_print conf base i f_scan False
+  | _ -> Birthday.gen_print_menu_birth conf base f_scan mode ]
 ;
-
-value cousmenu_print = Perso.interp_templ "cousmenu";
 
 value print conf base p =
   let max_lev =
     try int_of_string (List.assoc "max_cousins_level" conf.base_env) with
-    [ Not_found | Failure _ -> Perso.default_max_cousin_lev ]
+    [ Not_found | Failure _ -> default_max_lev ]
   in
   match (p_getint conf.env "v1", p_getenv conf.env "t") with
   [ (Some lev1, _) ->
@@ -436,8 +514,12 @@ value print conf base p =
         | None -> lev1 ]
       in
       print_cousins conf base p lev1 lev2
-  | (_, Some (("AN" | "AD") as t)) when conf.wizard || conf.friend ->
-      print_anniv conf base p (t = "AD") max_lev
+  | (_, Some "AN") when conf.wizard || conf.friend ->
+      print_anniv conf base p max_lev
   | _ ->
-      cousmenu_print conf base p ]
+      let effective_level =
+        max_ancestor_level conf base p.cle_index max_lev + 1
+      in
+      if effective_level == 2 then print_cousins conf base p 2 2
+      else print_menu conf base p effective_level ]
 ;

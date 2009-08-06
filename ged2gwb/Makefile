@@ -1,9 +1,9 @@
-# $Id: Makefile,v 5.20 2007/09/12 09:58:44 ddr Exp $
+# $Id: Makefile,v 4.5 2004/08/09 11:34:59 ddr Exp $
 
 include ../tools/Makefile.inc
 
 OCAMLI=-I ../src
-OBJS=../src/argl.cmo ../src/adef.cmo ../src/iovalue.cmo ../src/buff.cmo ../src/name.cmo ../src/ansel.cmo ../src/mutil.cmo ../src/futil.cmo ../src/dutil.cmo ../src/secure.cmo ../src/btree.cmo ../src/database.cmo ../src/db2.cmo ../src/db2disk.cmo ../src/diff.cmo ../src/outbase.cmo ../src/gwdb.cmo ../src/checkItem.cmo ../src/calendar.cmo ../src/lock.cmo ../src/progrBar.cmo ../src/consang.cmo ../src/consangAll.cmo ../src/check.cmo ged2gwb.cmo
+OBJS=../src/argl.cmo ../src/adef.cmo ../src/iovalue.cmo ../src/name.cmo ../src/ansel.cmo ../src/buff.cmo ../src/gutil.cmo ../src/btree.cmo ../src/secure.cmo ../src/iobase.cmo ../src/calendar.cmo ../src/lock.cmo ../src/consang.cmo ../src/consangAll.cmo ../src/check.cmo ged2gwb.cmo
 
 all:: out
 
@@ -20,12 +20,12 @@ clean::
 	$(RM) ged2gwb
 
 ged2gwb.out: $(OBJS)
-	$(OCAMLC) -custom $(STATIC) $(OCAMLD) unix.cma $(LIBUNIX) -I $(CAMLP5D) gramlib.cma $(OBJS) -o ged2gwb.out
+	$(OCAMLC) -custom $(STATIC) $(OCAMLD) unix.cma $(LIBUNIX) $(CAMLP4D)/gramlib.cma $(OBJS) -o ged2gwb.out
 
 ged2gwb.opt: $(OBJS:.cmo=.cmx)
-	$(OCAMLOPT) $(STATIC) unix.cmxa $(LIBUNIX) -I $(CAMLP5D) gramlib.cmxa $(OBJS:.cmo=.cmx) -o ged2gwb.opt
+	$(OCAMLOPT) $(STATIC) unix.cmxa $(LIBUNIX) $(CAMLP4D)/gramlib.cmxa $(OBJS:.cmo=.cmx) -o ged2gwb.opt
 
 depend:
-	TOP=.. ../tools/camlp5_depend.sh $(OCAMLI) *.ml* > .depend
+	TOP=.. ../tools/camlp4_depend.sh $(OCAMLI) *.ml* > .depend
 
 include .depend
