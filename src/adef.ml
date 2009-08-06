@@ -1,5 +1,5 @@
-(* $Id: adef.ml,v 4.4 2004/12/14 09:30:10 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: adef.ml,v 5.6 2007/02/21 18:14:01 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
 type iper = int;
 type ifam = int;
@@ -10,6 +10,8 @@ value float_of_fix x = float x /. 1000000.0;
 value fix_of_float x = truncate (x *. 1000000.0 +. 0.5);
 external fix : int -> fix = "%identity";
 external fix_repr : fix -> int = "%identity";
+
+value no_consang = fix (-1);
 
 external int_of_iper : iper -> int = "%identity";
 external iper_of_int : int -> iper = "%identity";
@@ -54,7 +56,7 @@ value compress d =
     [ Sure | About | Maybe | Before | After ->
         d.day >= 0 && d.month >= 0 && d.year > 0 && d.year < 2500 &&
         d.delta = 0
-    | _ -> False ]
+    | OrYear _ | YearInt _ -> False ]
   in
   if simple then
     let p =
@@ -63,7 +65,7 @@ value compress d =
       | Maybe -> 2
       | Before -> 3
       | After -> 4
-      | _ -> 0 ]
+      | Sure | OrYear _ | YearInt _ -> 0 ]
     in
     Some (((p * 32 + d.day) * 13 + d.month) * 2500 + d.year)
   else None
@@ -126,10 +128,10 @@ value codate_None = codate_of_od None;
 exception Request_failure of string;
 
 type gen_couple 'person =
-  { father : mutable 'person;
-    mother : mutable 'person }
+  { father : 'person;
+    mother : 'person }
 and gen_parents 'person =
-  { parent : mutable (array 'person) }
+  { parent : array 'person }
 ;
 
 value father cpl =
@@ -145,14 +147,6 @@ value parent parent = {father = parent.(0); mother = parent.(1)};
 value parent_array cpl =
   if Obj.size (Obj.repr cpl) = 2 then [| cpl.father; cpl.mother |]
   else (Obj.magic cpl).parent
-;
-value set_father cpl father =
-  if Obj.size (Obj.repr cpl) = 2 then cpl.father := father
-  else (Obj.magic cpl).parent.(0) := father
-;
-value set_mother cpl mother =
-  if Obj.size (Obj.repr cpl) = 2 then cpl.mother := mother
-  else (Obj.magic cpl).parent.(1) := mother
 ;
 
 value multi_couple father mother : gen_couple 'person =

@@ -1,8 +1,9 @@
-(* $Id: date.mli,v 4.3 2004/12/14 09:30:11 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: date.mli,v 5.3 2007/01/19 01:53:16 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
-open Def;
 open Config;
+open Def;
+open Gwdb;
 
 value code_dmy : config -> dmy -> string;
 value string_of_ondate : config -> date -> string;
@@ -15,3 +16,5 @@ value short_marriage_date_text :
 value print_dates : config -> base -> person -> unit;
 value print_calendar : config -> base -> unit;
 value get_birth_death_date : person -> (option date * option date * bool);
+
+value before_date : dmy -> dmy -> bool;

@@ -1,6 +1,6 @@
 (* camlp4r ./q_codes.cmo *)
-(* $Id: iovalue.ml,v 4.3 2004/12/14 09:30:13 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: iovalue.ml,v 5.7 2007/02/18 19:26:34 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
 value string_tag = Obj.tag (Obj.repr "a");
 value float_tag = Obj.tag (Obj.repr 3.5);
@@ -56,7 +56,7 @@ value rec input_loop ifuns ic =
     | code -> failwith (Printf.sprintf "input bad code 0x%x" code) ]
 and input_block ifuns ic tag size =
   let v =
-    if tag == 0 then Obj.magic (Array.create size (Obj.magic 0))
+    if tag = 0 then Obj.magic (Array.create size (Obj.magic 0))
     else Obj.new_block tag size
   in
   do {
@@ -85,6 +85,28 @@ type out_funs 'a =
     output : 'a -> string -> int -> int -> unit }
 ;
 
+value size_32 = ref 0;
+value size_64 = ref 0;
+
+value gen_output_block_header ofuns oc tag size =
+  do {
+    if tag < 16 && size < 8 then
+      ofuns.output_byte oc (<<PREFIX_SMALL_BLOCK>> + tag + size lsl 4)
+    else do {
+      ofuns.output_byte oc <<CODE_BLOCK32>>;
+      ofuns.output_byte oc (size lsr 14 land 0xFF);
+      ofuns.output_byte oc (size lsr 6 land 0xFF);
+      ofuns.output_byte oc (size lsl 2 land 0xFF);
+      ofuns.output_byte oc (size lsl 10 land 0xFF + tag);
+    };
+    if size = 0 then ()
+    else do {
+      size_32.val := size_32.val + 1 + size;
+      size_64.val := size_64.val + 1 + size;
+    }
+  }
+;
+
 value rec output_loop ofuns oc x =
   if not (Obj.is_block x) then
     if Obj.magic x >= 0 && Obj.magic x < 0x40 then
@@ -103,8 +125,8 @@ value rec output_loop ofuns oc x =
       ofuns.output_binary_int oc (Obj.magic x);
     }
   else
-    if Obj.tag x == fun_tag then failwith "Iovalue.output <fun>"
-    else if Obj.tag x == string_tag then do {
+    if Obj.tag x = fun_tag then failwith "Iovalue.output <fun>"
+    else if Obj.tag x = string_tag then do {
       let len = String.length (Obj.magic x) in
       if len < 0x20 then
         ofuns.output_byte oc (<<PREFIX_SMALL_STRING>> + len)
@@ -117,17 +139,13 @@ value rec output_loop ofuns oc x =
         ofuns.output_binary_int oc len;
       };
       ofuns.output oc (Obj.magic x) 0 len;
+      size_32.val := size_32.val + 1 + (len + 4) / 4;
+      size_64.val := size_64.val + 1 + (len + 8) / 8;
     }
-    else if Obj.tag x == float_tag then
+    else if Obj.tag x = float_tag then
       failwith "Iovalue.output: floats not implemented"
     else do {
-      if Obj.tag x < 16 && Obj.size x < 8 then
-        ofuns.output_byte oc
-          (<<PREFIX_SMALL_BLOCK>> + Obj.tag x + Obj.size x lsl 4)
-      else do {
-        ofuns.output_byte oc <<CODE_BLOCK32>>;
-        ofuns.output_binary_int oc (Obj.tag x + Obj.size x lsl 10);
-      };
+      gen_output_block_header ofuns oc (Obj.tag x) (Obj.size x);
       for i = 0 to Obj.size x - 1 do {
         output_loop ofuns oc (Obj.field x i);
       };
@@ -142,6 +160,7 @@ value out_channel_funs =
 
 value output oc x = output_loop out_channel_funs oc (Obj.repr x);
 value gen_output ofuns i x = output_loop ofuns i (Obj.repr x);
+value output_block_header = gen_output_block_header out_channel_funs;
 
 (* Size *)
 
@@ -174,7 +193,7 @@ value dput_char c =
   }
 ;
 value rec dput_int i =
-  if i == 0 then ()
+  if i = 0 then ()
   else do {
     dput_char (Char.chr (Char.code '0' + i mod 10));
     dput_int (i / 10);
@@ -206,9 +225,11 @@ value rec digest_loop v =
   if not (Obj.is_block v) then
     let n = (Obj.magic v : int) in
     do { dput_char 'I'; dput_int n }
-  else if Obj.size v == 0 then
+  else if Obj.tag v = Obj.closure_tag then
+    invalid_arg "Iovalue.digest: closure"
+  else if Obj.size v = 0 then
     do { dput_char 'T'; dput_int (Obj.tag v) }
-  else if Obj.tag v == string_tag then do {
+  else if Obj.tag v = string_tag then do {
     let s = (Obj.magic v : string) in
     dput_char 'S'; dput_int (String.length s);
     dput_char '/'; dput_string s;
@@ -219,7 +240,7 @@ value rec digest_loop v =
     digest_fields v 0;
   }
 and digest_fields v i =
-  if i == Obj.size v then ()
+  if i = Obj.size v then ()
   else do { digest_loop (Obj.field v i); digest_fields v (i + 1) }
 ;
 
@@ -230,3 +251,53 @@ value digest v =
     string_code (Digest.substring dbuf.val 0 dlen.val)
   }
 ;
+
+value output_value_header_size = 20;
+value array_header_size arr_len = if arr_len < 8 then 1 else 5;
+
+value output_array_access oc arr_get arr_len pos =
+  loop (pos + output_value_header_size + array_header_size arr_len) 0
+  where rec loop pos i =
+    if i = arr_len then pos
+    else do {
+      output_binary_int oc pos;
+      loop (pos + size (arr_get i)) (i + 1)
+    }
+;
+
+(* *)
+
+type header_pos = (int * int);
+
+value intext_magic_number = [| 0x84; 0x95; 0xA6; 0xBE |];
+
+value create_output_value_header oc = do {
+  (* magic number *)
+  for i = 0 to 3 do { output_byte oc intext_magic_number.(i); };
+  let pos_header = pos_out oc in
+  (* room for block length *)
+  output_binary_int oc 0;
+  (* room for obj counter *)
+  output_binary_int oc 0;
+  (* room for size_32 *)
+  output_binary_int oc 0;
+  (* room for size_64 *)
+  output_binary_int oc 0;
+  size_32.val := 0;
+  size_64.val := 0;
+  (pos_header, pos_out oc)
+};
+
+value patch_output_value_header oc (pos_header, pos_start) = do {
+  let pos_end = pos_out oc in
+  (* block_length *)
+  seek_out oc pos_header;
+  output_binary_int oc (pos_end - pos_start);
+  (* obj counter is zero because no_sharing *)
+  output_binary_int oc 0;
+  (* size_32 *)
+  output_binary_int oc size_32.val;
+  (* size_64 *)
+  output_binary_int oc size_64.val;
+  pos_end;
+};

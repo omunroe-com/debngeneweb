@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN" "http://www.w3.org/TR/REC-html40/loose.dtd">
 <head>
-  <!-- $Id: perso.txt,v 1.2 2004/12/14 10:04:37 ddr Exp $ -->
-  <!-- Copyright (c) 1998-2005 INRIA -->
+  <!-- $Id: perso.txt,v 5.1 2006/01/01 05:35:04 ddr Exp $ -->
+  <!-- Copyright (c) 1998-2006 INRIA -->
   <meta name="ROBOTS" content="NONE">
   <title>
     %if;has_public_name;
@@ -90,10 +90,10 @@ in database
 <td  rowspan="32">
 <!-- Gender symbol -->
 %if;is_male;
-<img src="%image_prefix;/male.gif" width=13 height=13
+<img src="%image_prefix;/male.png" width=13 height=13
  alt="[M/F]0" align=left>
 %elseif;is_female;
-<img src="%image_prefix;/female.gif" width=13 height=13
+<img src="%image_prefix;/female.png" width=13 height=13
  alt="[M/F]1" align=left>
 %end;
 <!-- Gender symbol end -->
@@ -1027,7 +1027,7 @@ in database
 Affichage standard</a>
 p-->
 
-<img src="%image_prefix;/gwlogo.gif"
+<img src="%image_prefix;/gwlogo.png"
  alt=... width=64 height=72 align=right>
 <br>
 %copyright;

@@ -1,174 +1,145 @@
-(* $Id: consangAll.ml,v 4.11 2004/12/14 09:30:11 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: consangAll.ml,v 5.35 2007/02/21 18:14:01 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
 open Def;
-open Gutil;
+open Gwdb;
 
-value no_consang = Adef.fix (-1);
+value designation base p =
+  let first_name = p_first_name base p in
+  let nom = p_surname base p in
+  Mutil.iso_8859_1_of_utf_8
+    (first_name ^ "." ^ string_of_int (get_occ p) ^ " " ^ nom)
+;
 
-value rec clear_descend_consang base mark ifam =
-  let des = doi base ifam in
+value rec clear_descend_consang base cset mark ifam =
+  let des = foi base ifam in
   Array.iter
     (fun ip ->
        if not mark.(Adef.int_of_iper ip) then do {
-         let a = aoi base ip in
-         set_consang a no_consang;
+         cset (Adef.int_of_iper ip) Adef.no_consang;
          mark.(Adef.int_of_iper ip) := True;
-         let u = uoi base ip in
-         Array.iter (clear_descend_consang base mark) u.family
+         let u = poi base ip in
+         Array.iter (clear_descend_consang base cset mark) (get_family u)
        }
        else ())
-    des.children
+    (get_children des)
 ;
 
 value relationship base tab ip1 ip2 =
   fst (Consang.relationship_and_links base tab False ip1 ip2)
 ;
 
-value progr_bar_size = 60;
-value progr_bar_draw_rep = 5;
-value progr_bar_draw = "|/-\\";
-value progr_bar_empty = '.';
-value progr_bar_full = '#';
-
-value progr_bar_draw_len = String.length progr_bar_draw;
-value progr_bar_cnt =
-  progr_bar_size * progr_bar_draw_rep * progr_bar_draw_len
-;
-
-value start_progr_bar () =
-  do {
-    for i = 1 to progr_bar_size do { Printf.eprintf "%c" progr_bar_empty };
-    Printf.eprintf "\013"
-  }
-;
-
-value run_progr_bar cnt max_cnt =
-  do {
-    let already_disp = cnt * progr_bar_size / max_cnt in
-    let to_disp = (cnt + 1) * progr_bar_size / max_cnt in
-    for i = already_disp + 1 to to_disp do {
-      Printf.eprintf "%c" progr_bar_full
-    };
-    let already_disp = cnt * progr_bar_cnt / max_cnt in
-    let to_disp = (cnt + 1) * progr_bar_cnt / max_cnt in
-    if cnt = max_cnt - 1 then Printf.eprintf " \008"
-    else if to_disp > already_disp then
-      let k = to_disp mod progr_bar_draw_len in
-      let k = if k < 0 then progr_bar_draw_len + k else k in
-      Printf.eprintf "%c\008" progr_bar_draw.[k]
-    else ();
-    flush stderr;
-  }
-;
-
-value finish_progr_bar () =
-  do {
-    Printf.eprintf "\n";
-    flush stderr;
-  }
-;
-
 value trace quiet cnt max_cnt =
   do {
-    if quiet then run_progr_bar (max_cnt - cnt) max_cnt
+    if quiet then ProgrBar.run (max_cnt - cnt) max_cnt
     else do {
-      Printf.eprintf "%6d\008\008\008\008\008\008" cnt;
+      Printf.eprintf "%7d\008\008\008\008\008\008\008" cnt;
       flush stderr;
     }
   }
 ;
 
-value compute base from_scratch quiet =
-  let _ = base.data.ascends.array () in
-  let _ = base.data.couples.array () in
-  let tab =
-    Consang.make_relationship_info base (Consang.topological_sort base aoi)
-  in
-  let consang_tab = Array.create base.data.families.len no_consang in
-  let cnt = ref 0 in
-  do {
+value compute base from_scratch quiet = do {
+  let () = load_ascends_array base in
+  let () = load_couples_array base in
+  let (fget, cget, cset, carray) = ascends_array base in
+  try do {
+    let tab =
+      let ts = Consang.topological_sort base poi in
+      Consang.make_relationship_info base ts
+    in
+    let consang_tab = Array.create (nb_of_families base) Adef.no_consang in
+    let cnt = ref 0 in
     if not from_scratch then
-      let mark = Array.create base.data.ascends.len False in
-      match base.func.patched_ascends () with
+      let mark = Array.create (nb_of_persons base) False in
+      match patched_ascends base with
       [ [] -> ()
       | list ->
           List.iter
             (fun ip ->
-               let u = uoi base ip in
-               Array.iter (clear_descend_consang base mark) u.family)
+               let u = poi base ip in
+               Array.iter (clear_descend_consang base cset mark)
+                 (get_family u))
             list ]
     else ();
-    for i = 0 to base.data.ascends.len - 1 do {
-      let a = base.data.ascends.get i in
-      if from_scratch then set_consang a no_consang
-      else
-        match parents a with
-        [ Some ifam -> consang_tab.(Adef.int_of_ifam ifam) := consang a
+    for i = 0 to nb_of_persons base - 1 do {
+      if from_scratch then do {
+        cset i Adef.no_consang;
+        incr cnt;
+      }
+      else do {
+        let cg = cget i in
+        match fget i with
+        [ Some ifam -> consang_tab.(Adef.int_of_ifam ifam) := cg
         | None -> () ];
-      if consang a == no_consang then incr cnt else ()
+        if cg = Adef.no_consang then incr cnt else ()
+      };
     };
     let max_cnt = cnt.val in
     let most = ref None in
     Printf.eprintf "To do: %d persons\n" max_cnt;
     if max_cnt = 0 then ()
-    else if quiet then start_progr_bar ()
+    else if quiet then ProgrBar.start ()
     else Printf.eprintf "Computing consanguinity...";
     flush stderr;
     let running = ref True in
     while running.val do {
       running.val := False;
-      for i = 0 to base.data.ascends.len - 1 do {
-        let a = base.data.ascends.get i in
-        if consang a == no_consang then
-          match parents a with
+      for i = 0 to nb_of_persons base - 1 do {
+        if cget i = Adef.no_consang then
+          match fget i with
           [ Some ifam ->
               let pconsang = consang_tab.(Adef.int_of_ifam ifam) in
-              if pconsang == no_consang then
-                let cpl = coi base ifam in
-                let fath = aoi base (father cpl) in
-                let moth = aoi base (mother cpl) in
-                if consang fath != no_consang &&
-                   consang moth != no_consang then
-                   do {
-                  let consang =
-                    relationship base tab (father cpl) (mother cpl)
-                  in
+              if pconsang = Adef.no_consang then
+                let cpl = foi base ifam in
+                let ifath = get_father cpl in
+                let imoth = get_mother cpl in
+                if cget (Adef.int_of_iper ifath) != Adef.no_consang &&
+                   cget (Adef.int_of_iper imoth) != Adef.no_consang
+                then do {
+                  let consang = relationship base tab ifath imoth in
                   trace quiet cnt.val max_cnt;
                   decr cnt;
-                  set_consang a (Adef.fix_of_float consang);
-                  consang_tab.(Adef.int_of_ifam ifam) := Gutil.consang a;
+                  let cg = Adef.fix_of_float consang in
+                  cset i cg;
+                  consang_tab.(Adef.int_of_ifam ifam) := cg;
                   if not quiet then
                     let better =
                       match most.val with
-                      [ Some m -> Gutil.consang a > Gutil.consang m
+                      [ Some m -> cg > cget m
                       | None -> True ]
                     in
                     if better then do {
                       Printf.eprintf "\nMax consanguinity %g for %s... "
-                        consang (designation base (base.data.persons.get i));
+                        consang
+                        (designation base (poi base (Adef.iper_of_int i)));
                       flush stderr;
-                      most.val := Some a
+                      most.val := Some i
                     }
                     else ()
                   else ()
                 }
                 else running.val := True
               else do {
-                trace quiet cnt.val max_cnt; decr cnt; set_consang a pconsang
+                trace quiet cnt.val max_cnt;
+                decr cnt;
+                cset i pconsang;
               }
           | None ->
               do {
                 trace quiet cnt.val max_cnt;
                 decr cnt;
-                set_consang a (Adef.fix_of_float 0.0)
+                cset i (Adef.fix_of_float 0.0);
               } ]
         else ()
       }
     };
     if max_cnt = 0 then ()
-    else if quiet then finish_progr_bar ()
+    else if quiet then ProgrBar.finish ()
     else Printf.eprintf " done   \n";
     flush stderr;
   }
-;
+  with
+  [ Sys.Break -> do { Printf.eprintf "\n"; flush stderr; () } ];
+  carray
+};

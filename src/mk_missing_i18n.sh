@@ -2,14 +2,14 @@
 #cd (*
 exec ocaml camlp4r.cma $0
 *) ".";
-(* $Id: mk_missing_i18n.sh,v 4.12 2004/01/29 16:34:17 ddr Exp $ *)
+(* $Id: mk_missing_i18n.sh,v 5.3 2006/10/31 14:12:03 ddr Exp $ *)
 
 open Printf;
 
 value languages =
   ["af"; "bg"; "br"; "ca"; "cs"; "da"; "de"; "en"; "eo"; "es"; "et"; "fi";
    "fr"; "he"; "is"; "it"; "lv"; "nl"; "no"; "pl"; "pt"; "pt-br"; "ro"; "ru";
-   "sl"; "sv"; "zh"]
+   "sl"; "sv"(*; "zh": too many missing things, gave up *)]
 ;
 
 value linenum = ref 0;
@@ -55,7 +55,7 @@ value check first lang =
   in
   do {
     linenum.val := 0;
-    let ic_lex = open_in "hd/lang/lexicon.txt" in
+    let ic_lex = open_in "hd/lang/lex_utf8.txt" in
     let ic_i18n = open_in "src/i18n" in
     printf "<h3><a name=%s>%s</h3>\n" lang lang;
     printf "<pre>\n";
@@ -79,7 +79,8 @@ value check first lang =
           printf "    %s\n" line;
           List.iter
             (fun (lang, transl) ->
-               printf "%s:%s\n" lang (if transl = "" then " " else transl))
+               printf "%s:%s\n" lang
+                 (if transl = "" then " ..." else transl))
             list;
           printf "\n";
           has_missing.val := True
@@ -107,18 +108,31 @@ value header lang = printf "<a href=#%s>%s</a>\n" lang lang;
 
 do {
   printf "\
-<head><title>Missing phrases</title></head>
+<head>
+  <title>Missing phrases</title>
+  <meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\">
+</head>
 <body background=\"images/gwback.jpg\">
 <h1>Missing phrases</h1>
+
+<p>
+Address of this page:
+<a href=\"http://www.geneweb.org/missing.utf8.html\">http://www.geneweb.org/missing.utf8.html</a>
+</p>
+
+<p>
 Here are the list of all languages with the missing phrases in the lexicon
 of the current version of <b><font color=#2f6400>GeneWeb</font></b>. The
 missing entries are displayed together with their English and French
 translations.
+</p>
 <p>
 If you want to collaborate, you can <a
 href=\"../email.html\">send me</a>
 the translations in
 the given language if you know it. Thanks.
+</p>
+
 <p align=center>
 <tt>
 ";

@@ -1,5 +1,5 @@
-(* $Id: adef.mli,v 4.4 2004/12/14 09:30:10 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: adef.mli,v 5.6 2007/02/21 18:14:01 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
 type iper = 'a;
 type ifam = 'a;
@@ -32,6 +32,8 @@ value fix_of_float : float -> fix;
 external fix : int -> fix = "%identity";
 external fix_repr : fix -> int = "%identity";
 
+value no_consang : fix;
+
 value date_of_cdate : cdate -> date;
 value cdate_of_date : date -> cdate;
 
@@ -53,9 +55,6 @@ value mother : gen_couple 'a -> 'a;
 value couple : 'a -> 'a -> gen_couple 'a;
 value parent : array 'a -> gen_couple 'a;
 value parent_array : gen_couple 'a -> array 'a;
-
-value set_father : gen_couple 'a -> 'a -> unit;
-value set_mother : gen_couple 'a -> 'a -> unit;
 
 value multi_couple : 'a -> 'a -> gen_couple 'a;
 value multi_parent : array 'a -> gen_couple 'a;

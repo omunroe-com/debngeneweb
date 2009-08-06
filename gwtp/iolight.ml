@@ -1,9 +1,17 @@
-(* $Id: iolight.ml,v 4.5 2004/12/14 09:30:09 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: iolight.ml,v 5.13 2007/01/19 01:53:16 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
+open Dbdisk;
 open Def;
 
-value magic_gwb = "GnWb001y";
+type person = dsk_person;
+type ascend = dsk_ascend;
+type union = dsk_union;
+type family = dsk_family;
+type couple = dsk_couple;
+type descend = dsk_descend;
+
+value magic_gwb = "GnWb0020";
 
 value check_magic =
   let b = String.create (String.length magic_gwb) in
@@ -52,29 +60,43 @@ value apply_patches tab plist plen =
   }
 ;
 
-value make_cache ic shift array_pos patches len name =
+value value_header_size = 20;
+value array_header_size len = if len < 8 then 1 else 5;
+
+(* to turn around lack of header in some output valued arrays version 4.10 *)
+value input_4_10_array ic pos len =
+  do {
+    Printf.eprintf "*** recovering 4.10 array...\n";
+    flush stderr;
+    seek_in ic (pos + value_header_size + array_header_size len);
+    Array.init len (fun _ -> Iovalue.input ic)
+  }
+;
+
+value make_record_access ic shift array_pos patches len name =
   let tab = ref None in
-  let r =
-    {array = fun []; get = fun []; len = patch_len len patches.val;
-     clear_array = fun _ -> tab.val := None}
-  in
-  let array () =
+  let rec array () =
     match tab.val with
     [ Some x -> x
-    | None ->
-        do {
-          Printf.eprintf "*** read %s\n" name;
-          flush stderr;
-          do {
-            seek_in ic array_pos;
-            let t = apply_patches (input_value ic) patches.val r.len in
-            tab.val := Some t;
-            t
-          }
-        } ]
+    | None -> do {
+        Printf.eprintf "*** read %s\n" name;
+        flush stderr;
+        seek_in ic array_pos;
+        let v =
+          try input_value ic with
+          [ Failure _ -> input_4_10_array ic array_pos len ]
+        in
+        let t = apply_patches v patches.val r.len in
+        tab.val := Some t;
+        t
+      } ]
+  and r =
+    {load_array () = let _ = array () in (); get i = (array ()).(i);
+     set i v = (array ()).(i) := v; len = patch_len len patches.val;
+     output_array oc = Mutil.output_value_no_sharing oc (array () : array _);
+     clear_array () = tab.val := None}
   in
-  let gen_get i = (r.array ()).(i) in
-  do { r.array := array; r.get := gen_get; r }
+  r
 ;
 
 value input_patches bname =
@@ -113,60 +135,76 @@ value input bname =
   let norigin_file = input_value ic in
   let shift = 0 in
   let persons =
-    make_cache ic shift persons_array_pos patches.p_person persons_len
+    make_record_access ic shift persons_array_pos patches.p_person persons_len
       "persons"
   in
   let shift = shift + persons_len * Iovalue.sizeof_long in
   let ascends =
-    make_cache ic shift ascends_array_pos patches.p_ascend persons_len
+    make_record_access ic shift ascends_array_pos patches.p_ascend persons_len
       "ascends"
   in
   let shift = shift + persons_len * Iovalue.sizeof_long in
   let unions =
-    make_cache ic shift unions_array_pos patches.p_union persons_len "unions"
+    make_record_access ic shift unions_array_pos patches.p_union persons_len
+      "unions"
   in
   let shift = shift + persons_len * Iovalue.sizeof_long in
   let families =
-    make_cache ic shift families_array_pos patches.p_family families_len
-      "families"
+    make_record_access ic shift families_array_pos patches.p_family
+      families_len "families"
   in
   let shift = shift + families_len * Iovalue.sizeof_long in
   let couples =
-    make_cache ic shift couples_array_pos patches.p_couple families_len
+    make_record_access ic shift couples_array_pos patches.p_couple families_len
       "couples"
   in
   let shift = shift + families_len * Iovalue.sizeof_long in
   let descends =
-    make_cache ic shift descends_array_pos patches.p_descend families_len
-      "descends"
+    make_record_access ic shift descends_array_pos patches.p_descend
+      families_len "descends"
   in
   let shift = shift + families_len * Iovalue.sizeof_long in
   let strings =
-    make_cache ic shift strings_array_pos patches.p_string strings_len
+    make_record_access ic shift strings_array_pos patches.p_string strings_len
       "strings"
   in
   let cleanup () = close_in ic in
-  let read_notes mlen =
+  let read_notes fnotes rn_mode =
+    let fname =
+      if fnotes = "" then "notes"
+      else Filename.concat "notes_d" (fnotes ^ ".txt")
+    in
     match
-      try Some (open_in (Filename.concat bname "notes")) with
+      try Some (Secure.open_in (Filename.concat bname fname)) with
       [ Sys_error _ -> None ]
     with
-    [ Some ic ->
-        let len = ref 0 in
-        do {
-          try
-            while mlen = 0 || len.val < mlen do {
-              len.val := Buff.store len.val (input_char ic)
-            }
-          with
-          [ End_of_file -> () ];
-          close_in ic;
-          Buff.get len.val
-        }
+    [ Some ic -> do {
+        let str =
+          match rn_mode with
+          [ RnDeg -> if in_channel_length ic = 0 then "" else " "
+          | Rn1Ln -> try input_line ic with [ End_of_file -> "" ]
+          | RnAll ->
+              loop 0 where rec loop len =
+                match
+                  try Some (input_char ic) with [ End_of_file -> None ]
+                with
+                [ Some c -> loop (Buff.store len c)
+                | _ -> Buff.get len ] ]
+        in
+        close_in ic;
+        str
+      }
     | None -> "" ]
   in
-  let commit_notes s =
-    let fname = Filename.concat bname "notes" in
+  let commit_notes fnotes s =
+    let fname =
+      if fnotes = "" then "notes"
+      else do {
+        try Unix.mkdir (Filename.concat bname "notes_d") 0o755 with _ -> ();
+        Filename.concat "notes_d" (fnotes ^ ".txt")
+      }
+    in
+    let fname = Filename.concat bname fname in
     do {
       try Sys.remove (fname ^ "~") with [ Sys_error _ -> () ];
       try Sys.rename fname (fname ^ "~") with _ -> ();
@@ -176,23 +214,26 @@ value input bname =
       }
     }
   in
-  let bnotes = {nread = read_notes; norigin_file = norigin_file} in
+  let bnotes =
+    {nread = read_notes; norigin_file = norigin_file; efiles _ = []}
+  in
   let base_data =
     {persons = persons; ascends = ascends; unions = unions;
      visible = { v_write = fun []; v_get = fun [] };
      families = families; couples = couples; descends = descends;
-     strings = strings; bnotes = bnotes}
+     strings = strings; particles = []; bnotes = bnotes; bdir = bname}
   in
   let base_func =
-    {persons_of_name = fun []; strings_of_fsname = fun [];
-     index_of_string = fun [];
+    {person_of_key = fun []; persons_of_name = fun [];
+     strings_of_fsname = fun [];
      persons_of_surname = {find = fun []; cursor = fun []; next = fun []};
      persons_of_first_name = {find = fun []; cursor = fun []; next = fun []};
      patch_person = fun []; patch_ascend = fun [];
      patch_union = fun []; patch_family = fun []; patch_couple = fun [];
-     patch_descend = fun []; patch_string = fun []; patch_name = fun [];
-     patched_ascends = fun []; commit_patches = fun [];
-     commit_notes = commit_notes; cleanup = cleanup}
+     patch_descend = fun []; patch_name = fun []; insert_string = fun [];
+     commit_patches = fun []; commit_notes = commit_notes;
+     patched_ascends = fun []; is_patched_person _ = False;
+     cleanup = cleanup}
   in
   {data = base_data; func = base_func}
 ;

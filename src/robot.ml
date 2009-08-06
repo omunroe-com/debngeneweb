@@ -1,17 +1,28 @@
 (* camlp4r *)
-(* $Id: robot.ml,v 4.13 2004/12/14 09:30:17 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: robot.ml,v 5.16 2007/01/19 01:53:17 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
+open Config;
 open Util;
 open Printf;
 
-value magic_robot = "GWRB0002";
+value magic_robot = "GWRB0007";
 
 module W = Map.Make (struct type t = string; value compare = compare; end);
 
+type norfriwiz = [ Normal | Friend of string | Wizard of string ];
+
+type who =
+  { acc_times : list float;
+    oldest_time : float;
+    nb_connect : int;
+    nbase : string;
+    utype : norfriwiz }
+;
+
 type excl =
   { excl : mutable list (string * ref int);
-    who : mutable W.t (list float * float * int);
+    who : mutable W.t who;
     max_conn : mutable (int * string) }
 ;
 
@@ -43,8 +54,8 @@ value purge_who tm xcl sec =
   let sec = float sec in
   let to_remove =
     W.fold
-      (fun k (v, _, _) l ->
-         match v with
+      (fun k who l ->
+         match who.acc_times with
          [ [tm0 :: _] -> if tm -. tm0 > sec then [k :: l] else l
          | [] -> [k :: l] ])
       xcl.who []
@@ -91,14 +102,19 @@ value robot_excl () =
 
 value min_disp_req = ref 6;
 
-value check oc tm from max_call sec cgi suicide =
+value check oc tm from max_call sec conf suicide =
+  let nfw =
+    if conf.wizard then Wizard conf.user
+    else if conf.friend then Friend conf.user
+    else Normal
+  in
   let (xcl, fname) = robot_excl () in
   let refused =
     match try Some (List.assoc from xcl.excl) with [ Not_found -> None ] with
     [ Some att ->
         do {
           incr att;
-          if att.val mod max_call == 0 then do {
+          if att.val mod max_call = 0 then do {
             fprintf_date oc (Unix.localtime tm);
             fprintf oc "\n";
             fprintf oc "  From: %s\n" from;
@@ -112,8 +128,8 @@ value check oc tm from max_call sec cgi suicide =
     | None ->
         do {
           purge_who tm xcl sec;
-          let (r, _, _) =
-            try W.find from xcl.who with [ Not_found -> ([], tm, 0) ]
+          let r =
+            try (W.find from xcl.who).acc_times with [ Not_found -> [] ]
           in
           let (cnt, tml, tm0) =
             let sec = float sec in
@@ -130,7 +146,11 @@ value check oc tm from max_call sec cgi suicide =
             count 1 [] r
           in
           let r = List.rev tml in
-          xcl.who := W.add from ([tm :: r], tm0, cnt) xcl.who;
+          xcl.who :=
+            W.add from
+              {acc_times = [tm :: r]; oldest_time = tm0; nb_connect = cnt;
+               nbase = conf.bname; utype = nfw}
+              xcl.who;
           let refused =
             if suicide || cnt > max_call then do {
               fprintf oc "--- %s is a robot" from;
@@ -163,7 +183,9 @@ value check oc tm from max_call sec cgi suicide =
           else ();
           let (list, nconn) =
             W.fold
-              (fun k (_, tm, nb) (list, nconn) ->
+              (fun k w (list, nconn) ->
+                 let tm = w.oldest_time in
+                 let nb = w.nb_connect in
                  do {
                    if nb > fst xcl.max_conn then xcl.max_conn := (nb, k)
                    else ();
@@ -197,6 +219,27 @@ value check oc tm from max_call sec cgi suicide =
     with
     [ Some oc -> do { output_excl oc xcl; close_out oc; }
     | None -> () ];
-    if refused then robot_error cgi from max_call sec else ()
+    if refused then robot_error conf.cgi from max_call sec else ();
+    W.fold
+      (fun _ w (c, cw, cf, wl) ->
+         if w.nbase = conf.bname && w.nbase <> "" then
+           match w.utype with
+           [ Wizard n ->
+               let at = List.hd w.acc_times in
+               if List.mem_assoc n wl then
+                 let old_at = List.assoc n wl in
+                 if at > old_at then
+                   let wl = List.remove_assoc n wl in
+                   (c, cw, cf, [(n, at) :: wl])
+                 else (c, cw, cf, wl)
+               else (c + 1, cw + 1, cf, [(n, at) :: wl])
+           | Friend _ ->
+               if w.nb_connect > 2 then (c + 1, cw, cf + 1, wl)
+               else (c, cw, cf, wl)
+           | Normal ->
+               if w.nb_connect > 2 then (c + 1, cw, cf, wl)
+               else (c, cw, cf, wl) ]
+         else (c, cw, cf, wl))
+      xcl.who (0, 0, 0, [])
   }
 ;

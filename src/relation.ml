@@ -1,222 +1,17 @@
 (* camlp4r ./pa_html.cmo *)
-(* $Id: relation.ml,v 4.50 2004/12/14 09:30:17 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: relation.ml,v 5.18 2007/01/19 01:53:16 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
+DEFINE OLD;
+
+open Config;
 open Def;
 open Gutil;
-open Config;
+open Gwdb;
+open Hutil;
 open Util;
 
 value round_2_dec x = floor (x *. 100.0 +. 0.5) /. 100.0;
-
-value print_with_relation text conf base p r is =
-  fun
-  [ Some ic ->
-      let c = pget conf base ic in
-      if is_hidden c then ()
-      else do {
-        html_li conf;
-        Wserver.wprint "<input type=radio name=select value=%d>\n"
-          (Adef.int_of_iper ic);
-        Wserver.wprint "(%s)\n" (text conf r.r_type is);
-        Wserver.wprint "%s\n" (person_title_text conf base c)
-      }
-  | None -> () ]
-;
-
-value print_with_related conf base p ip =
-  let c = pget conf base ip in
-  if is_hidden c then ()
-  else List.iter
-    (fun r ->
-       do {
-         match r.r_fath with
-         [ Some ip1 when p.cle_index == ip1 ->
-             print_with_relation rchild_type_text conf base p r
-               (index_of_sex c.sex) (Some ip)
-         | _ -> () ];
-         match r.r_moth with
-         [ Some ip1 when p.cle_index == ip1 ->
-             print_with_relation rchild_type_text conf base p r
-               (index_of_sex c.sex) (Some ip)
-         | _ -> () ]
-       })
-    c.rparents
-;
-
-value print_with_witness conf base p fam ip =
-  let w = pget conf base ip in
-  if is_hidden w then ()
-  else do {
-    html_li conf;
-    Wserver.wprint "<input type=radio name=select value=%d>\n"
-      (Adef.int_of_iper ip);
-    Wserver.wprint "(%s)\n"
-      (nominative (transl_nth conf "witness/witnesses" 0));
-    Wserver.wprint "%s\n" (person_title_text conf base w)
-  }
-;
-
-value print_menu conf base p =
-  let auth = authorized_age conf base p in
-  let title h =
-    do {
-      Wserver.wprint "%s " (capitale (transl conf "link between"));
-      Wserver.wprint "%s"
-        (if conf.hide_names && not auth then "x x"
-         else if h then
-           match sou base p.public_name with
-           [ "" -> p_first_name base p ^ " " ^ p_surname base p
-           | n -> n ]
-         else person_text conf base p);
-      Wserver.wprint " %s..." (transl_nth conf "and" 0)
-    }
-  in
-  let is = index_of_sex p.sex in
-  let u = uget conf base p.cle_index in
-  do {
-    header conf title;
-    tag "form" "method=get action=\"%s\"" conf.command begin
-      Util.hidden_env conf;
-      Wserver.wprint "<input type=hidden name=em value=R>\n";
-      wprint_hidden_person conf base "e" p;
-      tag "ul" begin
-        html_li conf;
-        Wserver.wprint "<input type=hidden name=m value=NG>\n";
-        Wserver.wprint "<input type=radio name=select value=input checked>\n";
-        Wserver.wprint "<input name=n size=40 maxlength=200>\n";
-        html_p conf;
-        tag "ul" begin
-          html_li conf;
-          Wserver.wprint "<input type=radio name=t value=PN checked>\n";
-          Wserver.wprint "<em>%s %s</em> %s <em>%s</em> %s <em>%s</em>\n"
-            (transl_nth conf "first name/first names" 0)
-            (transl_nth conf "surname/surnames" 0) (transl conf "or")
-            (transl conf "public name") (transl conf "or")
-            (nominative (transl conf "alias"));
-          match Util.find_sosa_ref conf base with
-          [ Some p ->
-              do {
-                Wserver.wprint "%s " (transl conf "or");
-                Wserver.wprint
-                  (ftransl conf "<em>Sosa number</em> relative to %t")
-                  (fun _ ->
-                     Wserver.wprint "%s"
-                       (referenced_person_title_text conf base p))
-              }
-          | None -> () ];
-          html_li conf;
-          Wserver.wprint "<input type=radio name=t value=P> <em>%s</em>\n"
-            (transl_nth conf "first name/first names" 0);
-          html_li conf;
-          Wserver.wprint "<input type=radio name=t value=N> <em>%s</em>\n"
-            (transl_nth conf "surname/surnames" 0);
-        end;
-        Array.iter
-          (fun ifam ->
-             let fam = foi base ifam in
-             let cpl = coi base ifam in
-             let c = spouse p.cle_index cpl in
-             let c = pget conf base c in
-             if (p_first_name base c <> "?" || p_surname base c <> "?")
-                && not (is_hidden c)
-             then do {
-               html_li conf;
-               Wserver.wprint "<input type=radio name=select value=%d>\n"
-                 (Adef.int_of_iper c.cle_index);
-               Wserver.wprint "%s\n" (person_title_text conf base c)
-             }
-             else ())
-          u.family;
-        List.iter
-          (fun r ->
-             do {
-               print_with_relation relation_type_text conf base p r 0
-                 r.r_fath;
-               print_with_relation relation_type_text conf base p r 1 r.r_moth
-             })
-          p.rparents;
-        List.iter (print_with_related conf base p) p.related;
-        Array.iter
-          (fun ifam ->
-             let fam = foi base ifam in
-             Array.iter (print_with_witness conf base p ifam) fam.witnesses)
-          u.family;
-      end;
-      html_p conf;
-      tag "table" "border=%d width=\"90%%\"" conf.border begin
-        tag "tr" begin
-          tag "td" "align=right" begin
-            Wserver.wprint "%s\n" (capitale (transl conf "long display"));
-            Wserver.wprint "<input type=checkbox name=long value=on>\n";
-          end;
-          tag "td" "align=right" begin
-            Wserver.wprint "%s\n"
-              (capitale (transl_nth conf "image/images" 1));
-            Wserver.wprint "<input type=checkbox name=image value=on>\n";
-          end;
-        end;
-        tag "tr" begin
-          tag "td" "align=right" begin
-            Wserver.wprint "%s\n" (capitale (transl conf "include spouses"));
-            Wserver.wprint "<input type=checkbox name=spouse value=on>\n";
-          end;
-          tag "td" "align=right" begin
-            Wserver.wprint "%s\n"
-              (capitale (transl conf "cancel GeneWeb links"));
-            Wserver.wprint "<input type=checkbox name=cgl value=on>\n";
-          end;
-        end;
-        tag "tr" begin
-          tag "td" "align=right" begin
-            Wserver.wprint "%s\n" (capitale (transl conf "border"));
-            Wserver.wprint "<input name=bd size=1 maxlength=2 value=0>\n";
-          end;
-          tag "td" "align=right" begin
-            Wserver.wprint "\
-<table><tr><td>%s</td>
-<td><input type=radio name=color value=\"\" checked></td>\n"
-              (capitale (transl conf "color"));
-            List.iter
-              (fun c ->
-                 Wserver.wprint "\
-<td bgcolor=%s><input type=radio name=color value=%s></td>\n" c c)
-              ["FFC0C0"; "FFFFC0"; "C0FFC0"; "C0FFFF"; "C0C0FF"; "FFC0FF"];
-            Wserver.wprint "</tr></table>\n";
-          end;
-        end;
-        tag "tr" begin
-          tag "td" "align=right" begin
-            Wserver.wprint "&nbsp;";
-          end;
-          tag "td" "align=right" begin
-            Wserver.wprint "&nbsp;";
-          end;
-        end;
-        tag "tr" "align=left" begin
-          tag "td" "align=center colspan=2" begin
-            Wserver.wprint "<table><tr align=left><td>\n";
-            Wserver.wprint "<input type=radio name=et value=A checked>\n";
-            Wserver.wprint "%s<br>\n" (capitale (transl conf "ancestors"));
-            Wserver.wprint "<input type=radio name=et value=M>\n";
-            Wserver.wprint "%s<br>\n"
-              (capitale (transl conf "relationships by marriage"));
-            Wserver.wprint "<input type=radio name=et value=S>\n";
-            Wserver.wprint "%s<br>\n"
-              (capitale (transl conf "shortest path"));
-            Wserver.wprint "</td></tr></table>\n";
-          end;
-        end;
-        tag "tr" "align=left" begin
-          tag "td" "align=center colspan=2" begin
-            Wserver.wprint "<input type=submit value=\"Ok\">\n";
-          end;
-        end;
-      end;
-    end;
-    trailer conf
-  }
-;
 
 (* find shortest path :
  * parents, siblings, mates and children are at distance 1.
@@ -230,6 +25,7 @@ type famlink =
   | Child ]
 ;
 
+IFDEF OLD THEN declare
 open Dag2html;
 
 type dag_ind 'a =
@@ -294,8 +90,8 @@ value add_missing_parents_of_siblings conf base indl =
                     match ind.di_val with
                     [ Some ip ->
                         let ip =
-                          match parents (aget conf base ip) with
-                          [ Some ifam -> father (coi base ifam)
+                          match get_parents (aget conf base ip) with
+                          [ Some ifam -> get_father (foi base ifam)
                           | None -> assert False ]
                         in
                         if List.mem ip ipl then ipl else [ip :: ipl]
@@ -329,9 +125,9 @@ value dag_fam_list_of_ind_list indl =
   List.fold_left
     (fun faml ind ->
        let faml =
-         if List.memq ind.di_famc faml then faml else [ind.di_famc :: faml]
+         if List.mem ind.di_famc faml then faml else [ind.di_famc :: faml]
        in
-       if List.memq ind.di_fams faml then faml else [ind.di_fams :: faml])
+       if List.mem ind.di_fams faml then faml else [ind.di_fams :: faml])
     [] indl
 ;
 
@@ -369,7 +165,7 @@ value dag_of_ind_dag_list indl =
     indl
 ;
 
-value html_table_of_relation_path_dag conf base elem_txt vbar_txt path =
+value dag_of_relation_path conf base path =
   let indl = dag_ind_list_of_path path in
   let indl = add_missing_parents_of_siblings conf base indl in
   let faml = dag_fam_list_of_ind_list indl in
@@ -384,19 +180,78 @@ value html_table_of_relation_path_dag conf base elem_txt vbar_txt path =
          | Dag.Right _ -> set ])
       Dag.Pset.empty nl
   in
-  let spouse_on =
-    match Util.p_getenv conf.env "spouse" with
-    [ Some "on" -> True
-    | _ -> False ]
-  in
+  (set, d)
+;
+
+value old_print_relationship_dag conf base elem_txt vbar_txt path next_txt =
   let invert =
     match Util.p_getenv conf.env "invert" with
     [ Some "on" -> True
     | _ -> False ]
   in
-  let no_group = p_getenv conf.env "nogroup" = Some "on" in
-  Dag.make_tree_hts conf base elem_txt vbar_txt spouse_on invert no_group set
-    [] d
+  let (set, d) = dag_of_relation_path conf base path in
+  let page_title = capitale (transl conf "relationship") in
+  let hts = Dag.make_tree_hts conf base elem_txt vbar_txt invert set [] d in
+  Dag.print_slices_menu_or_dag_page conf base page_title hts next_txt
+;
+end ELSE declare 
+value old_print_relationship_dag conf base elem_txt vbar_txt path next_txt =
+  incorrect_request conf
+;
+end END;
+
+value add_common_parent base ip1 ip2 set =
+  let a1 = poi base ip1 in
+  let a2 = poi base ip2 in
+  match (get_parents a1, get_parents a2) with
+  [ (Some ifam1, Some ifam2) ->
+      let cpl1 = foi base ifam1 in
+      let cpl2 = foi base ifam2 in
+      if get_father cpl1 = get_father cpl2 then
+        Dag.Pset.add (get_father cpl1) set
+      else if get_mother cpl1 = get_mother cpl2 then
+        Dag.Pset.add (get_mother cpl1) set
+      else set
+  | _ -> set ]
+;
+
+value ind_set_of_relation_path conf base path =
+  let (set, _) =
+    List.fold_left
+      (fun (set, prev_ip) (ip, fl) ->
+         let set =
+           match fl with
+           [ Parent | Child | Self | Mate -> set
+           | Sibling | HalfSibling ->
+               match prev_ip with
+               [ Some prev_ip -> add_common_parent base prev_ip ip set
+               | None -> set ] ]
+         in
+         (Dag.Pset.add ip set, Some ip))
+      (Dag.Pset.empty, None) (List.rev path)
+  in
+  set
+;
+
+value print_relationship_dag conf base elem_txt vbar_txt path next_txt =
+  if p_getenv conf.env "new" <> Some "on" then 
+    old_print_relationship_dag conf base elem_txt vbar_txt path next_txt
+  else
+  (* This new version is bugged: when displaying e.g. a relationship
+     between a couple passing through other people, the couple family
+     link is added in the dag. Result: the two persons may be displayed
+     in the middle of the dag instead of its ends. Solution to be
+     found. In the mean time, the "old" version is displayed by
+     default (roglo 17 Sep 2005) *)
+  let invert =
+    match Util.p_getenv conf.env "invert" with
+    [ Some "on" -> True
+    | _ -> False ]
+  in
+  let set = ind_set_of_relation_path conf base path in
+  let page_title = capitale (transl conf "relationship") in
+  Dag.make_and_print_dag conf base elem_txt vbar_txt invert set [] page_title
+    next_txt
 ;
 
 value next_relation_link_txt conf ip1 ip2 excl_faml =
@@ -408,17 +263,17 @@ value next_relation_link_txt conf ip1 ip2 excl_faml =
   let color =
     match p_getenv conf.env "color" with
     [ None -> ""
-    | Some x -> ";color=" ^ x ]
+    | Some x -> ";color=" ^ code_varenv x ]
   in
   let (sl, _) =
     List.fold_left
       (fun (sl, i) ifam ->
          ([";ef"; string_of_int i; "=";
            string_of_int (Adef.int_of_ifam ifam) :: sl], i - 1))
-      (["\""], List.length excl_faml - 1) excl_faml
+      ([], List.length excl_faml - 1) excl_faml
   in
   let sl =
-    ["href=\""; commd conf; "em=R;ei=";
+    [commd conf; "em=R;ei=";
      string_of_int (Adef.int_of_iper ip1); ";i=";
      string_of_int (Adef.int_of_iper ip2);
      if p_getenv conf.env "spouse" = Some "on" then ";spouse=on" else "";
@@ -428,26 +283,22 @@ value next_relation_link_txt conf ip1 ip2 excl_faml =
 ;
 
 value print_relation_path conf base ip1 ip2 path ifam excl_faml =
-  if path == [] then ()
-  else do {
-    let elem_txt p =
-      Util.referenced_person_title_text conf base p ^
-        Date.short_dates_text conf base p
+  if path = [] then do {
+    let title _ =
+      Wserver.wprint "%s" (capitale (transl conf "relationship"))
     in
+    header_no_page_title conf title;
+    trailer conf
+  }
+  else
+    let next_txt = next_relation_link_txt conf ip1 ip2 [ifam :: excl_faml] in
+    let elem_txt p = Dag.Item p "" in
     let vbar_txt ip =
       let u = uget conf base ip in
-      let excl_faml = Array.to_list u.family @ excl_faml in
+      let excl_faml = Array.to_list (get_family u) @ excl_faml in
       next_relation_link_txt conf ip1 ip2 excl_faml
     in
-    Wserver.wprint "<p>\n";
-    let hts =
-      html_table_of_relation_path_dag conf base elem_txt vbar_txt path
-    in
-    Dag.print_html_table conf hts;
-    Wserver.wprint "<p>\n";
-    Wserver.wprint "<a %s>&gt;&gt;</a>\n"
-      (next_relation_link_txt conf ip1 ip2 [ifam :: excl_faml])
-  }
+    print_relationship_dag conf base elem_txt vbar_txt path next_txt
 ;
 
 type node =
@@ -456,8 +307,8 @@ type node =
 ;
 
 value get_shortest_path_relation conf base ip1 ip2 excl_faml =
-  let mark_per = Array.create base.data.persons.len NotVisited in
-  let mark_fam = Array.create base.data.families.len False in
+  let mark_per = Array.create (nb_of_persons base) NotVisited in
+  let mark_fam = Array.create (nb_of_families base) False in
   do {
     List.iter
       (fun i ->
@@ -467,16 +318,16 @@ value get_shortest_path_relation conf base ip1 ip2 excl_faml =
     let parse_fam ifam =
       if mark_fam.(Adef.int_of_ifam ifam) then []
       else do {
-        let cpl = coi base ifam in
+        let fam = foi base ifam in
         mark_fam.(Adef.int_of_ifam ifam) := True;
         let result =
-          [((father cpl), Parent, ifam); ((mother cpl), Parent, ifam)]
+          [(get_father fam, Parent, ifam); (get_mother fam, Parent, ifam)]
         in
         let result =
           result @
             List.fold_right
               (fun child children -> [(child, Sibling, ifam) :: children])
-              (Array.to_list (doi base ifam).children) []
+              (Array.to_list (get_children (foi base ifam))) []
         in
         let result =
           result @
@@ -488,8 +339,9 @@ value get_shortest_path_relation conf base ip1 ip2 excl_faml =
                    List.fold_right
                      (fun child children ->
                         [(child, HalfSibling, fam) :: children])
-                     (Array.to_list (doi base fam).children) children)
-              (Array.to_list (uget conf base (father cpl)).family) []
+                     (Array.to_list (get_children (foi base fam))) children)
+              (Array.to_list (get_family (uget conf base (get_father fam))))
+              []
         in
         let result =
           result @
@@ -501,8 +353,9 @@ value get_shortest_path_relation conf base ip1 ip2 excl_faml =
                    List.fold_right
                      (fun child children ->
                         [(child, HalfSibling, fam) :: children])
-                     (Array.to_list (doi base fam).children) children)
-              (Array.to_list (uget conf base (mother cpl)).family) []
+                     (Array.to_list (get_children (foi base fam))) children)
+              (Array.to_list (get_family (uget conf base (get_mother fam))))
+              []
         in
         result
       }
@@ -513,19 +366,20 @@ value get_shortest_path_relation conf base ip1 ip2 excl_faml =
           (fun ifam nb ->
              if mark_fam.(Adef.int_of_ifam ifam) then nb
              else do {
-               let cpl = coi base ifam in
+               let fam = foi base ifam in
                mark_fam.(Adef.int_of_ifam ifam) := True;
                List.fold_right
                  (fun child children -> [(child, Child, ifam) :: children])
-                 (Array.to_list (doi base ifam).children)
-                 [((father cpl), Mate, ifam); ((mother cpl), Mate, ifam)] @
+                 (Array.to_list (get_children fam))
+                 [(get_father fam, Mate, ifam);
+                  (get_mother fam, Mate, ifam)] @
                  nb
              })
-          (Array.to_list (uget conf base iper).family) []
+          (Array.to_list (get_family (uget conf base iper))) []
       in
       let result =
         result @
-          (match parents (aget conf base iper) with
+          (match get_parents (aget conf base iper) with
            [ Some ifam -> parse_fam ifam
            | _ -> [] ])
       in
@@ -565,7 +419,7 @@ value get_shortest_path_relation conf base ip1 ip2 excl_faml =
                         loop2 [iper :: result] neighbourslist
                       }
                   | Visited (s, v, f) ->
-                      if s == source then loop2 result neighbourslist
+                      if s = source then loop2 result neighbourslist
                       else
                         let p1 = make_path [(iper, fl)] vertex in
                         let p2 = make_path [(iper, f)] v in
@@ -580,7 +434,7 @@ value get_shortest_path_relation conf base ip1 ip2 excl_faml =
         | [] -> Right newvertexlist ]
     in
     let rec width_search queue1 visited1 queue2 visited2 =
-      if queue1 == [] || queue2 == [] then None
+      if queue1 = [] || queue2 = [] then None
       else if visited1 > visited2 then
         let visited2 = visited2 + List.length queue2 in
         match one_step_further False queue2 with
@@ -599,7 +453,9 @@ value get_shortest_path_relation conf base ip1 ip2 excl_faml =
 ;
 
 value print_shortest_path conf base p1 p2 =
-  if p1.cle_index = p2.cle_index then do {
+  let ip1 = get_key_index p1 in
+  let ip2 = get_key_index p2 in
+  if ip1 = ip2 then do {
     let title _ =
       Wserver.wprint "%s" (capitale (transl conf "relationship"))
     in
@@ -629,9 +485,10 @@ value print_shortest_path conf base p1 p2 =
                   [ Some n -> n
                   | None -> 0 ]
                 in
-                let u = uget conf base p.cle_index in
+                let u = uget conf base (get_key_index p) in
                 let list =
-                  if n < Array.length u.family then [u.family.(n) :: list]
+                  if n < Array.length (get_family u) then
+                    [(get_family u).(n) :: list]
                   else list
                 in
                 loop list (i + 1)
@@ -640,27 +497,19 @@ value print_shortest_path conf base p1 p2 =
     let title _ =
       Wserver.wprint "%s" (capitale (transl conf "relationship"))
     in
-    let ip1 = p1.cle_index in
-    let ip2 = p2.cle_index in
     match get_shortest_path_relation conf base ip1 ip2 excl_faml with
     [ Some (path, ifam) ->
-        if p_getenv conf.env "slices" = Some "on" then
-          Dag.print_slices_menu conf base None
-        else do {
-          header_no_page_title conf title;
-          print_relation_path conf base ip1 ip2 path ifam excl_faml;
-          trailer conf
-        }
+        print_relation_path conf base ip1 ip2 path ifam excl_faml
     | None ->
         let s1 = gen_person_title_text reference raw_access conf base p1 in
         let s2 = gen_person_title_text reference raw_access conf base p2 in
         do {
           header_no_page_title conf title;
           if excl_faml = [] then do {
-            Wserver.wprint "<center><h1><font color=%s>" conf.highlight;
+            Wserver.wprint "<center><h1><font color=\"%s\">" conf.highlight;
             title False;
             Wserver.wprint "</font></h1></center>\n";
-            Util.print_link_to_welcome conf True;
+            Hutil.print_link_to_welcome conf True;
             Wserver.wprint "%s\n"
               (capitale
                  (cftransl conf "no known relationship link between %s and %s"
@@ -678,15 +527,15 @@ value print_shortest_path conf base p1 p2 =
 
 value nb_fields s =
   loop 1 0 where rec loop cnt i =
-    if i == String.length s then cnt
-    else if s.[i] == '/' then loop (cnt + 1) (i + 1)
+    if i = String.length s then cnt
+    else if s.[i] = '/' then loop (cnt + 1) (i + 1)
     else loop cnt (i + 1)
 ;
 
 value rec belongs_to_branch ip dist =
   fun
   [ [(n, _, ipl) :: lens] ->
-      if n = dist && List.memq ip ipl then True
+      if n = dist && List.mem ip ipl then True
       else belongs_to_branch ip dist lens
   | [] -> False ]
 ;
@@ -710,12 +559,12 @@ value get_piece_of_branch conf base (((reltab, list), x), proj) (len1, len2) =
                   else loop2 ipl
               | [] -> loop1 ifaml ]
             in
-            loop2 (Array.to_list (doi base ifam).children)
+            loop2 (Array.to_list (get_children (foi base ifam)))
         | [] -> [] ]
       in
-      loop1 (Array.to_list (uget conf base ip).family)
+      loop1 (Array.to_list (get_family (uget conf base ip)))
   in
-  loop anc.cle_index x
+  loop (get_key_index anc) x
 ;
 
 value parents_label conf base info =
@@ -726,7 +575,7 @@ value parents_label conf base info =
       let is =
         if nb_fields txt = 2 then
           match get_piece_of_branch conf base info (1, 1) with
-          [ [ip1] -> if (pget conf base ip1).sex = Male then 0 else 1
+          [ [ip1] -> if get_sex (pget conf base ip1) = Male then 0 else 1
           | _ -> (* must be a bug *) 0 ]
         else 0
       in
@@ -736,7 +585,7 @@ value parents_label conf base info =
       let is =
         if nb_fields txt = 2 then
           match get_piece_of_branch conf base info (1, 1) with
-          [ [ip1] -> if (pget conf base ip1).sex = Male then 0 else 1
+          [ [ip1] -> if get_sex (pget conf base ip1) = Male then 0 else 1
           | _ -> (* must be a bug *) 0 ]
         else 0
       in
@@ -763,7 +612,8 @@ value ancestor_label conf base info x sex =
       let is =
         if nb_fields txt = 6 then
           match get_piece_of_branch conf base info (1, 1) with
-          [ [ip1] -> if (pget conf base ip1).sex = Male then is else is + 3
+          [ [ip1] ->
+              if get_sex (pget conf base ip1) = Male then is else is + 3
           | _ -> (* must be a bug *) is ]
         else is
       in
@@ -776,7 +626,8 @@ value ancestor_label conf base info x sex =
       let is =
         if nb_fields txt = 6 then
           match get_piece_of_branch conf base info (1, 1) with
-          [ [ip1] -> if (pget conf base ip1).sex = Male then is else is + 3
+          [ [ip1] ->
+              if get_sex (pget conf base ip1) = Male then is else is + 3
           | _ -> (* must be a bug *) is ]
         else is
       in
@@ -795,7 +646,7 @@ value child_in_law_label conf sex_child sex_parent =
 ;
 
 value descendant_label conf base info x p =
-  let is = index_of_sex p.sex in
+  let is = index_of_sex (get_sex p) in
   match x with
   [ 1 -> transl_nth conf "a son/a daughter/a child" is
   | 2 ->
@@ -804,7 +655,8 @@ value descendant_label conf base info x p =
         if nb_fields txt = 6 then
           let info = (info, fun r -> r.Consang.lens2) in
           match get_piece_of_branch conf base info (1, 1) with
-          [ [ip1] -> if (pget conf base ip1).sex = Male then is else is + 3
+          [ [ip1] ->
+              if get_sex (pget conf base ip1) = Male then is else is + 3
           | _ -> (* must be a bug *) is ]
         else is
       in
@@ -820,9 +672,9 @@ value descendant_label conf base info x p =
           match get_piece_of_branch conf base info (1, 2) with
           [ [ip1; ip2] ->
               let is =
-                if (pget conf base ip1).sex = Male then is else is + 6
+                if get_sex (pget conf base ip1) = Male then is else is + 6
               in
-              if (pget conf base ip2).sex = Male then is else is + 3
+              if get_sex (pget conf base ip2) = Male then is else is + 3
           | _ -> (* must be a bug *) is ]
         else is
       in
@@ -842,7 +694,7 @@ value brother_label conf x sex =
   | 4 -> transl_nth conf "a 3rd cousin" is
   | n ->
       Printf.sprintf (ftransl_nth conf "a %s cousin" is)
-        (transl_nth conf "*nth (cousin)*" (n - 1)) ]
+        (transl_nth conf "nth (cousin)" (n - 1)) ]
 ;
 
 value half_brother_label conf sex =
@@ -858,15 +710,16 @@ value brother_in_law_label conf brother_sex self_sex =
 ;
 
 value uncle_label conf base info x p =
-  let is = index_of_sex p.sex in
+  let is = index_of_sex (get_sex p) in
   match x with
   [ 1 ->
       let txt = transl conf "an uncle/an aunt" in
       let is =
-        if nb_fields txt == 4 then
+        if nb_fields txt = 4 then
           let info = (info, fun r -> r.Consang.lens1) in
           match get_piece_of_branch conf base info (1, 1) with
-          [ [ip1] -> if (pget conf base ip1).sex = Male then is else is + 2
+          [ [ip1] ->
+              if get_sex (pget conf base ip1) = Male then is else is + 2
           | _ -> (* must be a bug *) is ]
         else is
       in
@@ -874,10 +727,11 @@ value uncle_label conf base info x p =
   | 2 ->
       let txt = transl conf "a great-uncle/a great-aunt" in
       let is =
-        if nb_fields txt == 4 then
+        if nb_fields txt = 4 then
           let info = (info, fun r -> r.Consang.lens1) in
           match get_piece_of_branch conf base info (1, 1) with
-          [ [ip1] -> if (pget conf base ip1).sex = Male then is else is + 2
+          [ [ip1] ->
+              if get_sex (pget conf base ip1) = Male then is else is + 2
           | _ -> (* must be a bug *) is ]
         else is
       in
@@ -889,7 +743,7 @@ value uncle_label conf base info x p =
 ;
 
 value nephew_label conf x p =
-  let is = index_of_sex p.sex in
+  let is = index_of_sex (get_sex p) in
   match x with
   [ 1 -> transl_nth conf "a nephew/a niece" is
   | 2 -> transl_nth conf "a great-nephew/a great-niece" is
@@ -900,7 +754,8 @@ value nephew_label conf x p =
 ;
 
 value same_parents conf base p1 p2 =
-  parents (aget conf base p1.cle_index) = parents (aget conf base p2.cle_index)
+  get_parents (aget conf base (get_key_index p1)) =
+  get_parents (aget conf base (get_key_index p2))
 ;
 
 value print_link_name conf base n p1 p2 sol =
@@ -928,30 +783,33 @@ value print_link_name conf base n p1 p2 sol =
       in
       let sp1 = pp1 <> None in
       let sp2 = pp2 <> None in
-      if x2 == 0 then
-        if sp1 && x1 == 1 then
-          (parent_in_law_label conf ini_p1.sex ini_p2.sex, False, sp2)
+      if x2 = 0 then
+        if sp1 && x1 = 1 then
+          (parent_in_law_label conf (get_sex ini_p1) (get_sex ini_p2),
+           False, sp2)
         else
           let info = ((info, x1), fun r -> r.Consang.lens1) in
-          (ancestor_label conf base info x1 p2.sex, sp1, sp2)
-      else if x1 == 0 then
-        if sp2 && x2 == 1 then
-          (child_in_law_label conf ini_p2.sex ini_p1.sex, sp1, False)
+          (ancestor_label conf base info x1 (get_sex p2), sp1, sp2)
+      else if x1 = 0 then
+        if sp2 && x2 = 1 then
+          (child_in_law_label conf (get_sex ini_p2) (get_sex ini_p1), sp1,
+           False)
         else (descendant_label conf base (info, x2) x2 p2, sp1, sp2)
-      else if x2 == x1 then
-        if x2 == 1 && not (same_parents conf base p2 p1) then
-          (half_brother_label conf p2.sex, sp1, sp2)
-        else if x2 == 1 && (sp2 || sp1) && p2.sex <> Neuter then
-          (brother_in_law_label conf ini_p2.sex ini_p1.sex, False, False)
-        else (brother_label conf x1 p2.sex, sp1, sp2)
-      else if x2 == 1 then
+      else if x2 = x1 then
+        if x2 = 1 && not (same_parents conf base p2 p1) then
+          (half_brother_label conf (get_sex p2), sp1, sp2)
+        else if x2 = 1 && (sp2 || sp1) && get_sex p2 <> Neuter then
+          (brother_in_law_label conf (get_sex ini_p2) (get_sex ini_p1), False,
+           False)
+        else (brother_label conf x1 (get_sex p2), sp1, sp2)
+      else if x2 = 1 then
         (uncle_label conf base (info, x1) (x1 - x2) p2, sp1, sp2)
-      else if x1 == 1 then (nephew_label conf (x2 - x1) p2, sp1, sp2)
+      else if x1 = 1 then (nephew_label conf (x2 - x1) p2, sp1, sp2)
       else if x2 < x1 then
         let s =
           let info = ((info, x1), fun r -> r.Consang.lens1) in
           transl_a_of_gr_eq_gen_lev conf
-            (brother_label conf x2 p2.sex)
+            (brother_label conf x2 (get_sex p2))
             (ancestor_label conf base info (x1 - x2) Neuter)
         in
         (s, sp1, sp2)
@@ -965,7 +823,8 @@ value print_link_name conf base n p1 p2 sol =
             else
               let info = ((info, x2), fun r -> r.Consang.lens2) in
               match get_piece_of_branch conf base info (x2 - x1, x2 - x1) with
-              [ [ip2] -> if (pget conf base ip2).sex = Male then sm else sf
+              [ [ip2] ->
+                  if get_sex (pget conf base ip2) = Male then sm else sf
               | _ -> sm ]
           in
           transl_a_of_gr_eq_gen_lev conf d s
@@ -975,13 +834,13 @@ value print_link_name conf base n p1 p2 sol =
     let s =
       if sp2 then
         transl_a_of_gr_eq_gen_lev conf
-          (transl_nth conf "the spouse" (index_of_sex p2.sex)) s
+          (transl_nth conf "the spouse" (index_of_sex (get_sex p2))) s
       else s
     in
     let s =
       if sp1 then
         transl_a_of_gr_eq_gen_lev conf s
-          (transl_nth conf "the spouse" (1 - index_of_sex p1.sex))
+          (transl_nth conf "the spouse" (1 - index_of_sex (get_sex p1)))
       else s
     in
     let s1 = "<strong>" ^ std_color conf s ^ "</strong>" in
@@ -993,7 +852,7 @@ value print_link_name conf base n p1 p2 sol =
       if x2 < x1 then transl_a_of_b conf s1 s2
       else transl_a_of_gr_eq_gen_lev conf s1 s2
     in
-    Wserver.wprint "%s.\n" (nominative s)
+    Wserver.wprint "%s.\n" (Util.translate_eval s)
   }
 ;
 
@@ -1005,7 +864,7 @@ value wprint_num conf n =
 value string_of_big_int conf i =
   let sep = transl conf "(thousand separator)" in
   let rec glop i =
-    if i == 0 then ""
+    if i = 0 then ""
     else
       let s = glop (i / 1000) in
       if s = "" then string_of_int (i mod 1000)
@@ -1067,90 +926,91 @@ value print_solution_not_ancestor conf base long p1 p2 sol =
     [ Some "on" -> ";image=on"
     | _ -> "" ]
   in
-  do {
-    Wserver.wprint "<ul>\n";
-    html_li conf;
-    Wserver.wprint "%s\n" (capitale (transl conf "indeed,"));
-    tag "ul" begin
-      List.iter
-        (fun (a, n) ->
-           do {
-             html_li conf;
-             Wserver.wprint "%s" (person_title_text conf base a);
-             Wserver.wprint "\n<em>(";
-             Wserver.wprint "%d %s" n
-               (transl_nth conf "relationship link/relationship links"
-                  (if n = 1 then 0 else 1));
-             if not long then do {
-               let propose_dag = n > 1 && n <= 10 in
-               Wserver.wprint ":\n%s" (transl conf "click");
-               let dp1 =
-                 match pp1 with
-                 [ Some p -> p
-                 | _ -> p1 ]
-               in
-               let dp2 =
-                 match pp2 with
-                 [ Some p -> p
-                 | _ -> p2 ]
-               in
-               Wserver.wprint
-                 " <a href=\"%sm=RL;%s;l1=%d;%s;l2=%d;%s%s%s%s%s\">"
-                 (commd conf) (acces conf base a) x1
-                 (acces_n conf base "1" dp1) x2 (acces_n conf base "2" dp2)
-                 (if pp1 = None then "" else ";" ^ acces_n conf base "3" p1)
-                 (if pp2 = None then "" else ";" ^ acces_n conf base "4" p2)
-                 (if propose_dag then ";dag=on" else "") image_opt;
-               Wserver.wprint "%s</a>" (transl conf "here");
-               if n > 1 && not propose_dag then
-                 Wserver.wprint "%s"
-                   (transl conf " to see the first relationship link")
-               else ()
-             }
-             else ();
-             Wserver.wprint "</em>).\n"
-           })
-        list;
-    end;
-    let is_are =
-      match list with
-      [ [_] -> transl conf "is"
-      | _ -> transl conf "are" ]
-    in
-    Wserver.wprint "%s %s\n" is_are (transl conf "at the same time");
-    let lab proj x =
-      let info = (((reltab, list), x), proj) in
-      match list with
-      [ [(a, _)] -> ancestor_label conf base info x a.sex
-      | _ -> parents_label conf base info x ]
-    in
-    let print pp p alab =
-      let s = gen_person_title_text no_reference raw_access conf base p in
-      let s =
-        if pp = None then transl_a_of_b conf alab s
-        else
-          transl_a_of_gr_eq_gen_lev conf
-            (transl_a_of_b conf alab
-               (transl_nth conf "the spouse" (1 - index_of_sex p.sex)))
-            s
+  tag "ul" begin
+    tag "li" begin
+      Wserver.wprint "%s\n" (capitale (transl conf "indeed,"));
+      tag "ul" begin
+        List.iter
+          (fun (a, n) ->
+             tag "li" begin
+               Wserver.wprint "%s" (person_title_text conf base a);
+               Wserver.wprint "\n<em>(";
+               Wserver.wprint "%d %s" n
+                 (transl_nth conf "relationship link/relationship links"
+                    (if n = 1 then 0 else 1));
+               if not long then do {
+                 let propose_dag = n > 1 && n <= 10 in
+                 Wserver.wprint ":\n%s" (transl conf "click");
+                 let dp1 =
+                   match pp1 with
+                   [ Some p -> p
+                   | _ -> p1 ]
+                 in
+                 let dp2 =
+                   match pp2 with
+                   [ Some p -> p
+                   | _ -> p2 ]
+                 in
+                 Wserver.wprint
+                   " <a href=\"%sm=RL;%s;l1=%d;%s;l2=%d;%s%s%s%s%s\">"
+                   (commd conf) (acces conf base a) x1
+                   (acces_n conf base "1" dp1) x2 (acces_n conf base "2" dp2)
+                   (if pp1 = None then "" else ";" ^ acces_n conf base "3" p1)
+                   (if pp2 = None then "" else ";" ^ acces_n conf base "4" p2)
+                   (if propose_dag then ";dag=on" else "") image_opt;
+                 Wserver.wprint "%s</a>" (transl conf "here");
+                 if n > 1 && not propose_dag then
+                   Wserver.wprint "%s"
+                     (transl conf " to see the first relationship link")
+                 else ()
+               }
+               else ();
+               Wserver.wprint "</em>).\n";
+             end)
+          list;
+      end;
+      let is_are =
+        match list with
+        [ [_] -> transl conf "is"
+        | _ -> transl conf "are" ]
       in
-      Wserver.wprint "%s\n" (nominative s)
-    in
-    tag "ul" begin
-      html_li conf;
-      print pp1 p1 (lab (fun r -> r.Consang.lens1) x1);
-      html_li conf;
-      print pp2 p2 (lab (fun r -> r.Consang.lens2) x2);
+      Wserver.wprint "%s %s\n" is_are (transl conf "at the same time");
+      let lab proj x =
+        let info = (((reltab, list), x), proj) in
+        match list with
+        [ [(a, _)] -> ancestor_label conf base info x (get_sex a)
+        | _ -> parents_label conf base info x ]
+      in
+      let print pp p alab =
+        let s = gen_person_title_text no_reference raw_access conf base p in
+        let s =
+          if pp = None then transl_a_of_b conf alab s
+          else
+            transl_a_of_gr_eq_gen_lev conf
+              (transl_a_of_b conf alab
+                 (transl_nth conf "the spouse"
+                    (1 - index_of_sex (get_sex p))))
+              s
+        in
+        Wserver.wprint "%s\n" (Util.translate_eval s)
+      in
+      tag "ul" begin
+        tag "li" begin
+          print pp1 p1 (lab (fun r -> r.Consang.lens1) x1);
+        end;
+        tag "li" begin
+          print pp2 p2 (lab (fun r -> r.Consang.lens2) x2);
+        end;
+      end;
     end;
-    Wserver.wprint "</ul>\n"
-  }
+  end
 ;
 
 value print_solution conf base long n p1 p2 sol =
   let (pp1, pp2, (x1, x2, list), reltab) = sol in
   do {
-    print_link_name conf base n p1 p2 sol;
-    if x1 == 0 || x2 == 0 then
+    tag "p" begin print_link_name conf base n p1 p2 sol; end;
+    if x1 = 0 || x2 = 0 then
       print_solution_ancestor conf base long p1 p2 pp1 pp2 x1 x2 list
     else print_solution_not_ancestor conf base long p1 p2 sol;
     Wserver.wprint "\n"
@@ -1170,13 +1030,13 @@ value print_dag_links conf base p1 p2 rl =
          List.fold_left
            (fun anc_map (p, n) ->
               let (pp1, pp2, nn, nt, maxlev) =
-                try M.find p.cle_index anc_map with
+                try M.find (get_key_index p) anc_map with
                 [ Not_found -> (pp1, pp2, 0, 0, 0) ]
               in
               if nn >= max_br then anc_map
               else
                 let v = (pp1, pp2, nn + n, nt + 1, max maxlev (max x1 x2)) in
-                M.add p.cle_index v anc_map)
+                M.add (get_key_index p) v anc_map)
            anc_map list)
       M.empty rl
   in
@@ -1208,7 +1068,7 @@ value print_dag_links conf base p1 p2 rl =
          in
          if nt > 1 && nn > 1 && nn < max_br then do {
            let a = pget conf base ip in
-           if is_anc then () else html_li conf;
+           if is_anc then () else Wserver.wprint "<li>\n";
            if not is_anc then
              Wserver.wprint "%s:\n" (person_title_text conf base a)
            else ();
@@ -1225,7 +1085,7 @@ value print_dag_links conf base p1 p2 rl =
                (fun (l1, l2) (_, _, (x1, x2, list), _) ->
                   List.fold_left
                     (fun (l1, l2) (a, _) ->
-                       if a.cle_index = ip then
+                       if get_key_index a = ip then
                          let l1 = if List.mem x1 l1 then l1 else [x1 :: l1] in
                          let l2 = if List.mem x2 l2 then l2 else [x2 :: l2] in
                          (l1, l2)
@@ -1257,11 +1117,11 @@ value print_dag_links conf base p1 p2 rl =
              Wserver.wprint "%d %s" nn
                (transl_nth conf "relationship link/relationship links" 1);
            Wserver.wprint "</a>";
-           if is_anc then () else Wserver.wprint "\n"
+           if is_anc then () else Wserver.wprint "\n</li>\n"
          }
          else rest.val := True)
       anc_map;
-    if rest.val then do { html_li conf; Wserver.wprint "...\n" } else ();
+    if rest.val then stagn "li" begin Wserver.wprint "..."; end else ();
     if is_anc then Wserver.wprint ")\n" else Wserver.wprint "</ul>\n"
   }
   else ()
@@ -1269,34 +1129,35 @@ value print_dag_links conf base p1 p2 rl =
 
 value print_propose_upto conf base p1 p2 rl =
   match rl with
-  [ [(None, None, (x1, x2, _), _) :: _] when x1 == 0 || x2 == 0 ->
+  [ [(None, None, (x1, x2, _), _) :: _] when x1 = 0 || x2 = 0 ->
       let maxlen =
         List.fold_right
           (fun (_, _, (x1, x2, _), _) maxlen -> max maxlen (max x1 x2)) rl 0
       in
-      let (p, a) = if x1 == 0 then (p2, p1) else (p1, p2) in
+      let (p, a) = if x1 = 0 then (p2, p1) else (p1, p2) in
       do {
         html_p conf;
-        Wserver.wprint "<font size=-1>";
+        Wserver.wprint "<span style=\"font-size:80%%\">";
         Wserver.wprint "%s"
           (capitale
-             (transl_a_of_b conf (transl conf "ancestors")
-                (person_title_text conf base p)));
+             (translate_eval
+                (transl_a_of_b conf (transl conf "ancestors")
+                   (person_title_text conf base p))));
         Wserver.wprint " %s"
           (transl_decline conf "up to" (person_title_text conf base a));
         Wserver.wprint ":\n<em>%s\n" (transl conf "click");
         Wserver.wprint "<a href=\"%sm=A;t=D;%s;%s;l=%d\">" (commd conf)
           (acces conf base p) (acces_n conf base "1" a) maxlen;
         Wserver.wprint "%s</a>" (transl conf "here");
-        Wserver.wprint ".</em></font>\n"
+        Wserver.wprint ".</em></span>\n"
       }
   | _ -> () ]
 ;
 
-value compute_simple_relationship conf base tstab p1 p2 =
+value compute_simple_relationship conf base tstab ip1 ip2 =
   let tab = Consang.make_relationship_info base tstab in
   let (relationship, ancestors) =
-    Consang.relationship_and_links base tab True p1.cle_index p2.cle_index
+    Consang.relationship_and_links base tab True ip1 ip2
   in
   if ancestors = [] then None
   else
@@ -1333,18 +1194,18 @@ value compute_simple_relationship conf base tstab p1 p2 =
         [] ancestors
     in
     let rl =
-      Sort.list
+      List.sort
         (fun (len11, len12, _) (len21, len22, _) ->
-           if len11 + len12 > len21 + len22 then True
-           else if len11 + len12 < len21 + len22 then False
-           else len11 >= len21)
+           if len11 + len12 > len21 + len22 then -1
+           else if len11 + len12 < len21 + len22 then 1
+           else compare len21 len11)
         rl
     in
     let rl =
       List.fold_left
         (fun l (len1, len2, sol) ->
            match l with
-           [ [(l1, l2, sols) :: l] when len1 == l1 && len2 == l2 ->
+           [ [(l1, l2, sols) :: l] when len1 = l1 && len2 = l2 ->
                [(l1, l2, [sol :: sols]) :: l]
            | _ -> [(len1, len2, [sol]) :: l] ])
         [] rl
@@ -1353,30 +1214,31 @@ value compute_simple_relationship conf base tstab p1 p2 =
 ;
 
 value known_spouses_list conf base p excl_p =
-  let u = uget conf base p.cle_index in
+  let u = uget conf base (get_key_index p) in
   List.fold_left
     (fun spl ifam ->
-       let sp = pget conf base (spouse p.cle_index (coi base ifam)) in
-       if sou base sp.first_name <> "?" && sou base sp.surname <> "?" &&
-          sp.cle_index <> excl_p.cle_index
+       let sp = pget conf base (spouse (get_key_index p) (foi base ifam)) in
+       if sou base (get_first_name sp) <> "?" &&
+          sou base (get_surname sp) <> "?" &&
+          get_key_index sp <> get_key_index excl_p
        then
          [sp :: spl]
        else spl)
-    [] (Array.to_list u.family)
+    [] (Array.to_list (get_family u))
 ;
 
 value merge_relations rl1 rl2 =
-  Sort.merge
+  List.merge
     (fun (po11, po12, (l11, l12, _), _) (po21, po22, (l21, l22, _), _) ->
-       if l11 + l12 < l21 + l22 then True
-       else if l11 + l12 > l21 + l22 then False
-       else if l11 < l21 then True
-       else if l11 > l21 then False
-       else if po11 = None && po12 = None then True
-       else if po21 = None && po22 = None then False
-       else if po11 = None || po21 = None then True
-       else if po21 = None || po22 = None then False
-       else True)
+       if l11 + l12 < l21 + l22 then -1
+       else if l11 + l12 > l21 + l22 then 1
+       else if l11 < l21 then -1
+       else if l11 > l21 then 1
+       else if po11 = None && po12 = None then -1
+       else if po21 = None && po22 = None then 1
+       else if po11 = None || po21 = None then -1
+       else if po21 = None || po22 = None then 1
+       else -1)
     rl1 rl2
 ;
 
@@ -1385,7 +1247,10 @@ value combine_relationship conf base tstab pl1 pl2 f_sp1 f_sp2 sl =
     (fun p1 sl ->
        List.fold_right
          (fun p2 sl ->
-            let sol = compute_simple_relationship conf base tstab p1 p2 in
+            let sol =
+              compute_simple_relationship conf base tstab (get_key_index p1)
+                (get_key_index p2)
+            in
             match sol with
             [ Some (rl, total, _, reltab) ->
                 let s = List.map (fun r -> (f_sp1 p1, f_sp2 p2, r)) rl in
@@ -1399,7 +1264,9 @@ value sp p = Some p;
 value no_sp p = None;
 
 value compute_relationship conf base by_marr p1 p2 =
-  if p1.cle_index == p2.cle_index then None
+  let ip1 = get_key_index p1 in
+  let ip2 = get_key_index p2 in
+  if ip1 = ip2 then None
   else
     (* optimization to be used 1/ if database not too big or 2/ running
     on machines with much memory *)
@@ -1409,7 +1276,7 @@ value compute_relationship conf base by_marr p1 p2 =
 *)
     (**)
     let tstab = Util.create_topological_sort conf base in
-    let sol = compute_simple_relationship conf base tstab p1 p2 in
+    let sol = compute_simple_relationship conf base tstab ip1 ip2 in
     let sol_by_marr =
       if by_marr then
         let spl1 = known_spouses_list conf base p1 p2 in
@@ -1426,10 +1293,10 @@ value compute_relationship conf base by_marr p1 p2 =
           | _ -> combine_relationship conf base tstab spl1 [p2] sp no_sp sl ]
         in
         match (sol, sl) with
-        [ (Some ([(x1, x2, _) :: _], _, _, _), _) when x1 == 0 || x2 == 0 ->
+        [ (Some ([(x1, x2, _) :: _], _, _, _), _) when x1 = 0 || x2 = 0 ->
             sl
         | (_, [([(_, _, (x1, x2, _)) :: _], _, _) :: _])
-          when x1 == 0 || x2 == 0 ->
+          when x1 = 0 || x2 = 0 ->
             sl
         | _ -> combine_relationship conf base tstab spl1 spl2 sp sp sl ]
       else []
@@ -1454,7 +1321,7 @@ value compute_relationship conf base by_marr p1 p2 =
 ;
 
 value print_one_path conf base found a p1 p2 pp1 pp2 l1 l2 =
-  let ip = a.cle_index in
+  let ip = get_key_index a in
   let sp1 =
     match pp1 with
     [ Some _ -> Some p1
@@ -1475,11 +1342,11 @@ value print_one_path conf base found a p1 p2 pp1 pp2 l1 l2 =
     [ Some p2 -> p2
     | _ -> p2 ]
   in
-  let ip1 = p1.cle_index in
-  let ip2 = p2.cle_index in
-  let dist = make_dist_tab conf base ip (max l1 l2 + 1) in
-  let b1 = find_first_branch conf base dist ip l1 ip1 Neuter in
-  let b2 = find_first_branch conf base dist ip l2 ip2 Neuter in
+  let ip1 = get_key_index p1 in
+  let ip2 = get_key_index p2 in
+  let dist = RelationLink.make_dist_tab conf base ip (max l1 l2 + 1) in
+  let b1 = RelationLink.find_first_branch conf base dist ip l1 ip1 Neuter in
+  let b2 = RelationLink.find_first_branch conf base dist ip l2 ip2 Neuter in
   match (b1, b2) with
   [ (Some b1, Some b2) ->
       let bd = match p_getint conf.env "bd" with [ Some x -> x | None -> 0 ] in
@@ -1488,26 +1355,25 @@ value print_one_path conf base found a p1 p2 pp1 pp2 l1 l2 =
         [ Some x -> " " ^ x
         | _ ->
             match Util.p_getenv conf.env "color" with
-	    [ None | Some "" -> ""
+            [ None | Some "" -> ""
             | Some x -> " bgcolor=" ^ x ] ]
       in
       let info =
-        {ip = ip; sp = a.sex; ip1 = ip1; ip2 = ip2; b1 = b1; b2 = b2; c1 = 1;
-         c2 = 1; pb1 = None; pb2 = None; nb1 = None; nb2 = None; sp1 = sp1;
-         sp2 = sp2; bd = bd; td_prop = td_prop}
+        {ip = ip; sp = get_sex a; ip1 = ip1; ip2 = ip2; b1 = b1; b2 = b2;
+         c1 = 1; c2 = 1; pb1 = None; pb2 = None; nb1 = None; nb2 = None;
+         sp1 = sp1; sp2 = sp2; bd = bd; td_prop = td_prop}
       in
       if List.mem (b1, b2) found.val then ()
       else do {
-        tag "center" begin
-          tag "table" "border=1" begin
-            tag "tr" "align=left" begin
-              tag "td" begin
-                RelationLink.print_relation_path conf base info;
-              end;
+        Wserver.wprint "<table width=\"100%%\"><tr><td align=\"center\">\n";
+        tag "table" "border=\"1\"" begin
+          tag "tr" begin
+            tag "td" begin
+              RelationLink.print_relation_path conf base info;
             end;
           end;
         end;
-        html_p conf;
+        Wserver.wprint "</td></tr></table>\n";
         found.val := [(b1, b2) :: found.val]
       }
   | _ -> () ]
@@ -1526,6 +1392,18 @@ value print_path conf base i p1 p2 (pp1, pp2, (l1, l2, list), _) =
 value print_main_relationship conf base long p1 p2 rel =
   let title _ = Wserver.wprint "%s" (capitale (transl conf "relationship")) in
   do {
+    let conf =
+      if long then
+        (* changing doctype to transitional because use of
+           <hr width=... align=...> *)
+        let doctype =
+          match p_getenv conf.base_env "doctype" with
+          [ Some ("html-4.01" | "html-4.01-trans") -> "html-4.01-trans"
+          | _ -> "xhtml-1.0-trans" ]
+        in
+        {(conf) with base_env = [("doctype", doctype) :: conf.base_env]}
+      else conf
+    in
     header conf title;
     print_link_to_welcome conf True;
     match p_getenv conf.env "spouse" with
@@ -1539,10 +1417,10 @@ value print_main_relationship conf base long p1 p2 rel =
     | Some x -> conf.senv := conf.senv @ [("bd", x)] ];
     match p_getenv conf.env "color" with
     [ None | Some "" -> ()
-    | Some x -> conf.senv := conf.senv @ [("color", x)] ];
+    | Some x -> conf.senv := conf.senv @ [("color", code_varenv x)] ];
     match rel with
     [ None ->
-        if p1.cle_index == p2.cle_index then
+        if get_key_index p1 = get_key_index p2 then
           Wserver.wprint "%s\n"
             (capitale (transl conf "it is the same person!"))
         else
@@ -1552,8 +1430,8 @@ value print_main_relationship conf base long p1 p2 rel =
                   [gen_person_title_text reference raw_access conf base p1;
                    gen_person_title_text reference raw_access conf base p2]))
     | Some (rl, total, relationship) ->
-        let a1 = aget conf base p1.cle_index in
-        let a2 = aget conf base p2.cle_index in
+        let a1 = aget conf base (get_key_index p1) in
+        let a2 = aget conf base (get_key_index p2) in
         let all_by_marr =
           List.for_all
             (fun
@@ -1573,28 +1451,27 @@ value print_main_relationship conf base long p1 p2 rel =
         in
         do {
           Wserver.wprint "\n";
-          html_p conf;
-          Wserver.wprint "%s: <em>" (capitale (transl conf "total"));
-          if Num.eq total Num.zero then Wserver.wprint "***"
-          else wprint_num conf total;
-          Wserver.wprint "</em> %s\n"
-            (transl_nth conf "relationship link/relationship links"
-               (if Num.eq total Num.one then 0 else 1));
+          tag "p" begin
+            Wserver.wprint "%s: <em>" (capitale (transl conf "total"));
+            if Num.eq total Num.zero then Wserver.wprint "***"
+              else wprint_num conf total;
+            Wserver.wprint "</em> %s\n"
+              (transl_nth conf "relationship link/relationship links"
+                 (if Num.eq total Num.one then 0 else 1));
+          end;
           if long then () else print_dag_links conf base p1 p2 rl;
           if not all_by_marr && authorized_age conf base p1 &&
-             authorized_age conf base p2 && (consang a1) != Adef.fix (-1) &&
-             consang a2 != Adef.fix (-1)
-          then do {
-            html_p conf;
-            Wserver.wprint "<em>%s: " (capitale (transl conf "relationship"));
-            Wserver.wprint "%s"
-              (string_of_decimal_num conf
-                 (round_2_dec
-                    (Adef.float_of_fix (Adef.fix_of_float relationship) *.
-                       100.0)));
-            Wserver.wprint "%%</em>";
-            html_p conf
-          }
+             authorized_age conf base p2 && get_consang a1 != Adef.fix (-1) &&
+             get_consang a2 != Adef.fix (-1)
+          then
+            tag "p" begin
+              Wserver.wprint "<em>%s: %s%%</em>"
+                (capitale (transl conf "relationship"))
+                (string_of_decimal_num conf
+                   (round_2_dec
+                      (Adef.float_of_fix (Adef.fix_of_float relationship) *.
+                         100.0)));
+            end
           else ();
           print_propose_upto conf base p1 p2 rl
         } ];
@@ -1602,35 +1479,30 @@ value print_main_relationship conf base long p1 p2 rel =
   }
 ;
 
-value print_multi_relation_html_table conf hts pl2 lim assoc_txt =
-  let title _ = Wserver.wprint "%s" (capitale (transl conf "relationship")) in
-  do {
-    header_no_page_title conf title;
-    Dag.print_html_table conf hts;
-    match pl2 with
-    [ [] -> ()
-    | _ ->
-        do {
-          Wserver.wprint "<p>\n<a href=\"%sm=RLM" (commd conf);
-          let _ =
-            List.fold_left
-              (fun n p ->
-                 do {
-                   Wserver.wprint ";i%d=%d" n (Adef.int_of_iper p.cle_index);
-                   try
-                     let t = Hashtbl.find assoc_txt p.cle_index in
-                     Wserver.wprint ";t%d=%s" n t
-                   with
-                   [ Not_found -> () ];
-                   n + 1
-                 })
-              1 pl2
-          in
-          if lim > 0 then Wserver.wprint ";lim=%d" lim else ();
-          Wserver.wprint "\">&gt;&gt;</a>\n"
-        } ];
-    trailer conf
-  }
+value multi_relation_next_txt conf pl2 lim assoc_txt =
+  match pl2 with
+  [ [] -> ""
+  | _ ->
+      let sl = if lim > 0 then [";lim="; string_of_int lim] else [] in
+      let (sl, _) =
+        List.fold_left
+          (fun (sl, n) p ->
+             let sl =
+               try
+                 let t = Hashtbl.find assoc_txt (get_key_index p) in
+                 [";t"; string_of_int n; "="; t :: sl]
+               with
+               [ Not_found -> sl ]
+             in
+             let sl =
+               [";i"; string_of_int n; "=";
+                string_of_int (Adef.int_of_iper (get_key_index p)) :: sl]
+             in
+             (sl, n - 1))
+          (sl, List.length pl2) (List.rev pl2)
+      in
+      let sl = [commd conf; "m=RLM" :: sl] in
+      String.concat "" sl ]
 ;
 
 value print_no_relationship conf base pl =
@@ -1667,8 +1539,8 @@ value print_multi_relation conf base pl lim assoc_txt =
     loop [] pl1 where rec loop path =
       fun
       [ [p1 :: ([p2 :: _] as pl)] ->
-          let ip1 = p1.cle_index in
-          let ip2 = p2.cle_index in
+          let ip1 = get_key_index p1 in
+          let ip2 = get_key_index p2 in
           match get_shortest_path_relation conf base ip1 ip2 [] with
           [ Some (path1, _) ->
               let path =
@@ -1682,27 +1554,20 @@ value print_multi_relation conf base pl lim assoc_txt =
               loop path pl
           | None -> loop path pl ]
       | [_] | [] -> path ]
-  in
-  let elem_txt p =
-    let txt =
-      Util.referenced_person_title_text conf base p ^
-        Date.short_dates_text conf base p
-    in
-    try
-      let t = Hashtbl.find assoc_txt p.cle_index in
-      txt ^ " <b>(" ^ t ^ ")</b>"
-    with
-    [ Not_found -> txt ]
-  in
-  let vbar_txt ip = "" in
+  in 
   if path = [] then print_no_relationship conf base pl
   else
-    let hts =
-      html_table_of_relation_path_dag conf base elem_txt vbar_txt path
+    let elem_txt p =
+      Dag.Item p
+        (try
+           let t = Hashtbl.find assoc_txt (get_key_index p) in
+           "<b>(" ^ t ^ ")</b>"
+         with
+         [ Not_found -> "" ])
     in
-    if p_getenv conf.env "slices" = Some "on" then
-      Dag.print_slices_menu conf base (Some hts)
-    else print_multi_relation_html_table conf hts pl2 lim assoc_txt
+    let vbar_txt ip = "" in
+    let next_txt = multi_relation_next_txt conf pl2 lim assoc_txt in
+    print_relationship_dag conf base elem_txt vbar_txt path next_txt
 ;
 
 value print_base_loop conf base p =
@@ -1717,6 +1582,8 @@ value print_base_loop conf base p =
     trailer conf
   }
 ;
+
+value relmenu_print = Perso.interp_templ "relmenu";
 
 value print conf base p =
   fun
@@ -1736,7 +1603,7 @@ value print conf base p =
           with
           [ Left rel -> print_main_relationship conf base long p1 p rel
           | Right p -> print_base_loop conf base p ] ]
-  | None -> print_menu conf base p ]
+  | None -> relmenu_print conf base p ]
 ;
 
 value print_multi conf base =
@@ -1748,7 +1615,7 @@ value print_multi conf base =
       [ Some p ->
           do {
             match p_getenv conf.env ("t" ^ k) with
-            [ Some x -> Hashtbl.add assoc_txt p.cle_index x
+            [ Some x -> Hashtbl.add assoc_txt (get_key_index p) x
             | None -> () ];
             loop [p :: pl] (i + 1)
           }

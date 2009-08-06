@@ -1,4 +1,4 @@
-# $Id: a.gwf,v 4.24 2004/11/09 12:33:49 ddr Exp $
+# $Id: a.gwf,v 5.12 2007/01/23 14:24:10 ddr Exp $
 # Parameters in "<body>" (background, color, etc)
 # Here is a palette of possibilities... test and choose one of them
 # if you want by removing the initial "#"
@@ -44,12 +44,56 @@ friend_passwd_file=
 wizard_passwd=
 
 # Alternative way for wizard entry: authorization file.
-# The file must hold lines of the form "user:password".
+# The file must hold lines of the form either:
+#    user:password
+#    user:password:comment
+#    user:password:complete name:comment
+# The "complete name" is used in the page displaying the wizards by
+# alphabetic order and in wizard pages. If the wizard line contains
+# no complete name, the "user" is used.
+#   The alphabetic order can be changed by adding a slash in the "complete
+# name" at the position you want the alphabetic comparison take place. For
+# example, with "Daniel de /Rauglaudre" as "complete name", it is ordered
+# at letter "R" (like "Rauglaudre") and in the form:
+#    Rauglaudre (Daniel de)
+# but it his wizard page, it is displayed as "Daniel de Rauglaudre" without
+# the slash.
 wizard_passwd_file=
+
+# Manitou is a wizard who can:
+# - delete any forum message
+# - edit any wizard's notes
+# - see all connected wizards
+# - always see consanguinities
+# - stay wizard even when wizard_just_friend is set
+# - can apply a request "sleep=xx" to sleep xx seconds after a request
+#   (useful e.g. to have time to look at the memory used)
+# Hir changes in database are not recorded in the history.
+#   The variable must contain the wizard's user name:
+# manitou=
+
+# Wizards moderators file.
+# List of wizards moderating the database forum.
+# If empty or empty file, no moderation.
+# One wizard name by line.
+moderator_file=
+
+# Forum supervisor. The forum is not moderated but controlled afterwards.
+# This supervisor is a wizard who can delete any forum message. He can
+# see the real wizards or friend user names (since they can be hidden in
+# the "ident" area) and the IP address the message comes from.
+supervisor=
+
+# Notify change program (e.g. shell script) to be executed for each
+# database change.
+# notify_change=
 
 # Wizard loosing his powers, becoming just a "friend"
 # Set it to "yes" or "no"
 wizard_just_friend=no
+
+# Generates pages with DOCTYPE HTML 4.01 (default XHTML 1.1)
+# doctype=html-4.01
 
 # File recording a black list for the database forum.
 # forum_exclude_file=
@@ -80,6 +124,9 @@ can_send_image=yes
 # Show consanguinity (if computed) in personal pages
 show_consang=yes
 
+# Death symbol in dates (default: christians' one)
+# death_symbol=†
+
 # Allow the usage of the request m=KILL_ANC
 can_kill_ancestors=no
 
@@ -109,6 +156,12 @@ access_by_key=no
 # Set to no if you don't want that the search by (nobility) titles be
 # proposed in the welcome page.
 propose_titles=yes
+
+# File for allowed titles/domains (empty => all allowed)
+allowed_titles_file=
+
+# After above, file for denied titles/domains
+denied_titles_file=
 
 # Set to no if you don't want that the link "add a family" be added in
 # the welcome page for wizards. In "no", forbid also adding families not
@@ -194,11 +247,12 @@ places_inverted=no
 
 # Templates.
 #
-# For the moment, there is a template only for:
-# 1/ the "personal page, perso.txt
-# 2/ the update person form, updind.txt
-# 3/ the update family form, updfam.txt
-# The standard template is located in the etc directory of the GeneWeb
+# Some pages, not all, have templates, including:
+# - the welcome page, welcome.txt
+# - the personal page, perso.txt
+# - the update person form, updind.txt
+# - the update family form, updfam.txt
+# The standard templates are located in the etc directory of the GeneWeb
 # distribution.
 #
 # Other templates can be added in the databases directory in a subdirectory
@@ -251,3 +305,6 @@ expand_env=no
 # Message of the day. If set, display this message in the welcome page.
 # Can contain html tags.
 #motd=
+
+# Display the compilation time at bottom of pages.
+# display_compilation_time=off

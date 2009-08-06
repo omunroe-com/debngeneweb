@@ -1,12 +1,14 @@
 (* camlp4r *)
-(* $Id: setup.ml,v 4.53 2004/12/14 15:03:05 ddr Exp $ *)
+(* $Id: setup.ml,v 5.6 2007/02/25 02:32:19 ddr Exp $ *)
 
 open Printf;
 
 value port = ref 2316;
 value default_lang = ref "en";
 value setup_dir = ref ".";
+value bin_dir = ref "";
 value lang_param = ref "";
+value only_file = ref "";
 
 value slashify s =
   let s1 = String.copy s in
@@ -102,7 +104,7 @@ value header_no_page_title conf title =
 \"http://www.w3.org/TR/REC-html40/loose.dtd\">
 ";
     Wserver.wprint "<head>\n";
-    Wserver.wprint "  <meta name=\"ROBOTS\" content=\"NONE\">\n";
+    Wserver.wprint "  <meta name=\"robots\" content=\"none\">\n";
     Wserver.wprint "  <title>";
     title True;
     Wserver.wprint "</title>\n";
@@ -127,7 +129,7 @@ value trailer conf =
 <br />
 ";
     Wserver.wprint "
-<hr><font size=\"-1\"><em>Copyright (c) 1998-2005 INRIA -
+<hr><font size=\"-1\"><em>Copyright (c) 1998-2007 INRIA -
 GeneWeb %s</em></font>" Version.txt;
     Wserver.wprint "<br />";
     
@@ -156,7 +158,7 @@ value strip_control_m s =
 value strip_spaces str =
   let start =
     loop 0 where rec loop i =
-      if i == String.length str then i
+      if i = String.length str then i
       else
         match str.[i] with
         [ ' ' | '\r' | '\n' | '\t' -> loop (i + 1)
@@ -164,13 +166,13 @@ value strip_spaces str =
   in
   let stop =
     loop (String.length str - 1) where rec loop i =
-      if i == -1 then i + 1
+      if i = -1 then i + 1
       else
         match str.[i] with
         [ ' ' | '\r' | '\n' | '\t' -> loop (i - 1)
         | _ -> i + 1 ]
   in
-  if start == 0 && stop == String.length str then str
+  if start = 0 && stop = String.length str then str
   else if start > stop then ""
   else String.sub str start (stop - start)
 ;
@@ -187,21 +189,21 @@ value p_getenv env label =
 value s_getenv env label = try getenv env label with [ Not_found -> "" ];
 
 value rec skip_spaces s i =
-  if i < String.length s && s.[i] == ' ' then skip_spaces s (i + 1) else i
+  if i < String.length s && s.[i] = ' ' then skip_spaces s (i + 1) else i
 ;
 
 value create_env s =
   let rec get_assoc beg i =
-    if i == String.length s then
-      if i == beg then [] else [String.sub s beg (i - beg)]
-    else if s.[i] == ';' || s.[i] == '&' then
+    if i = String.length s then
+      if i = beg then [] else [String.sub s beg (i - beg)]
+    else if s.[i] = ';' || s.[i] = '&' then
       let next_i = skip_spaces s (succ i) in
       [String.sub s beg (i - beg) :: get_assoc next_i next_i]
     else get_assoc beg (succ i)
   in
   let rec separate i s =
     if i = String.length s then (s, "")
-    else if s.[i] == '=' then
+    else if s.[i] = '=' then
       (String.sub s 0 i, String.sub s (succ i) (String.length s - succ i))
     else separate (succ i) s
   in
@@ -281,7 +283,7 @@ value all_db dir =
     with
     [ End_of_file -> () ];
     Unix.closedir dh;
-    list.val := Sort.list  \<= list.val;
+    list.val := List.sort compare list.val;
     list.val
   }
 ;
@@ -316,11 +318,16 @@ value referer conf =
   Wserver.extract_param "referer: " '\r' conf.request
 ;
 
+value only_file_name () =
+  if only_file.val = "" then Filename.concat setup_dir.val "only.txt"
+  else only_file.val
+;
+
 value macro conf =
   fun
-  [ '/' -> ifdef UNIX then "/" else "\\"
+  [ '/' -> IFDEF UNIX THEN "/" ELSE "\\" END
   | 'a' -> strip_spaces (s_getenv conf.env "anon")
-  | 'c' -> stringify (Filename.concat setup_dir.val conf.comm)
+  | 'c' -> stringify setup_dir.val
   | 'd' -> conf.comm
   | 'i' -> strip_spaces (s_getenv conf.env "i")
   | 'l' -> conf.lang
@@ -330,8 +337,9 @@ value macro conf =
   | 'p' -> parameters conf.env
   | 'q' -> Version.txt
   | 'u' -> Filename.dirname (abs_setup_dir ())
-  | 'x' -> setup_dir.val
+  | 'x' -> stringify bin_dir.val
   | 'w' -> slashify (Sys.getcwd ())
+  | 'y' -> Filename.basename (only_file_name ())
   | '%' -> "%"
   | c -> "BAD MACRO " ^ String.make 1 c ]
 ;
@@ -472,7 +480,8 @@ value rec copy_from_stream conf print strm =
               print_specific_file conf print
                 (Filename.concat setup_dir.val "gwd.arg") strm
           | 's' -> for_all conf print (selected conf.env) strm
-          | 't' -> print_if conf print (ifdef UNIX then False else True) strm
+          | 't' ->
+              print_if conf print (IFDEF UNIX THEN False ELSE True END) strm
           | 'v' ->
               let out = strip_spaces (s_getenv conf.env "o") in
               print_if conf print (Sys.file_exists (out ^ ".gwb")) strm
@@ -546,11 +555,11 @@ and print_selector conf print =
   in
   let list =
     let sel =
-      ifdef WIN95 then
-	if String.length sel = 3 && sel.[1] == ':' && sel.[2] == '\\' then
-	  sel ^ "."
-	else sel
-      else sel
+      IFDEF WIN95 THEN
+        if String.length sel = 3 && sel.[1] = ':' && sel.[2] = '\\' then
+          sel ^ "."
+        else sel
+      ELSE sel END
     in
     try
       let dh = Unix.opendir sel in
@@ -580,11 +589,11 @@ and print_selector conf print =
         (fun x ->
            let d =
              if x = ".." then
-	       ifdef WIN95 then
-	         if sel.[String.length sel - 1] <> '\\' then
-		   Filename.dirname sel ^ "\\"
-		 else Filename.dirname sel
-	       else Filename.dirname sel
+               IFDEF WIN95 THEN
+                 if sel.[String.length sel - 1] <> '\\' then
+                   Filename.dirname sel ^ "\\"
+                 else Filename.dirname sel
+               ELSE Filename.dirname sel END
              else Filename.concat sel x
            in
            let x = if is_directory d then Filename.concat x "" else x in
@@ -805,7 +814,7 @@ value gwc_or_ged2gwb out_name_of_in_name conf =
 ;
 
 value gwc_check conf =
-  let conf = {(conf) with env = [("f", "on") :: conf.env]} in
+  let conf = {(conf) with env = [("nofail", "on"); ("f", "on") :: conf.env]} in
   gwc_or_ged2gwb out_name_of_gw conf
 ;
 
@@ -826,10 +835,10 @@ value infer_rc conf rc =
 
 value gwc conf =
   let rc =
-    let comm = stringify (Filename.concat setup_dir.val "gwc") in
+    let comm = stringify (Filename.concat bin_dir.val "gwc") in
     exec_f (comm ^ parameters conf.env)
   in
-  let rc = ifdef WIN95 then infer_rc conf rc else rc in
+  let rc = IFDEF WIN95 THEN infer_rc conf rc ELSE rc END in
   do {
     let gwo = strip_spaces (s_getenv conf.env "anon") ^ "o" in
     try Sys.remove gwo with [ Sys_error _ -> () ];
@@ -852,7 +861,8 @@ value gwu_or_gwb2ged_check suffix conf =
     | None -> "" ]
   in
   let out_file =
-    if out_file = "" then in_file ^ suffix
+    if out_file = "" || out_file = Filename.current_dir_name then
+      in_file ^ suffix
     else if Filename.check_suffix out_file suffix then out_file
     else if Filename.check_suffix out_file (String.uppercase suffix) then
       out_file
@@ -868,7 +878,7 @@ value gwb2ged = gwu_or_gwb2ged_check ".ged";
 
 value gwb2ged_or_gwu_1 ok_file conf =
   let rc =
-    let comm = stringify (Filename.concat setup_dir.val conf.comm) in
+    let comm = stringify (Filename.concat bin_dir.val conf.comm) in
     exec_f (comm ^ parameters conf.env)
   in
   do {
@@ -905,14 +915,15 @@ value has_gwu dir =
         try
           loop () where rec loop () =
             let e = Unix.readdir dh in
-            ifdef UNIX then
+            IFDEF UNIX THEN
               match e with
               [ "gwu" -> raise Exit
               | _ -> loop () ]
-            else
+            ELSE
               match String.lowercase e with
               [ "gwu.exe" -> raise Exit
               | _ -> loop () ]
+            END
         with
         [ End_of_file -> False
         | Exit -> True ]
@@ -945,13 +956,13 @@ value recover conf =
   else if init_dir = dest_dir then print_file conf "err_smdr.htm"
   else if not (Sys.file_exists init_dir) then print_file conf "err_ndir.htm"
   else if
-    (ifdef UNIX then
+    (IFDEF UNIX THEN
        try
          (Unix.stat (Filename.concat init_dir ".")).Unix.st_ino =
            (Unix.stat (Filename.concat dest_dir ".")).Unix.st_ino
        with
        [ Unix.Unix_error _ _ _ -> False ]
-     else False)
+     ELSE False END)
   then
     print_file conf "err_smdr.htm"
   else if not dir_has_gwu then print_file conf "err_ngw.htm"
@@ -1043,13 +1054,13 @@ value recover_2 conf =
       flush stderr;
       Sys.chdir dir;
       let c =
-        Filename.concat setup_dir.val src_to_new ^ " " ^ tmp ^ " -f -o " ^
+        Filename.concat bin_dir.val src_to_new ^ " " ^ tmp ^ " -f -o " ^
           out_file ^ " > " ^ "comm.log"
       in
       eprintf "$ %s\n" c;
       flush stderr;
       let rc = Sys.command c in
-      let rc = ifdef WIN95 then infer_rc conf rc else rc in
+      let rc = IFDEF WIN95 THEN infer_rc conf rc ELSE rc END in
       eprintf "\n";
       flush stderr;
       rc
@@ -1091,6 +1102,7 @@ value cleanup conf =
     [ Some f -> strip_spaces f
     | None -> "" ]
   in
+  let conf = {(conf) with comm = "."} in
   if in_base = "" then print_file conf "err_miss.htm"
   else print_file conf "cleanup1.htm"
 ;
@@ -1106,32 +1118,32 @@ value cleanup_1 conf =
     eprintf "$ cd \"%s\"\n" (Sys.getcwd ());
     flush stderr;
     let c =
-      Filename.concat setup_dir.val "gwu" ^ " " ^ in_base ^ " -o tmp.gw"
+      Filename.concat bin_dir.val "gwu" ^ " " ^ in_base ^ " -o tmp.gw"
     in
     eprintf "$ %s\n" c;
     flush stderr;
     let _ = Sys.command c in
     eprintf "$ mkdir old\n";
     try Unix.mkdir "old" 0o755 with [ Unix.Unix_error _ _ _ -> () ];
-    ifdef UNIX then eprintf "$ rm -rf old/%s\n" in_base_dir
-    else do {
+    IFDEF UNIX THEN eprintf "$ rm -rf old/%s\n" in_base_dir
+    ELSE do {
       eprintf "$ del old\\%s\\*.*\n" in_base_dir;
       eprintf "$ rmdir old\\%s\n" in_base_dir
-    };
+    } END;
     flush stderr;
     rm_base (Filename.concat "old" in_base_dir);
-    ifdef UNIX then eprintf "$ mv %s old/.\n" in_base_dir
-    else eprintf "$ move %s old\\.\n" in_base_dir;
+    IFDEF UNIX THEN eprintf "$ mv %s old/.\n" in_base_dir
+    ELSE eprintf "$ move %s old\\.\n" in_base_dir END;
     flush stderr;
     Sys.rename in_base_dir (Filename.concat "old" in_base_dir);
     let c =
-      Filename.concat setup_dir.val "gwc" ^ " tmp.gw -o " ^ in_base ^
+      Filename.concat bin_dir.val "gwc" ^ " tmp.gw -nofail -o " ^ in_base ^
         " > comm.log "
     in
     eprintf "$ %s\n" c;
     flush stderr;
     let rc = Sys.command c in
-    let rc = ifdef WIN95 then infer_rc conf rc else rc in
+    let rc = IFDEF WIN95 THEN infer_rc conf rc ELSE rc END in
     eprintf "\n";
     flush stderr;
     if rc > 1 then
@@ -1205,6 +1217,7 @@ value merge conf =
     [ Some f -> strip_spaces f
     | _ -> "" ]
   in
+  let conf = {(conf) with comm = "."} in
   let bases = selected conf.env in
   if out_file = "" || List.length bases < 2 then
     print_file conf "err_miss.htm"
@@ -1230,7 +1243,7 @@ value merge_1 conf =
         [ [] -> 0
         | [b :: bases] ->
             let c =
-              Filename.concat setup_dir.val "gwu" ^ " " ^ b ^ " -o " ^ b ^
+              Filename.concat bin_dir.val "gwu" ^ " " ^ b ^ " -o " ^ b ^
                 ".gw"
             in
             do {
@@ -1244,7 +1257,7 @@ value merge_1 conf =
       if rc <> 0 then rc
       else do {
         let c =
-          Filename.concat setup_dir.val "gwc" ^
+          Filename.concat bin_dir.val "gwc" ^
             List.fold_left
               (fun s b ->
                  if s = "" then " " ^ b ^ ".gw" else s ^ " -sep " ^ b ^ ".gw")
@@ -1431,10 +1444,10 @@ value gwd_1 conf =
 
 value ged2gwb conf =
   let rc =
-    let comm = stringify (Filename.concat setup_dir.val conf.comm) in
+    let comm = stringify (Filename.concat bin_dir.val conf.comm) in
     exec_f (comm ^ " -fne '\"\"'" ^ parameters conf.env)
   in
-  let rc = ifdef WIN95 then infer_rc conf rc else rc in
+  let rc = IFDEF WIN95 THEN infer_rc conf rc ELSE rc END in
   do {
     eprintf "\n";
     flush stderr;
@@ -1445,7 +1458,7 @@ value ged2gwb conf =
 
 value consang conf ok_file =
   let rc =
-    let comm = stringify (Filename.concat setup_dir.val conf.comm) in
+    let comm = stringify (Filename.concat bin_dir.val conf.comm) in
     exec_f (comm ^ parameters conf.env)
   in
   do {
@@ -1491,7 +1504,7 @@ value print_typed_file conf typ fname =
         nl ();
         Wserver.wprint "Content-length: %d" (in_channel_length ic);
         nl (); nl ();
-	try
+        try
           while True do {
             let c = input_char ic in
             Wserver.wprint "%c" c
@@ -1595,7 +1608,7 @@ value string_of_sockaddr =
 value local_addr = "127.0.0.1";
 
 value only_addr () =
-  let fname = Filename.concat setup_dir.val "only.txt" in
+  let fname = only_file_name () in
   match try Some (open_in fname) with [ Sys_error _ -> None ] with
   [ Some ic ->
       let v = try input_line ic with [ End_of_file -> local_addr ] in
@@ -1605,8 +1618,8 @@ value only_addr () =
 
 value lindex s c =
   pos 0 where rec pos i =
-    if i == String.length s then None
-    else if s.[i] == c then Some i
+    if i = String.length s then None
+    else if s.[i] = c then Some i
     else pos (i + 1)
 ;
 
@@ -1699,14 +1712,14 @@ value setup (addr, req) comm env_str =
 
 value wrap_setup a b c =
   do {
-    ifdef WIN95 then do {
+    IFDEF WIN95 THEN do {
       (* another process have been launched, therefore we lost variables;
          and we cannot parse the arg list again, because of possible spaces
          in arguments which may appear as separators *)
       try default_lang.val := Sys.getenv "GWLANG" with [ Not_found -> () ];
       try setup_dir.val := Sys.getenv "GWGD" with [ Not_found -> () ]
     }
-    else ();
+    ELSE () END;
     try setup a b c with [ Exit -> () ]
   }
 ;
@@ -1766,30 +1779,34 @@ value speclist =
     "<string>: default lang");
    ("-daemon", Arg.Set daemon, ": Unix daemon mode.");
    ("-p", Arg.Int (fun x -> port.val := x),
-    "<number>:\n       Select a port number (default = " ^
+    "<number>: Select a port number (default = " ^
       string_of_int port.val ^ "); > 1024 for normal users.");
+   ("-only", Arg.String (fun s -> only_file.val := s),
+    "<file>: File containing the only authorized address");
    ("-gd", Arg.String (fun x -> setup_dir.val := x),
-    "<string>: gwsetup directory") ::
-   ifdef SYS_COMMAND then
+    "<string>: gwsetup directory");
+   ("-bindir", Arg.String (fun x -> bin_dir.val := x),
+    "<string>: binary directory (default = value of option -gd)") ::
+   IFDEF SYS_COMMAND THEN
      [("-wserver", Arg.String (fun _ -> ()), " (internal feature)")]
-   else []]
+   ELSE [] END]
 ;
 value anonfun s = raise (Arg.Bad ("don't know what to do with " ^ s));
 
 value null_reopen flags fd =
-  ifdef UNIX then do {
+  IFDEF UNIX THEN do {
     let fd2 = Unix.openfile "/dev/null" flags 0 in
     Unix.dup2 fd2 fd;
     Unix.close fd2
   }
-  else ()
+  ELSE () END
 ;
 
 value setup_available_languages = ["de"; "en"; "es"; "fr"; "it"; "lv"; "sv"];
 
 value intro () =
   let (default_gwd_lang, default_setup_lang) =
-    ifdef UNIX then
+    IFDEF UNIX THEN
       let s = try Sys.getenv "LANG" with [ Not_found -> "" ] in
       if List.mem s Version.available_languages then
         (s, if List.mem s setup_available_languages then s else "en")
@@ -1801,18 +1818,19 @@ value intro () =
             (s, if List.mem s setup_available_languages then s else "en")
           else (default_lang.val, default_lang.val)
         else (default_lang.val, default_lang.val)
-    else (default_lang.val, default_lang.val)
+    ELSE (default_lang.val, default_lang.val) END
   in
   do {
     Argl.parse speclist anonfun usage;
+    if bin_dir.val = "" then bin_dir.val := setup_dir.val else ();
     default_lang.val := default_setup_lang;
     let (gwd_lang, setup_lang) =
       if daemon.val then
-        let setup_lang =
-          if String.length lang_param.val < 2 then default_setup_lang
-          else lang_param.val
-        in
-        ifdef UNIX then do {
+        IFDEF UNIX THEN do {
+          let setup_lang =
+            if String.length lang_param.val < 2 then default_setup_lang
+            else lang_param.val
+          in
           printf "To start, open location http://localhost:%d/\n"
             port.val;
           flush stdout;
@@ -1823,7 +1841,7 @@ value intro () =
           else exit 0;
           (default_gwd_lang, setup_lang)
         }
-        else (default_gwd_lang, default_setup_lang)
+        ELSE (default_gwd_lang, default_setup_lang) END
       else do {
         let (gwd_lang, setup_lang) =
           if String.length lang_param.val < 2 then do {
@@ -1841,10 +1859,10 @@ value intro () =
     in
     set_gwd_default_language_if_absent gwd_lang;
     default_lang.val := setup_lang;
-    ifdef WIN95 then do {
+    IFDEF WIN95 THEN do {
       Unix.putenv "GWLANG" setup_lang; Unix.putenv "GWGD" setup_dir.val
     }
-    else ();
+    ELSE () END;
     printf "\n";
     flush stdout
   }
@@ -1852,12 +1870,13 @@ value intro () =
 
 value main () =
   do {
-    ifdef UNIX then intro ()
-    else ifdef SYS_COMMAND then
+    IFDEF UNIX THEN intro ()
+    ELSIFDEF SYS_COMMAND THEN
       let len = Array.length Sys.argv in
       if len > 2 && Sys.argv.(len - 2) = "-wserver" then () else intro ()
-    else
-      try let _ = Sys.getenv "WSERVER" in () with [ Not_found -> intro () ];
+    ELSE
+      try let _ = Sys.getenv "WSERVER" in () with [ Not_found -> intro () ]
+    END;
     Wserver.f None port.val 0 None wrap_setup
   }
 ;

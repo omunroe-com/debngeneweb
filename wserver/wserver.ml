@@ -1,15 +1,20 @@
-(* $Id: wserver.ml,v 4.21 2004/12/14 13:47:46 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: wserver.ml,v 5.12 2007/01/19 01:53:18 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
+
+open Printf;
 
 value sock_in = ref "wserver.sin";
 value sock_out = ref "wserver.sou";
+value stop_server = ref "STOP_SERVER";
 value noproc = ref False;
 
-value wserver_oc =
-  do { set_binary_mode_out stdout True; ref stdout }
-;
+value wserver_oc = ref stdout;
 
-value wprint fmt = Printf.fprintf wserver_oc.val fmt;
+value wrap_string = ref (fun s -> s);
+
+value wprint fmt =
+  kprintf (fun s -> output_string wserver_oc.val (wrap_string.val s)) fmt
+;
 value wflush () = flush wserver_oc.val;
 
 value hexa_digit x =
@@ -25,7 +30,7 @@ value hexa_val conf =
   | _ -> 0 ]
 ;
 
-value decode s =
+value gen_decode strip_spaces s =
   let rec need_decode i =
     if i < String.length s then
       match s.[i] with
@@ -58,10 +63,10 @@ value decode s =
   in
   let rec strip_heading_and_trailing_spaces s =
     if String.length s > 0 then
-      if s.[0] == ' ' then
+      if s.[0] = ' ' then
         strip_heading_and_trailing_spaces
           (String.sub s 1 (String.length s - 1))
-      else if s.[String.length s - 1] == ' ' then
+      else if s.[String.length s - 1] = ' ' then
         strip_heading_and_trailing_spaces
           (String.sub s 0 (String.length s - 1))
       else s
@@ -70,9 +75,12 @@ value decode s =
   if need_decode 0 then
     let len = compute_len 0 0 in
     let s1 = String.create len in
-    strip_heading_and_trailing_spaces (copy_decode_in s1 0 0)
+    let s = copy_decode_in s1 0 0 in
+    if strip_spaces then strip_heading_and_trailing_spaces s else s
   else s
 ;
+
+value decode = gen_decode True;
 
 value special =
   fun
@@ -165,7 +173,7 @@ value print_exc exc =
       }
   | x ->
       do {
-        prerr_string "Uncaught exception: ";
+        prerr_string "Wserver: uncaught exception: ";
         prerr_string (Obj.magic (Obj.field (Obj.field (Obj.repr x) 0) 0));
         if Obj.size (Obj.repr x) > 1 then do {
           prerr_char '(';
@@ -227,29 +235,38 @@ value get_request strm =
   let rec loop len =
     parser
     [ [: `'\010'; s :] ->
-        if len == 0 then []
+        if len = 0 then []
         else let str = get_buff len in [str :: loop 0 s]
     | [: `'\013'; s :] -> loop len s
     | [: `c; s :] -> loop (store len c) s
-    | [: :] -> if len == 0 then [] else [get_buff len] ]
+    | [: :] -> if len = 0 then [] else [get_buff len] ]
   in
   loop 0 strm
 ;
 
-ifdef UNIX then
+IFDEF UNIX THEN
 value timeout tmout spid _ =
   do {
     Unix.kill spid Sys.sigkill;
-    http "";
-    wprint "Content-type: text/html; charset=iso-8859-1"; nl (); nl ();
-    wprint "<head><title>Time out</title></head>\n";
-    wprint "<body><h1>Time out</h1>\n";
-    wprint "Computation time > %d second(s)\n" tmout;
-    wprint "</body>\n";
-    wflush ();
+    Unix.kill spid Sys.sigterm;
+    let pid = Unix.fork () in
+    if pid = 0 then
+      if Unix.fork () = 0 then do {
+        http "";
+        wprint "Content-type: text/html; charset=iso-8859-1"; nl (); nl ();
+        wprint "<head><title>Time out</title></head>\n";
+        wprint "<body><h1>Time out</h1>\n";
+        wprint "Computation time > %d second(s)\n" tmout;
+        wprint "</body>\n";
+        wflush ();
+        exit 0;
+      }
+      else exit 0
+    else ();
+    let _ = Unix.waitpid [] pid in ();
     exit 2
   }
-;
+END;
 
 value get_request_and_content strm =
   let request = get_request strm in
@@ -280,8 +297,8 @@ value sockaddr_of_string s = Unix.ADDR_UNIX s;
 
 value treat_connection tmout callback addr fd =
   do {
-    ifdef NOFORK then ()
-    else ifdef UNIX then
+    IFDEF NOFORK THEN ()
+    ELSIFDEF UNIX THEN
       if tmout > 0 then
         let spid = Unix.fork () in
         if spid > 0 then do {
@@ -298,7 +315,7 @@ value treat_connection tmout callback addr fd =
         }
         else ()
       else ()
-    else ();
+    ELSE () END;
     let (request, script_name, contents) =
       let (request, contents) =
         let strm =
@@ -321,48 +338,38 @@ value treat_connection tmout callback addr fd =
       in
       (request, script_name, contents)
     in
-    if script_name = "robots.txt" then do {
-      http "";
-      wprint "Content-type: text/plain"; nl (); nl ();
-      wprint "User-Agent: *"; nl ();
-      wprint "Disallow: /"; nl ();
-      wflush ();
-      Printf.eprintf "Robot request\n";
-      flush stderr;
-    }
-    else do {
-      try callback (addr, request) script_name contents with
-      [ Unix.Unix_error Unix.EPIPE "write" _ -> ()
-      | exc -> print_err_exc exc ];
-      try wflush () with _ -> ();
-      try flush stderr with _ -> ();
-    };
+    try callback (addr, request) script_name contents with
+    [ Unix.Unix_error Unix.EPIPE "write" _ -> ()
+    | Sys_error "Broken pipe" -> ()
+    | exc -> print_err_exc exc ];
+    try wflush () with _ -> ();
+    try flush stderr with _ -> ();
   }
 ;
 
 value buff = String.create 1024;
 
-ifdef WIN95 then
+IFDEF WIN95 THEN
 value copy_what_necessary t oc =
   let strm =
     let len = ref 0 in
     let i = ref 0 in
     Stream.from
       (fun _ ->
-	 do {
+         do {
            if i.val >= len.val then do {
              len.val := Unix.read t buff 0 (String.length buff);
-	     i.val := 0;
-	     if len.val > 0 then output oc buff 0 len.val else ();
+             i.val := 0;
+             if len.val > 0 then output oc buff 0 len.val else ();
            }
-	   else ();
-           if len.val == 0 then None
-	   else do { incr i; Some buff.[i.val - 1] }
+           else ();
+           if len.val = 0 then None
+           else do { incr i; Some buff.[i.val - 1] }
          })
   in
   let _ = get_request_and_content strm in
   ()
-;
+END;
 
 value rec list_remove x =
   fun
@@ -370,11 +377,13 @@ value rec list_remove x =
   | [y :: l] -> if x = y then l else [y :: list_remove x l] ]
 ;
 
-ifdef NOFORK then declare end else
-value pids = ref [];
-ifdef NOFORK then declare end else
-value cleanup_verbose = ref True;
-ifdef NOFORK then declare end else
+IFDEF NOFORK THEN declare end ELSE
+value pids = ref []
+END;
+IFDEF NOFORK THEN declare end ELSE
+value cleanup_verbose = ref True
+END;
+IFDEF NOFORK THEN declare end ELSE
 value cleanup_sons () =
   List.iter
     (fun p ->
@@ -383,12 +392,12 @@ value cleanup_sons () =
          [ Unix.Unix_error _ _ _ as exc ->
              do {
                if cleanup_verbose.val then do {
-                 Printf.eprintf "*** Why error on waitpid %d?\n" p;
+                 eprintf "*** Why error on waitpid %d?\n" p;
                  flush stderr;
                  print_exc exc;
-                 Printf.eprintf "[";
-                 List.iter (fun p -> Printf.eprintf " %d" p) pids.val;
-                 Printf.eprintf "]\n";
+                 eprintf "[";
+                 List.iter (fun p -> eprintf " %d" p) pids.val;
+                 eprintf "]\n";
                  flush stderr;
                  cleanup_verbose.val := False;
                }
@@ -399,9 +408,9 @@ value cleanup_sons () =
        if pid = 0 then ()
        else pids.val := list_remove pid pids.val)
      pids.val
-;
+END;
 
-ifdef NOFORK then declare end else
+IFDEF NOFORK THEN declare end ELSE
 value wait_available max_clients s =
   match max_clients with
   [ Some m ->
@@ -409,12 +418,12 @@ value wait_available max_clients s =
         if List.length pids.val >= m then
 (*
 let tm = Unix.localtime (Unix.time ()) in
-let _ = do { Printf.eprintf "*** %02d/%02d/%4d %02d:%02d:%02d " tm.Unix.tm_mday (succ tm.Unix.tm_mon) (1900 + tm.Unix.tm_year) tm.Unix.tm_hour tm.Unix.tm_min tm.Unix.tm_sec; Printf.eprintf "%d clients running; waiting...\n" m; flush stderr; } in
+let _ = do { eprintf "*** %02d/%02d/%4d %02d:%02d:%02d " tm.Unix.tm_mday (succ tm.Unix.tm_mon) (1900 + tm.Unix.tm_year) tm.Unix.tm_hour tm.Unix.tm_min tm.Unix.tm_sec; eprintf "%d clients running; waiting...\n" m; flush stderr; } in
 *)
           let (pid, _) = Unix.wait () in
 (*
 let tm = Unix.localtime (Unix.time ()) in
-let _ = do { Printf.eprintf "*** %02d/%02d/%4d %02d:%02d:%02d " tm.Unix.tm_mday (succ tm.Unix.tm_mon) (1900 + tm.Unix.tm_year) tm.Unix.tm_hour tm.Unix.tm_min tm.Unix.tm_sec; Printf.eprintf "ok: place for another client\n"; flush stderr; } in
+let _ = do { eprintf "*** %02d/%02d/%4d %02d:%02d:%02d " tm.Unix.tm_mday (succ tm.Unix.tm_mon) (1900 + tm.Unix.tm_year) tm.Unix.tm_hour tm.Unix.tm_min tm.Unix.tm_sec; eprintf "ok: place for another client\n"; flush stderr; } in
 *)
           pids.val := list_remove pid pids.val
         else ();
@@ -425,19 +434,19 @@ let _ = do { Printf.eprintf "*** %02d/%02d/%4d %02d:%02d:%02d " tm.Unix.tm_mday 
           if pids.val <> [] && not stop_verbose.val then do {
             stop_verbose.val := True;
             let tm = Unix.localtime (Unix.time ()) in
-Printf.eprintf "*** %02d/%02d/%4d %02d:%02d:%02d %d process(es) remaining after cleanup (%d)\n" tm.Unix.tm_mday (succ tm.Unix.tm_mon) (1900 + tm.Unix.tm_year) tm.Unix.tm_hour tm.Unix.tm_min tm.Unix.tm_sec (List.length pids.val) (List.hd pids.val); flush stderr; ()
+eprintf "*** %02d/%02d/%4d %02d:%02d:%02d %d process(es) remaining after cleanup (%d)\n" tm.Unix.tm_mday (succ tm.Unix.tm_mon) (1900 + tm.Unix.tm_year) tm.Unix.tm_hour tm.Unix.tm_min tm.Unix.tm_sec (List.length pids.val) (List.hd pids.val); flush stderr; ()
           }
           else ();
         };
       }
   | None -> () ]
-;
+END;
 
 value wait_and_compact s =
   if Unix.select [s] [] [] 15.0 = ([], [], []) then do {
-    Printf.eprintf "Compacting... "; flush stderr;
+    eprintf "Compacting... "; flush stderr;
     Gc.compact ();
-    Printf.eprintf "Ok\n"; flush stderr;
+    eprintf "Ok\n"; flush stderr;
   }
   else ()
 ;
@@ -457,14 +466,27 @@ value skip_possible_remaining_chars fd =
   }
 ;
 
+value check_stopping () =
+  if Sys.file_exists stop_server.val then do {
+    flush stdout;
+    eprintf "\nServer stopped by presence of file %s.\n" stop_server.val;
+    eprintf "Remove that file to allow servers to run again.\n";
+    flush stderr;
+    exit 0
+  }
+  else ()
+;
+
 value accept_connection tmout max_clients callback s =
   do {
-    ifdef NOFORK then wait_and_compact s
-    else if noproc.val then wait_and_compact s
-    else wait_available max_clients s;
+    IFDEF NOFORK THEN wait_and_compact s
+    ELSE if noproc.val then wait_and_compact s
+    else wait_available max_clients s
+    END;
     let (t, addr) = Unix.accept s in
+    check_stopping ();
     Unix.setsockopt t Unix.SO_KEEPALIVE True;
-    ifdef NOFORK then
+    IFDEF NOFORK THEN
       let cleanup () =
         do {
           try Unix.shutdown t Unix.SHUTDOWN_SEND with _ -> ();
@@ -477,15 +499,14 @@ value accept_connection tmout max_clients callback s =
         treat_connection tmout callback addr t;
         cleanup ();
       }
-    else ifdef UNIX then
+    ELSIFDEF UNIX THEN
       match try Some (Unix.fork ()) with _ -> None with
       [ Some 0 ->
           do {
             try do {
               if max_clients = None && Unix.fork () <> 0 then exit 0 else ();
               Unix.close s;
-              Unix.dup2 t Unix.stdout;
-              Unix.dup2 t Unix.stdin;
+              wserver_oc.val := Unix.out_channel_of_descr t;
 (*  
    j'ai l'impression que cette fermeture fait parfois bloquer le serveur...
               try Unix.close t with _ -> ();
@@ -511,15 +532,15 @@ value accept_connection tmout max_clients callback s =
             else pids.val := [id :: pids.val];
           }
       | None ->
-          do { Unix.close t; Printf.eprintf "Fork failed\n"; flush stderr } ]
-    else do {
+          do { Unix.close t; eprintf "Fork failed\n"; flush stderr } ]
+    ELSE do {
       let oc = open_out_bin sock_in.val in
       let cleanup () = try close_out oc with _ -> () in
       try copy_what_necessary t oc with
       [ Unix.Unix_error _ _ _ -> ()
       | exc -> do { cleanup (); raise exc } ];
       cleanup ();
-      ifdef SYS_COMMAND then
+      IFDEF SYS_COMMAND THEN
         let comm =
           let stringify_if_spaces s =
             try let _ = String.index s ' ' in "\"" ^ s ^ "\"" with
@@ -530,7 +551,7 @@ value accept_connection tmout max_clients callback s =
           "-wserver " ^ string_of_sockaddr addr
         in
         let _ = Sys.command comm in ()
-      else if noproc.val then do {
+      ELSE if noproc.val then do {
         let fd = Unix.openfile sock_in.val [Unix.O_RDONLY] 0 in
         let oc = open_out_bin sock_out.val in
         wserver_oc.val := oc;
@@ -555,9 +576,8 @@ let args = Sys.argv in
         in
         let _ = Unix.waitpid [] pid in
         let ic = open_in_bin sock_in.val in
-        let request = get_request (Stream.of_channel ic) in
         close_in ic
-      ;
+      END;
       let cleanup () =
         do {
           try Unix.shutdown t Unix.SHUTDOWN_SEND with _ -> ();
@@ -573,7 +593,7 @@ let args = Sys.argv in
           try
             loop () where rec loop () =
               let len = input ic buff 0 (String.length buff) in
-              if len == 0 then ()
+              if len = 0 then ()
               else do {
                 loop_write 0 where rec loop_write i =
                   let olen = Unix.write t buff i (len - i) in
@@ -590,25 +610,27 @@ let args = Sys.argv in
       | exc -> do { cleanup (); raise exc } ];
       cleanup ();
     }
+    END
   }
 ;
 
 value f addr_opt port tmout max_clients g =
   match
-    ifdef NOFORK then None
-    else ifdef WIN95 then
-      ifdef SYS_COMMAND then
+    IFDEF NOFORK THEN None
+    ELSIFDEF WIN95 THEN
+      IFDEF SYS_COMMAND THEN
         let len = Array.length Sys.argv in
         if len > 2 && Sys.argv.(len - 2) = "-wserver" then
           Some Sys.argv.(len - 1)
         else None
-      else
+      ELSE
         try Some (Sys.getenv "WSERVER") with [ Not_found -> None ]
-    else None
+      END
+    ELSE None END
   with
   [ Some s ->
-      ifdef NOFORK then ()
-      else ifdef WIN95 then do {
+      IFDEF NOFORK THEN ()
+      ELSIFDEF WIN95 THEN do {
         let addr = sockaddr_of_string s in
         let fd = Unix.openfile sock_in.val [Unix.O_RDONLY] 0 in
         let oc = open_out_bin sock_out.val in
@@ -616,35 +638,37 @@ value f addr_opt port tmout max_clients g =
         ignore (treat_connection tmout g addr fd);
         exit 0
       }
-      else ()
+      ELSE () END
   | None ->
-      let addr =
-        match addr_opt with
-        [ Some addr ->
-            try Unix.inet_addr_of_string addr with
-            [ Failure _ -> (Unix.gethostbyname addr).Unix.h_addr_list.(0) ]
-        | None -> Unix.inet_addr_any ]
-      in
-      let s = Unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
       do {
+        check_stopping ();
+        let addr =
+          match addr_opt with
+          [ Some addr ->
+              try Unix.inet_addr_of_string addr with
+              [ Failure _ -> (Unix.gethostbyname addr).Unix.h_addr_list.(0) ]
+          | None -> Unix.inet_addr_any ]
+        in
+        let s = Unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
         Unix.setsockopt s Unix.SO_REUSEADDR True;
         Unix.bind s (Unix.ADDR_INET addr port);
         Unix.listen s 4;
-        ifdef NOFORK then Sys.set_signal Sys.sigpipe Sys.Signal_ignore
-        else ifdef UNIX then let _ = Unix.nice 1 in ()
-        else ();
+        IFDEF NOFORK THEN Sys.set_signal Sys.sigpipe Sys.Signal_ignore
+        ELSIFDEF UNIX THEN let _ = Unix.nice 1 in ()
+        ELSE () END;
         let tm = Unix.localtime (Unix.time ()) in
-        Printf.eprintf "Ready %4d-%02d-%02d %02d:%02d port"
+        eprintf "Ready %4d-%02d-%02d %02d:%02d port"
           (1900 + tm.Unix.tm_year) (succ tm.Unix.tm_mon) tm.Unix.tm_mday
           tm.Unix.tm_hour tm.Unix.tm_min;
-        Printf.eprintf " %d" port;
-        Printf.eprintf "...\n";
+        eprintf " %d" port;
+        eprintf "...\n";
         flush stderr;
         while True do {
           try accept_connection tmout max_clients g s with
           [ Unix.Unix_error Unix.ECONNRESET "accept" _ -> ()
           | Unix.Unix_error (Unix.EBADF | Unix.ENOTSOCK) "accept" _ as x ->
               (* oops! *) raise x
+          | Sys_error "Broken pipe" -> ()
           | exc -> print_err_exc exc ];
           try wflush () with [ Sys_error _ -> () ];
           try flush stdout with [ Sys_error _ -> () ];

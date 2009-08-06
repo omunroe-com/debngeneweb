@@ -1,7 +1,7 @@
-(* $Id: srcfile.mli,v 4.2 2004/12/14 09:30:17 ddr Exp $ *)
-(* Copyright (c) 1998-2005 INRIA *)
+(* $Id: srcfile.mli,v 5.5 2007/01/19 01:53:17 ddr Exp $ *)
+(* Copyright (c) 1998-2007 INRIA *)
 
-open Def;
+open Gwdb;
 open Config;
 
 value print : config -> base -> string -> unit;

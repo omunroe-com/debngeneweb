@@ -1,17 +1,18 @@
-# $Id: Makefile,v 4.18 2004/07/01 14:00:24 ddr Exp $
+# $Id: Makefile,v 5.1 2007/02/26 10:33:04 ddr Exp $
 
 PREFIX=/usr
 LANGDIR=$(PREFIX)/share/geneweb
 DOCDIR=$(PREFIX)/share/geneweb/doc
 MANDIR=$(PREFIX)/man/man1
 DESTDIR=distribution
-MANPAGES=ged2gwb.1 gwb2ged.1 gwc.1 gwu.1
+MANPAGES=ged2gwb.1 gwb2ged.1 gwc.1 gwu.1 gwd.1 consang.1 gwsetup.1
 
 include tools/Makefile.inc
 
 all:: opt
 
 out::
+	cd src; $(MAKE) ppdef
 	cd wserver; $(MAKE) all
 	cd dag2html; $(MAKE) out
 	cd src; $(MAKE) PREFIX=$(PREFIX) all
@@ -22,6 +23,7 @@ out::
 	cd gwtp; $(MAKE) all
 
 opt::
+	cd src; $(MAKE) ppdef
 	cd wserver; $(MAKE) opt
 	cd dag2html; $(MAKE) opt
 	cd src; $(MAKE) PREFIX=$(PREFIX) opt
@@ -131,10 +133,14 @@ classical_distrib:
 	cp etc/INSTALL.htm $(DESTDIR)/.
 	cp etc/a.gwf $(DESTDIR)/.
 	mkdir $(DESTDIR)/doc
+	mkdir $(DESTDIR)/doc/wdoc
 	cp doc/*.htm $(DESTDIR)/doc/.
+	cp doc/wdoc/*.txt $(DESTDIR)/doc/wdoc/.
 	for i in de en fr it nl sv; do \
 	  mkdir $(DESTDIR)/doc/$$i; \
+	  mkdir $(DESTDIR)/doc/wdoc/$$i; \
 	  cp doc/$$i/*.htm $(DESTDIR)/doc/$$i/.; \
+	  if test -d "doc/wdoc/$$i"; then cp doc/wdoc/$$i/*.txt $(DESTDIR)/doc/wdoc/$$i/.; fi; \
 	done
 	mkdir $(DESTDIR)/doc/images
 	cp doc/images/*.jpg doc/images/gwlogo.png $(DESTDIR)/doc/images/.
@@ -144,6 +150,15 @@ classical_distrib:
 	cp hd/images/*.jpg hd/images/*.png $(DESTDIR)/images/.
 	mkdir $(DESTDIR)/etc
 	cp hd/etc/*.txt $(DESTDIR)/etc/.
+
+windows_files:
+	@for i in distribution/*.txt distribution/gw/*.txt; do \
+	  echo "========================================="; \
+	  echo $$i; \
+	  cp $$i $$i~; \
+	  sed -e 's/$$/\r/' $$i~ > $$i; \
+	  rm $$i~; \
+	done
 
 clean::
 	cd wserver; $(MAKE) clean
@@ -161,6 +176,8 @@ clean_mismatch:
 	rm src/pa_lock.cmo src/pa_html.cmo src/def.syn.cmo
 
 depend:
+	cd src; $(MAKE) ppdef pr_dep.cmo def.syn.cmo gwlib.ml
+	cd src; $(MAKE) pa_lock.cmo pa_html.cmo q_codes.cmo
 	cd wserver; $(MAKE) depend
 	cd src; $(MAKE) depend
 	cd ged2gwb; $(MAKE) depend
