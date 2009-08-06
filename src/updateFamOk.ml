@@ -1,5 +1,5 @@
-(* camlp4r ./pa_html.cmo *)
-(* $Id: updateFamOk.ml,v 5.48 2007/01/19 01:53:17 ddr Exp $ *)
+(* camlp5r ./pa_html.cmo *)
+(* $Id: updateFamOk.ml,v 5.51 2007/09/12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -381,41 +381,6 @@ value infer_origin_file conf base ifam ncpl ndes =
   else r
 ;
 
-value update_related_witnesses base ofam_witn nfam_witn ncpl =
-  let mod_ippl = [] in
-  let mod_ippl =
-    List.fold_left
-      (fun ippl ip ->
-         if List.mem ip ofam_witn then ippl
-         else
-           let p = gen_person_of_person (poi base ip) in
-           if not (List.mem (Adef.father ncpl) p.related) then
-             let p = {(p) with related = [Adef.father ncpl :: p.related]} in
-             if List.mem_assoc ip ippl then ippl else [(ip, p) :: ippl]
-           else ippl)
-      mod_ippl nfam_witn
-  in
-  let mod_ippl =
-    List.fold_left
-      (fun ippl ip ->
-         if List.mem ip nfam_witn then ippl
-         else
-           let p =
-             try List.assoc ip ippl with
-             [ Not_found -> gen_person_of_person (poi base ip) ]
-           in
-           if List.mem (Adef.father ncpl) p.related then
-             let p =
-               {(p) with
-                related = (List.filter ( \<> (Adef.father ncpl)) p.related)}
-             in
-             if List.mem_assoc ip ippl then ippl else [(ip, p) :: ippl]
-           else ippl)
-      mod_ippl ofam_witn
-  in
-  List.iter (fun (ip, p) -> patch_person base ip p) mod_ippl
-;
-
 value effective_mod conf base sfam scpl sdes = do {
   let fi = sfam.fam_index in
   let (oorigin, owitnesses) =
@@ -546,8 +511,8 @@ value effective_mod conf base sfam scpl sdes = do {
     ndes.children;
   Update.add_misc_names_for_new_persons base created_p.val;
   Update.update_misc_names_of_family base Male {family = get_family nfath};
-  update_related_witnesses base (Array.to_list owitnesses)
-    (Array.to_list nfam.witnesses) ncpl;
+  Update.update_related_pointers base (Adef.father ncpl)
+    (Array.to_list owitnesses) (Array.to_list nfam.witnesses);
   (fi, nfam, ncpl, ndes)
 };
 
@@ -610,7 +575,8 @@ value effective_add conf base sfam scpl sdes =
       ndes.children;
     Update.add_misc_names_for_new_persons base created_p.val;
     Update.update_misc_names_of_family base Male nfath_u;
-    update_related_witnesses base [] (Array.to_list nfam.witnesses) ncpl;
+    Update.update_related_pointers base (Adef.father ncpl) []
+      (Array.to_list nfam.witnesses);
     (fi, nfam, ncpl, ndes)
   }
 ;
@@ -944,9 +910,14 @@ value family_structure conf base ifam =
 
 value print_mod o_conf base =
   let conf = Update.update_conf o_conf in
-  let callback sfam scpl sdes =
+  let callback sfam scpl sdes = do {
     let ofs = family_structure conf base sfam.fam_index in
     let (ifam, fam, cpl, des) = effective_mod conf base sfam scpl sdes in
+    let s =
+      let sl = [fam.comment; fam.fsources] in
+      String.concat " " (List.map (sou base) sl)
+    in
+    Notes.update_notes_links_db conf (NotesLinks.PgFam ifam) s;
     let nfs = (Adef.parent_array cpl, des.children) in
     let onfs = Some (ofs, nfs) in
     let wl =
@@ -959,12 +930,11 @@ value print_mod o_conf base =
           (if Adef.mother cpl = ip then mother scpl else father scpl, ip)
       | None -> (father scpl, Adef.iper_of_int (-1)) ]
     in
-    do {
-      Util.commit_patches conf base;
-      History.record conf base (fn, sn, occ, ip) "mf";
-      Update.delete_topological_sort conf base;
-      print_mod_ok conf base wl cpl des
-    }
+    Util.commit_patches conf base;
+    History.record conf base (fn, sn, occ, ip) "mf";
+    Update.delete_topological_sort conf base;
+    print_mod_ok conf base wl cpl des
+  }
   in
   print_mod_aux conf base callback
 ;

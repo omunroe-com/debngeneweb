@@ -1,5 +1,5 @@
-(* camlp4r ./pa_html.cmo *)
-(* $Id: update.ml,v 5.40 2007/01/19 01:53:17 ddr Exp $ *)
+(* camlp5r ./pa_html.cmo *)
+(* $Id: update.ml,v 5.45 2007/09/12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -197,12 +197,7 @@ value print_warning conf base =
         (fun _ ->
            Printf.sprintf "%s%s" (print_someone_strong conf base p)
              (Date.short_dates_text conf base p))
-  | IncoherentSex p _ _ ->
-      Wserver.wprint
-        (fcapitale
-           (ftransl conf "%t's sex is not coherent with his/her relations"))
-        (fun _ -> print_someone_strong conf base p)
-  | ChangedOrderOfChildren ifam des before -> do {
+  | ChangedOrderOfChildren ifam des before after -> do {
       let cpl = foi base ifam in
       let fath = poi base (get_father cpl) in
       let moth = poi base (get_mother cpl) in
@@ -227,7 +222,6 @@ value print_warning conf base =
              end)
           arr
       in
-      let after = get_children des in
       let (bef_d, aft_d) = Diff.f before after in
       tag "table" "style=\"margin:1em\"" begin
         tag "tr" begin
@@ -276,6 +270,15 @@ value print_warning conf base =
         (fun _ ->
            Printf.sprintf "%s%s" (print_someone_strong conf base father)
              (Date.short_dates_text conf base father))
+  | IncoherentSex p _ _ ->
+      Wserver.wprint
+        (fcapitale
+           (ftransl conf "%t's sex is not coherent with his/her relations"))
+        (fun _ -> print_someone_strong conf base p)
+  | IncoherentAncestorDate anc p ->
+      Wserver.wprint "%s has a younger ancestor %s"
+        (print_someone_strong conf base p)
+        (print_someone_strong conf base anc)
   | MarriageDateAfterDeath p ->
       Wserver.wprint
         (fcapitale (ftransl conf "marriage of %t after his/her death"))
@@ -794,3 +797,44 @@ value update_conf conf =
       [ Some _ -> update_conf_create conf
       | None -> conf ] ]
 ;
+
+value rec list_except x =
+  fun
+  [ [y :: l] -> if x = y then l else [y :: list_except x l]
+  | [] -> invalid_arg "list_except" ]
+;
+
+value update_related_pointers base pi ol nl = do {
+  let ol = List.sort compare ol in
+  let nl = List.sort compare nl in
+  let (added_rel, removed_rel) =
+    loop ([], []) ol nl where rec loop (added_rel, removed_rel) ol nl =
+      match (ol, nl) with
+      [ ([oip :: orl], [nip :: nrl]) ->
+          if oip < nip then
+            loop (added_rel, [oip :: removed_rel]) orl nl
+          else if oip > nip then
+            loop ([nip :: added_rel], removed_rel) ol nrl
+          else loop (added_rel, removed_rel) orl nrl
+      | ([], _) -> (nl @ added_rel, removed_rel)
+      | (_, []) -> (added_rel, ol @ removed_rel) ]
+  in
+  List.iter
+    (fun ip ->
+       let p = gen_person_of_person (poi base ip) in
+       patch_person base ip {(p) with related = [pi :: p.related]})
+    added_rel;
+  List.iter
+    (fun ip ->
+       let p = gen_person_of_person (poi base ip) in
+       let related =
+         if List.mem pi p.related then list_except pi p.related
+         else do {
+           Printf.eprintf "Warning: related pointer was missing\n";
+           flush stderr;
+           p.related
+         }
+       in
+       patch_person base ip {(p) with related = related})
+    removed_rel;
+};

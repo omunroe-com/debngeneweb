@@ -1,4 +1,4 @@
-(* $Id: util.mli,v 5.33 2007/01/19 01:53:17 ddr Exp $ *)
+(* $Id: util.mli,v 5.36 2007/07/26 01:57:42 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -56,10 +56,6 @@ value is_hidden : person -> bool;
 
 value pget : config -> base -> iper -> person;
 
-(* equivalent to pget: ought to be replaced in the code *)
-value aget : config -> base -> iper -> person;
-value uget : config -> base -> iper -> person;
-
 type p_access = (base -> person -> string * base -> person -> string);
 value std_access : p_access;
 value raw_access : p_access;
@@ -108,6 +104,7 @@ value allowed_tags_file : ref string;
 value body_prop : config -> string;
 value url_no_index : config -> base -> string;
 value message_to_wizard : config -> unit;
+value check_xhtml : string -> string;
 
 value print_alphab_list :
   config -> ('a -> string) -> ('a -> unit) -> list 'a -> unit;
@@ -149,6 +146,8 @@ value relation_txt :
   config -> sex -> family -> format (('a -> 'b) -> 'b) 'a 'b;
 
 value string_of_decimal_num : config -> float -> string;
+
+value person_exists : config -> base -> (string * string * int) -> bool;
 
 value find_person_in_env : config -> base -> string -> option person;
 value find_sosa_ref : config -> base -> option person;

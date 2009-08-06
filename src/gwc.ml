@@ -1,5 +1,5 @@
-(* camlp4r ./pa_lock.cmo *)
-(* $Id: gwc.ml,v 5.53 2007/02/14 10:14:36 ddr Exp $ *)
+(* camlp5r ./pa_lock.cmo *)
+(* $Id: gwc.ml,v 5.56 2007/09/12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Dbdisk;
@@ -50,6 +50,7 @@ type gen =
     g_def : mutable array bool;
     g_separate : mutable bool;
     g_shift : mutable int;
+    g_first_av_occ : Hashtbl.t (string * string) int;
     g_errored : mutable bool;
     g_per_index : out_channel;
     g_per : out_channel;
@@ -275,13 +276,20 @@ value add_person_by_name gen first_name surname occ iper =
 ;
 
 value find_first_available_occ gen fn sn occ =
+  let occ =
+    try max occ (Hashtbl.find gen.g_first_av_occ (fn, sn)) with
+    [ Not_found -> occ ]
+  in
   loop occ where rec loop occ =
     match
       try Some (find_person_by_global_name gen fn sn occ) with
       [ Not_found -> None ]
     with
     [ Some _ -> loop (occ + 1)
-    | None -> occ ]
+    | None -> do {
+        Hashtbl.add gen.g_first_av_occ (fn, sn) occ;
+        occ
+      } ]
 ;
 
 value insert_undefined gen key =
@@ -517,15 +525,12 @@ value insert_family gen co fath_sex moth_sex witl fo deo =
   let (moth, imoth) = insert_somebody gen (Adef.mother co) in
   let witl =
     List.map
-      (fun (wit, sex) ->
+      (fun (wit, sex) -> do {
          let (p, ip) = insert_somebody gen wit in
-         do {
-           notice_sex gen p sex;
-           if not (List.mem ifath p.m_related) then
-             p.m_related := [ifath :: p.m_related]
-           else ();
-           ip
-         })
+         notice_sex gen p sex;
+         p.m_related := [ifath :: p.m_related];
+         ip
+       })
       witl
   in
   let children =
@@ -642,16 +647,12 @@ value map_option f =
   | None -> None ]
 ;
 
-value insert_relation_parent gen ip s k =
+value insert_relation_parent gen ip s k = do {
   let (par, ipar) = insert_somebody gen k in
-  do {
-    if not (List.mem ip par.m_related) then
-      par.m_related := [ip :: par.m_related]
-    else ();
-    if par.m_sex = Neuter then par.m_sex := s else ();
-    ipar
-  }
-;
+  par.m_related := [ip :: par.m_related];
+  if par.m_sex = Neuter then par.m_sex := s else ();
+  ipar
+};
 
 value insert_relation gen ip r =
   {r_type = r.r_type;
@@ -898,7 +899,8 @@ value link gwo_list tmp_dir bdir =
        g_local_names = Hashtbl.create 20011; g_pcnt = 0; g_fcnt = 0;
        g_scnt = 0; g_base = empty_base; g_patch_p = Hashtbl.create 20011;
        g_wiznotes = [];
-       g_def = [| |]; g_separate = False; g_shift = 0; g_errored = False;
+       g_def = [| |]; g_separate = False; g_shift = 0;
+       g_first_av_occ = Hashtbl.create 1; g_errored = False;
        g_per_index = open_out_bin tmp_per_index;
        g_per = open_out_bin tmp_per;
        g_fam_index = open_out_bin tmp_fam_index;

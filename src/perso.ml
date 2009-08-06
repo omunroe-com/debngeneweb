@@ -1,5 +1,5 @@
-(* camlp4r *)
-(* $Id: perso.ml,v 5.64 2007/02/10 05:23:29 ddr Exp $ *)
+(* camlp5r *)
+(* $Id: perso.ml,v 5.82 2007/09/12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -121,15 +121,9 @@ value string_of_title conf base and_txt p (nth, name, title, places, dates) =
   }
 ;
 
-value eq_title_names n1 n2 =
-  match (n1, n2) with
-  [ (Tname s1, Tname s2) -> eq_istr s1 s2
-  | (Tname _, _) | (_, Tname _) -> False
-  | _ -> n1 = n2 ]
-;
-
 value name_equiv n1 n2 =
-  eq_title_names n1 n2 || n1 = Tmain && n2 = Tnone || n1 = Tnone && n2 = Tmain
+  Futil.eq_title_names eq_istr n1 n2 || n1 = Tmain && n2 = Tnone ||
+  n1 = Tnone && n2 = Tmain
 ;
 
 value nobility_titles_list conf base p =
@@ -192,7 +186,7 @@ value find_sosa_aux conf base a p =
                tstab.(Adef.int_of_iper ip) then
             gene_find zil
           else
-            let asc = aget conf base ip in
+            let asc = pget conf base ip in
             match get_parents asc with
             [ Some ifam ->
                 let cpl = foi base ifam in
@@ -242,7 +236,7 @@ value find_sosa conf base a sosa_ref_l =
   [ Some p ->
       if get_key_index a = get_key_index p then Some (Num.one, p)
       else
-        let u = uget conf base (get_key_index a) in
+        let u = pget conf base (get_key_index a) in
         if has_children base u then find_sosa_aux conf base a p else None
   | None -> None ]
 ;
@@ -257,7 +251,7 @@ value max_ancestor_level conf base ip max_lev =
       x.val := max x.val level;
       if x.val = max_lev then ()
       else
-        match get_parents (aget conf base ip) with
+        match get_parents (pget conf base ip) with
         [ Some ifam ->
             let cpl = foi base ifam in
             do {
@@ -305,7 +299,7 @@ value make_desc_level_table conf base max_level p = do {
      because '%max_desc_level;' is still used... *)
   let levt = Array.create (nb_of_persons base) infinite in
   let flevt = Array.create (nb_of_families base) infinite in
-  let get = poi base in
+  let get = pget conf base in
   let ini_ip = get_key_index p in
   let rec fill lev =
     fun
@@ -321,8 +315,8 @@ value make_desc_level_table conf base max_level p = do {
                    if ip = ini_ip then True
                    else
                      match line with
-                     [ Male -> get_sex (poi base ip) <> Female
-                     | Female -> get_sex (poi base ip) <> Male
+                     [ Male -> get_sex (pget conf base ip) <> Female
+                     | Female -> get_sex (pget conf base ip) <> Male
                      | Neuter -> True ]
                  in
                  if down then
@@ -381,7 +375,7 @@ value next_generation conf base mark gpl =
          [ GP_person n ip _ ->
              let n_fath = Num.twice n in
              let n_moth = Num.inc n_fath 1 in
-             let a = aget conf base ip in
+             let a = pget conf base ip in
              match get_parents a with
              [ Some ifam ->
                  let cpl = foi base ifam in
@@ -468,7 +462,7 @@ value get_link all_gp ip =
 value parent_sosa conf base ip all_gp n parent =
   if sosa_is_present all_gp n then Num.to_string n
   else
-    match get_parents (aget conf base ip) with
+    match get_parents (pget conf base ip) with
     [ Some ifam ->
         match get_link all_gp (parent (foi base ifam)) with
         [ Some (GP_person n _ _) -> Num.to_string n
@@ -575,7 +569,7 @@ value tree_generation_list conf base gv p =
          match po with
          [ Empty -> [Empty :: list]
          | Cell p _ _ _ _ ->
-             match get_parents (aget conf base (get_key_index p)) with
+             match get_parents p with
              [ Some ifam ->
                  let cpl = foi base ifam in
                  let fath =
@@ -624,7 +618,7 @@ value get_date_place conf base auth_for_all_anc p =
           (fun d ifam ->
              if d <> None then d
              else Adef.od_of_codate (get_marriage (foi base ifam)))
-          d1 (Array.to_list (get_family (uget conf base (get_key_index p))))
+          d1 (Array.to_list (get_family p))
     in
     let d2 =
       match get_death p with
@@ -658,7 +652,7 @@ value get_date_place conf base auth_for_all_anc p =
             (fun pl ifam ->
                if pl <> "" then pl
                else sou base (get_marriage_place (foi base ifam)))
-            pl (Array.to_list (get_family (uget conf base (get_key_index p))))
+            pl (Array.to_list (get_family p))
       in
       pl
     in
@@ -813,7 +807,7 @@ value build_surnames_list conf base v p =
     else do {
       mark.(Adef.int_of_iper (get_key_index p)) :=
         mark.(Adef.int_of_iper (get_key_index p)) - 1;
-      match get_parents (aget conf base (get_key_index p)) with
+      match get_parents p with
       [ Some ifam ->
           let cpl = foi base ifam in
           let fath = pget conf base (get_father cpl) in
@@ -909,6 +903,30 @@ value linked_page_text conf base p s key str (pg, (_, il)) =
            [ Not_found -> str ])
         list str
   | _ -> str ]
+;
+
+value links_to_ind conf base db key =
+  let list =
+    List.fold_left
+      (fun pgl (pg, (_, il)) ->
+         let record_it =
+           match pg with
+           [ NotesLinks.PgInd ip -> authorized_age conf base (pget conf base ip)
+           | NotesLinks.PgFam ifam ->
+               let fam = foi base ifam in
+               if is_deleted_family fam then False
+               else authorized_age conf base (pget conf base (get_father fam))
+           | NotesLinks.PgNotes | NotesLinks.PgMisc _
+           | NotesLinks.PgWizard _ -> True ]
+         in
+         if record_it then
+           List.fold_left
+             (fun pgl (k, _) -> if k = key then [pg :: pgl] else pgl)
+             pgl il
+         else pgl)
+      [] db
+  in
+  list_uniq (List.sort compare list)
 ;
 
 (* Interpretation of template file *)
@@ -1068,8 +1086,8 @@ value make_efam conf base ip ifam =
   let ispouse = if ip = ifath then imoth else ifath in
   let cpl = (ifath, imoth, ispouse) in
   let m_auth =
-    authorized_age conf base (poi base ifath) &&
-    authorized_age conf base (poi base imoth)
+    authorized_age conf base (pget conf base ifath) &&
+    authorized_age conf base (pget conf base imoth)
   in
   (fam, cpl, m_auth)
 ;
@@ -1178,7 +1196,17 @@ and eval_simple_str_var conf base env (_, p_auth) =
       match get_env "fam" env with
       [ Vfam _ fam _ m_auth ->
           if m_auth then
-            string_with_macros conf [] (sou base (get_comment fam))
+            let s =
+              let wi =
+                {Wiki.wi_mode = "NOTES";
+                 Wiki.wi_cancel_links = conf.cancel_links;
+                 Wiki.wi_file_path = Notes.file_path conf base;
+                 Wiki.wi_person_exists = person_exists conf base;
+                 Wiki.wi_always_show_link = conf.wizard || conf.friend}
+              in
+              Wiki.syntax_links conf wi (sou base (get_comment fam))
+            in
+            string_with_macros conf [] s
           else ""
       | _ -> raise Not_found ]
   | "count" ->
@@ -1221,7 +1249,7 @@ and eval_simple_str_var conf base env (_, p_auth) =
       match get_env "level" env with
       [ Vint i -> string_of_int i
       | _ -> "" ]  
- | "marriage_place" ->
+  | "marriage_place" ->
       match get_env "fam" env with
       [ Vfam _ fam _ m_auth ->
           if m_auth then string_of_place conf base (get_marriage_place fam)
@@ -1545,15 +1573,15 @@ and eval_ancestor_field_var conf base env gp loc =
           let ispouse = if ip = ifath then imoth else ifath in
           let c = (ifath, imoth, ispouse) in
           let m_auth =
-            authorized_age conf base (poi base ifath) &&
-            authorized_age conf base (poi base imoth)
+            authorized_age conf base (pget conf base ifath) &&
+            authorized_age conf base (pget conf base imoth)
           in
           eval_family_field_var conf base env (ifam, f, c, m_auth) loc sl
       | _ -> raise Not_found ]
   | ["father" :: sl] ->
       match gp with
       [ GP_person _ ip _ ->
-          match (get_parents (poi base ip), get_env "all_gp" env) with
+          match (get_parents (pget conf base ip), get_env "all_gp" env) with
           [ (Some ifam, Vallgp all_gp) ->
               let cpl = foi base ifam in
               match get_link all_gp (get_father cpl) with
@@ -1694,23 +1722,34 @@ and eval_person_field_var conf base env ((p, p_auth) as ep) loc =
             let sn = Name.lower (sou base (get_surname p)) in
             (fn, sn, get_occ p)
           in
-          try
-            do {
-              List.iter
-                (fun (pg, (_, il)) ->
-                   match pg with
-                   [ NotesLinks.PgMisc pg ->
-                       if List.mem_assoc key il then
-                         let (nenv, _) = Notes.read_notes base pg in
-                         try let _ = List.assoc s nenv in raise Exit
-                         with [ Not_found -> () ]
-                       else ()
-                   | _ -> () ])
-                db;
-              VVbool False
-            }
-          with
-          [ Exit -> VVbool True ]
+          let r =
+            List.exists
+              (fun (pg, (_, il)) ->
+                 match pg with
+                 [ NotesLinks.PgMisc pg ->
+                     if List.mem_assoc key il then
+                       let (nenv, _) = Notes.read_notes base pg in
+                       List.mem_assoc s nenv
+                     else False
+                 | _ -> False ])
+              db
+          in
+          VVbool r
+      | _ -> raise Not_found ]
+  | ["has_linked_pages"] ->
+      match get_env "nldb" env with
+      [ Vnldb db ->
+          let r =
+            if p_auth then
+              let key =
+                let fn = Name.lower (sou base (get_first_name p)) in
+                let sn = Name.lower (sou base (get_surname p)) in
+                (fn, sn, get_occ p)
+              in
+              links_to_ind conf base db key <> []
+            else False
+          in
+          VVbool r
       | _ -> raise Not_found ]
   | ["has_sosa"] ->
       match get_env "sosa" env with
@@ -2018,7 +2057,7 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
             if tab.(i) then ()
             else do {
               tab.(i) := True;
-              let u = uget conf base (get_key_index p) in
+              let u = p in
               for i = 0 to Array.length (get_family u) - 1 do {
                 let des = foi base (get_family u).(i) in
                 for i = 0 to Array.length (get_children des) - 1 do {
@@ -2067,16 +2106,31 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
       if p_auth then
         let env = [('i', fun () -> Util.default_image_name base p)] in
         let s = sou base (get_notes p) in
-        let s =
-          let lines = Wiki.html_of_tlsw conf s in
-          Wiki.syntax_links conf "NOTES" (Notes.file_path conf base)
-            (String.concat "\n" lines)
+        let s = string_with_macros conf env s in
+        let lines = Wiki.html_of_tlsw conf s in
+        let wi =
+          {Wiki.wi_mode = "NOTES"; Wiki.wi_cancel_links = conf.cancel_links;
+           Wiki.wi_file_path = Notes.file_path conf base;
+           Wiki.wi_person_exists = person_exists conf base;
+           Wiki.wi_always_show_link = conf.wizard || conf.friend}
         in
-        string_with_macros conf env s
+        let s = Wiki.syntax_links conf wi (String.concat "\n" lines) in
+        if conf.pure_xhtml then Util.check_xhtml s else s
       else ""
   | "occ" -> if p_auth then string_of_int (get_occ p) else ""
   | "occupation" ->
-      if p_auth then string_with_macros conf [] (sou base (get_occupation p))
+      if p_auth then
+        let s = sou base (get_occupation p) in
+        let s =
+          let wi =
+            {Wiki.wi_mode = "NOTES"; Wiki.wi_cancel_links = conf.cancel_links;
+             Wiki.wi_file_path = Notes.file_path conf base;
+             Wiki.wi_person_exists = person_exists conf base;
+             Wiki.wi_always_show_link = conf.wizard || conf.friend}
+          in
+          Wiki.syntax_links conf wi s
+        in
+        string_with_macros conf [] s
       else ""
   | "on_baptism_date" ->
       match (p_auth, Adef.od_of_codate (get_baptism p)) with
@@ -2147,7 +2201,14 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
       [ Vstring s ->
           let env = [('i', fun () -> Util.default_image_name base p)] in
           let s =
-            Wiki.syntax_links conf "NOTES" (Notes.file_path conf base) s
+            let wi =
+              {Wiki.wi_mode = "NOTES";
+               Wiki.wi_cancel_links = conf.cancel_links;
+               Wiki.wi_file_path = Notes.file_path conf base;
+               Wiki.wi_person_exists = person_exists conf base;
+               Wiki.wi_always_show_link = conf.wizard || conf.friend}
+            in
+            Wiki.syntax_links conf wi s
           in
           string_with_macros conf env s
       | _ -> raise Not_found ]
@@ -2366,7 +2427,7 @@ value print_foreach conf base print_ast eval_expr =
               let ifath = get_father cpl in
               let cpl = (ifath, get_mother cpl, ifath) in
               let m_auth =
-                p_auth && authorized_age conf base (poi base ifath)
+                p_auth && authorized_age conf base (pget conf base ifath)
               in
               let efam = Vfam ifam (foi base ifam) cpl m_auth in
               loop ep efam sl
@@ -2380,7 +2441,7 @@ value print_foreach conf base print_ast eval_expr =
               let ifath = get_father cpl in
               let cpl = (ifath, get_mother cpl, ifath) in
               let m_auth =
-                p_auth && authorized_age conf base (poi base ifath)
+                p_auth && authorized_age conf base (pget conf base ifath)
               in
               let efam = Vfam ifam (foi base ifam) cpl m_auth in
               loop ep efam sl
@@ -2610,8 +2671,8 @@ value print_foreach conf base print_ast eval_expr =
         let ispouse = spouse (get_key_index p) fam in
         let cpl = (ifath, imoth, ispouse) in
         let m_auth =
-           authorized_age conf base (poi base ifath) &&
-           authorized_age conf base (poi base imoth)
+           authorized_age conf base (pget conf base ifath) &&
+           authorized_age conf base (pget conf base imoth)
         in
         let vfam = Vfam ifam fam cpl m_auth in
         let env = [("#loop", Vint 0) :: env] in
@@ -2691,6 +2752,7 @@ value print_foreach conf base print_ast eval_expr =
   and print_foreach_related env al ((p, p_auth) as ep) =
     if p_auth then
       let list =
+        let list = list_uniq (List.sort compare (get_related p)) in
         List.fold_left
           (fun list ic ->
              let c = pget conf base ic in
@@ -2706,7 +2768,7 @@ value print_foreach conf base print_ast eval_expr =
                            loop [(c, r) :: list] rl
                        | _ -> loop list rl ] ]
                | [] -> list ])
-          [] (get_related p)
+          [] list
       in
       let list =
         List.sort
@@ -2826,29 +2888,28 @@ value print_foreach conf base print_ast eval_expr =
           (Array.to_list (get_witnesses fam))
     | _ -> () ]
   and print_foreach_witness_relation env al ((p, _) as ep) =
-    let list =
+    let list = do {
       let list = ref [] in
-      do {
-        make_list (get_related p) where rec make_list =
-          fun
-          [ [ic :: icl] ->
-              do {
-                let c = pget conf base ic in
-                if get_sex c = Male then
-                  Array.iter
-                    (fun ifam ->
-                       let fam = foi base ifam in
-                       if array_mem (get_key_index p) (get_witnesses fam)
-                       then
-                         list.val := [(ifam, fam) :: list.val]
-                       else ())
-                    (get_family (uget conf base ic))
-                else ();
-                make_list icl
-              }
-          | [] -> () ];
-        list.val
-      }
+      let related = list_uniq (List.sort compare (get_related p)) in
+      make_list related where rec make_list =
+        fun
+        [ [ic :: icl] -> do {
+            let c = pget conf base ic in
+            if get_sex c = Male then
+              Array.iter
+                (fun ifam ->
+                   let fam = foi base ifam in
+                   if array_mem (get_key_index p) (get_witnesses fam)
+                   then
+                     list.val := [(ifam, fam) :: list.val]
+                   else ())
+                (get_family (pget conf base ic))
+            else ();
+            make_list icl
+          }
+        | [] -> () ];
+      list.val
+    }
     in
     let list =
       List.sort
@@ -2870,8 +2931,8 @@ value print_foreach conf base print_ast eval_expr =
          let imoth = get_mother fam in
          let cpl = (ifath, imoth, imoth) in
          let m_auth =
-           authorized_age conf base (poi base ifath) &&
-           authorized_age conf base (poi base imoth)
+           authorized_age conf base (pget conf base ifath) &&
+           authorized_age conf base (pget conf base imoth)
          in
          if m_auth then
            let env = [("fam", Vfam ifam fam cpl True) :: env] in
@@ -2936,7 +2997,9 @@ value interp_templ templ_fname conf base p = do {
     let nldb () =
       let bdir = Util.base_path [] (conf.bname ^ ".gwb") in
       let fname = Filename.concat bdir "notes_links" in
-      Vnldb (NotesLinks.read_db_from_file fname)
+      let db = NotesLinks.read_db_from_file fname in
+      let db = Notes.merge_possible_aliases conf db in
+      Vnldb db
     in
     let all_gp () = Vallgp (get_all_generations conf base p) in
     [("p", Vind p);
@@ -2970,7 +3033,7 @@ value print conf base p =
     if conf.wizard || conf.friend then None
     else
       let src =
-        match get_parents (aget conf base (get_key_index p)) with
+        match get_parents p with
         [ Some ifam -> sou base (get_origin_file (foi base ifam))
         | None -> "" ]
       in
@@ -2998,7 +3061,7 @@ value print_ancestors_dag conf base v p =
       let set = Dag.Pset.add ip set in
       if lev <= 1 then set
       else
-        match get_parents (aget conf base ip) with
+        match get_parents (pget conf base ip) with
         [ Some ifam ->
             let cpl = foi base ifam in
             let set = loop set (lev - 1) (get_mother cpl) in
@@ -3007,7 +3070,7 @@ value print_ancestors_dag conf base v p =
   in
   let elem_txt p = Dag.Item p "" in
   let vbar_txt ip =
-    let p = poi base ip in
+    let p = pget conf base ip in
     Printf.sprintf "%sm=A;t=T;v=%d;%s;dag=on" (commd conf) v
       (acces conf base p)
   in
@@ -3029,4 +3092,32 @@ value print_ascend conf base p =
         | _ -> "ancmenu" ]
       in
       interp_templ templ conf base p ]
+;
+
+value print_what_links conf base p =
+  if authorized_age conf base p then do {
+    let key =
+      let fn = Name.lower (sou base (get_first_name p)) in
+      let sn = Name.lower (sou base (get_surname p)) in
+      (fn, sn, get_occ p)
+    in
+    let bdir = Util.base_path [] (conf.bname ^ ".gwb") in
+    let fname = Filename.concat bdir "notes_links" in
+    let db = NotesLinks.read_db_from_file fname in
+    let db = Notes.merge_possible_aliases conf db in
+    let pgl = links_to_ind conf base db key in
+    let title h = do {
+      Wserver.wprint "%s: " (capitale (transl conf "linked pages"));
+      if h then Wserver.wprint "%s" (simple_person_text conf base p True)
+      else
+        Wserver.wprint "<a href=\"%s%s\">%s</a>" (commd conf)
+          (acces conf base p) (simple_person_text conf base p True)
+    }
+    in
+    Hutil.header conf title;
+    Hutil.print_link_to_welcome conf True;
+    Notes.print_linked_list conf base pgl;
+    Hutil.trailer conf;
+  }
+  else Hutil.incorrect_request conf
 ;

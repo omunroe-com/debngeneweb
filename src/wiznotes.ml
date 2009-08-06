@@ -1,5 +1,5 @@
-(* camlp4r ./pa_html.cmo *)
-(* $Id: wiznotes.ml,v 5.47 2007/02/25 12:17:38 ddr Exp $ *)
+(* camlp5r ./pa_html.cmo *)
+(* $Id: wiznotes.ml,v 5.54 2007/09/12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -385,15 +385,22 @@ value print_whole_wiznote conf base auth_file wz wfile (s, date) ho = do {
       tag "td" begin
         let s = string_with_macros conf [] s in
         let s =
-          Wiki.html_with_summary_of_tlsw conf "NOTES"
-            (Notes.file_path conf base) edit_opt s
+          let wi =
+            {Wiki.wi_mode = "NOTES";
+             Wiki.wi_cancel_links = conf.cancel_links;
+             Wiki.wi_file_path = Notes.file_path conf base;
+             Wiki.wi_person_exists = person_exists conf base;
+             Wiki.wi_always_show_link = conf.wizard || conf.friend}
+          in
+          Wiki.html_with_summary_of_tlsw conf wi edit_opt s
         in
         let s =
           match ho with
           [ Some (case_sens, h) -> html_highlight case_sens h s
           | None -> s ]
         in
-        Wserver.wprint "%s\n" s;
+        Wserver.wprint "%s\n"
+          (if conf.pure_xhtml then Util.check_xhtml s else s);
       end;
     end;
   end;
@@ -425,8 +432,14 @@ value print_part_wiznote conf base wz s cnt0 =
     let lines = if cnt0 = 0 then [title; "<br /><br />" :: lines] else lines in
     let file_path = Notes.file_path conf base in
     let can_edit = conf.wizard && conf.user = wz || conf.manitou in
-    Wiki.print_sub_part conf can_edit file_path "NOTES" "WIZNOTES"
-      (code_varenv wz) cnt0 lines;
+    let wi =
+      {Wiki.wi_mode = "NOTES"; Wiki.wi_cancel_links = conf.cancel_links;
+       Wiki.wi_file_path = file_path;
+       Wiki.wi_person_exists = person_exists conf base;
+       Wiki.wi_always_show_link = conf.wizard || conf.friend}
+    in
+    Wiki.print_sub_part conf wi can_edit "WIZNOTES" (code_varenv wz) cnt0
+      lines;
     Hutil.trailer conf;
   }
 ;
@@ -549,8 +562,14 @@ value print_mod_ok conf base =
     let commit = commit_wiznotes conf base in
     let string_filter = string_with_macros conf [] in
     let file_path = Notes.file_path conf base in
-    Wiki.print_mod_ok conf edit_mode mode fname read_string commit
-      string_filter file_path False
+    let wi =
+      {Wiki.wi_mode = mode; Wiki.wi_cancel_links = conf.cancel_links;
+       Wiki.wi_file_path = file_path;
+       Wiki.wi_person_exists = person_exists conf base;
+       Wiki.wi_always_show_link = conf.wizard || conf.friend}
+    in
+    Wiki.print_mod_ok conf wi edit_mode fname read_string commit string_filter
+      False
 ;
 
 value wizard_denying wddir =
@@ -564,6 +583,41 @@ value wizard_denying wddir =
   | None -> [] ]
 ;
 
+value print_connected_wizard conf first wddir wz tm_user = do {
+  let (wfile, stm) = wiznote_date (wzfile wddir wz) in
+  let tm = Unix.localtime stm in
+  if wfile <> "" then
+    stag "a" "href=\"%sm=WIZNOTES;f=%s%t\""
+      (commd conf) (Util.code_varenv wz)
+      (fun _ ->
+         Printf.sprintf ";d=%d-%02d-%02d,%02d:%02d:%02d"
+           (tm.Unix.tm_year + 1900) (tm.Unix.tm_mon + 1)
+           tm.Unix.tm_mday tm.Unix.tm_hour tm.Unix.tm_min
+           tm.Unix.tm_sec)
+    begin
+      Wserver.wprint "%s" wz;
+    end
+  else Wserver.wprint "%s" wz;
+  Wserver.wprint " ";
+  stag "a" "href=\"%sm=HIST;k=20;wiz=%s\" style=\"text-decoration:none\""
+    (commd conf) (Util.code_varenv wz)
+  begin
+    Wserver.wprint "(*)";
+  end;
+  let d = conf.ctime -. tm_user in
+  if d = 0.0 then ()
+  else do {
+    Wserver.wprint " - %.0f s" d;
+    if first then do {
+      Wserver.wprint " ";
+      stag "span" "style=\"font-size:80%%\"" begin
+        Wserver.wprint "(%s)" (transl conf "since the last click");
+      end;
+    }
+    else ();
+  };
+};
+
 value do_connected_wizards conf base (_, _, _, wl) = do {
   let title _ =
     Wserver.wprint "%s"
@@ -571,11 +625,10 @@ value do_connected_wizards conf base (_, _, _, wl) = do {
   in
   header conf title;
   print_link_to_welcome conf True;
-  let tm_now = Unix.time () in
   let wddir = dir conf base in
   let denying = wizard_denying wddir in
   let wl =
-    if not (List.mem_assoc conf.user wl) then [(conf.user, tm_now) :: wl]
+    if not (List.mem_assoc conf.user wl) then [(conf.user, conf.ctime) :: wl]
     else wl
   in
   let wl = List.sort (fun (_, tm1) (_, tm2) -> compare tm1 tm2) wl in
@@ -587,39 +640,18 @@ value do_connected_wizards conf base (_, _, _, wl) = do {
            if wz <> conf.user && List.mem wz denying && not conf.manitou
            then (True, first)
            else do {
-             let (wfile, stm) = wiznote_date (wzfile wddir wz) in
-             let tm = Unix.localtime stm in
              tag "li" "style=\"list-style-type:%s\""
                (if wz = conf.user && not is_visible ||
                    conf.manitou && List.mem wz denying
                 then "circle"
                 else "disc")
              begin
-               let sec =
-                 let d = tm_now -. tm_user in
-                 if d = 0.0 then "" else Printf.sprintf " - %.0f s" d
-               in
-               if wfile <> "" then
-                 Wserver.wprint
-                   "<a href=\"%sm=WIZNOTES;f=%s%t\">%s</a>%s%s"
-                   (commd conf) (Util.code_varenv wz)
-                   (fun _ ->
-                      Printf.sprintf ";d=%d-%02d-%02d,%02d:%02d:%02d"
-                        (tm.Unix.tm_year + 1900) (tm.Unix.tm_mon + 1)
-                        tm.Unix.tm_mday tm.Unix.tm_hour tm.Unix.tm_min
-                        tm.Unix.tm_sec)
-                   wz sec
-                   (if first then
-                      " <span style=\"font-size:80%\">(" ^
-                      transl conf "since the last click" ^ ")</span>"
-                    else "")
-               else Wserver.wprint "%s%s" wz sec;
+               print_connected_wizard conf first wddir wz tm_user;
                if wz = conf.user then do {
                  Wserver.wprint " :\n%s;"
                    (transl_nth conf "you are visible/you are not visible"
                       (if is_visible then 0 else 1));
-                 Wserver.wprint
-                   " %s %s%s%s %s" (transl conf "click")
+                 Wserver.wprint " %s %s%s%s %s" (transl conf "click")
                    (Printf.sprintf "<a href=\"%sm=CHANGE_WIZ_VIS;v=%d\">"
                       (commd conf) (if is_visible then 0 else 1))
                    (transl conf "here") "</a>" (transl conf "to change");

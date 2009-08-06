@@ -1,7 +1,7 @@
 %doctype;
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: welcome.txt,v 1.35 2007/01/19 01:53:16 ddr Exp $ -->
+  <!-- $Id: welcome.txt,v 1.40 2007/08/04 07:22:30 ddr Exp $ -->
   <!-- Copyright (c) 2006-2007 INRIA -->
   <title>[
 af: Genealogie/Familiekunde
@@ -34,14 +34,15 @@ sv: Genealogi
   <meta http-equiv="Content-Style-Type" content="text/css"%/>
   <meta name="robots" content="none"%/>
   <link rel="shortcut icon" href="%image_prefix;/gwlogo.png"%/>
-  <style type="text/css"><!--
+  <style type="text/css">
     %if;(evar.templ = "random")
       %include.random_css;
     %else;
+      html { background:url('%image_prefix;/gwback.jpg') }
       span.highlight { color: %highlight;; font-weight: bold }
       #user-info { float: %right; }
       #title { padding-top: 1em }
-      #title { text-align: center;; vertical-align: middle; width: 100%% }
+      #title { text-align: center; vertical-align: middle; width: 100%% }
       #title { color: %highlight; }
       #lang { text-align: center }
       #lang .title { font-size: 80%% }
@@ -50,7 +51,7 @@ sv: Genealogi
       #lang .item span { display: none }
       #content .subtitle { text-align: center }
     %end;
-  --></style>
+  </style>
 %base_header;
 </head>
 <body%if;(evar.templ != "random")%body_prop;%end;>
@@ -221,9 +222,9 @@ fr: Les droits des magiciens sont actuellement suspendus pour maintenance.
   </div>
 %end;
 
-%if;(bvar.motd2 != "")
+%if;(bvar.motd != "")
   <div>
-    %apply;interp(bvar.motd2)
+    %apply;interp(bvar.motd)
   </div>
 %end;
 
@@ -418,7 +419,7 @@ sv: <a href="%prefix;w=f"><em>Vän</em></a> tillträde<br%/> (passord)
       </tr>
     </table>
   %else;
-    <div>
+    <div style="text-align: center">
       <form method="post" action="%action;">
         %hidden;
         [

@@ -1,5 +1,5 @@
-(* camlp4r ./def.syn.cmo ./pa_lock.cmo ./pa_html.cmo *)
-(* $Id: request.ml,v 5.52 2007/02/06 14:03:58 ddr Exp $ *)
+(* camlp5r ./def.syn.cmo ./pa_lock.cmo ./pa_html.cmo *)
+(* $Id: request.ml,v 5.60 2007/09/12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -297,8 +297,7 @@ value specify conf base n pl =
                   in
                   if p_surname base spouse <> "?" then [spouse :: spouses]
                   else spouses)
-               (Array.to_list (get_family (uget conf base (get_key_index p))))
-               []
+               (Array.to_list (get_family p)) []
            in
            match spouses with
            [ [] -> ()
@@ -436,6 +435,10 @@ value family_m conf base =
       BirthDeath.print_birth conf base
   | Some "LD" when conf.wizard || conf.friend ->
       BirthDeath.print_death conf base
+  | Some "LINKED" ->
+      match find_person_in_env conf base "" with
+      [ Some p -> Perso.print_what_links conf base p
+      | _ -> very_unknown conf ]
   | Some "LL" -> BirthDeath.print_longest_lived conf base
   | Some "LM" when conf.wizard || conf.friend ->
       BirthDeath.print_marriage conf base
@@ -469,7 +472,6 @@ value family_m conf base =
   | Some "MRG_IND_OK" when conf.wizard -> MergeIndOk.print_merge conf base
   | Some "MRG_MOD_IND_OK" when conf.wizard ->
       MergeIndOk.print_mod_merge conf base
-  | Some "RLM" -> Relation.print_multi conf base
   | Some "N" ->
       match p_getenv conf.env "v" with
       [ Some v -> Some.surname_print conf base Some.surname_not_found v
@@ -535,6 +537,7 @@ value family_m conf base =
         trailer conf;
       }
   | Some "RL" -> RelationLink.print conf base
+  | Some "RLM" -> Relation.print_multi conf base
   | Some "SND_IMAGE" when conf.wizard && conf.can_send_image ->
       SendImage.print conf base
   | Some "SND_IMAGE_OK" when conf.wizard && conf.can_send_image ->
@@ -579,7 +582,7 @@ value print_no_index conf base =
 value special_vars =
   ["alwsurn"; "cgl"; "dsrc"; "em"; "ei"; "ep"; "en"; "eoc"; "escache"; "et";
    "iz"; "log_cnl"; "log_pwd"; "log_uid"; "long"; "manitou"; "nz"; "ocz";
-   "pz"; "size"; "spouse"; "templ"]
+   "pz"; "pure_xhtml"; "size"; "spouse"; "templ"]
 ;
 
 value only_special_env = List.for_all (fun (x, _) -> List.mem x special_vars);
@@ -612,6 +615,9 @@ value extract_henv conf base =
     | None -> () ];
     match p_getenv conf.env "alwsurn" with
     [ Some x -> conf.henv := conf.henv @ [("alwsurn", x)]
+    | None -> () ];
+    match p_getenv conf.env "pure_xhtml" with
+    [ Some x -> conf.henv := conf.henv @ [("pure_xhtml", x)]
     | None -> () ];
     match p_getenv conf.env "size" with
     [ Some x -> conf.henv := conf.henv @ [("size", x)]
@@ -668,40 +674,68 @@ value print_moved conf base s =
       } ]
 ;
 
-value treat_request conf base log =
-  do {
-    match (
-      p_getenv conf.base_env "moved",
-      p_getenv conf.env "opt",
-      p_getenv conf.env "m")
-   with
-   [ (Some s, _, _) -> print_moved conf base s
-   | (_, Some "no_index", _) -> print_no_index conf base
-   | (_, _, Some "IM") -> Image.print conf base
-   | _ ->
-       do {
-         set_owner conf;
-         extract_henv conf base;
-         make_senv conf base;
-         if only_special_env conf.env then do {
-           let r = Srcfile.incr_welcome_counter conf in
-           log_count conf log r;
-           Srcfile.print_start conf base
-         }
-         else do {
-           let r = Srcfile.incr_request_counter conf in
-           log_count conf log r;
-           match p_getenv conf.env "ptempl" with
-           [ Some tname when p_getenv conf.base_env "ptempl" = Some "yes" ->
-               match find_person_in_env conf base "" with
-               [ Some p -> Perso.interp_templ tname conf base p
-               | None -> family_m conf base ]
-           | _ -> family_m conf base ];
-         };
-       } ];
-    Wserver.wflush ();
-  }
-;
+value cnt_trace = ref 50;
+value trace_keys base (fn, sn, occ) ipo = do {
+  if cnt_trace.val < 0 then ()
+  else
+    match ipo with
+    [ None -> do {
+        Printf.eprintf "(\"%s\", \"%s\", \"%d\") deleted\n" fn sn occ;
+        flush stderr;
+      }
+    | Some ip -> do {
+        decr cnt_trace;
+        let p = poi base ip in
+        let fn1 = sou base (get_first_name p) in
+        let sn1 = sou base (get_surname p) in
+        let occ1 = get_occ p in
+        if Name.lower (Mutil.nominative fn1) = fn &&
+           Name.lower (Mutil.nominative sn1) = sn &&
+           occ1 = occ
+        then do {
+          Printf.eprintf "(\"%s\", \"%s\", \"%d\") ok\n" fn sn occ;
+          flush stderr;
+        }
+        else do {
+          Printf.eprintf "Error %s.%d %s with key = (\"%s\", \"%s\", \"%d\")\n"
+            fn1 occ1 sn1 fn sn occ;
+          flush stderr;
+        }
+      } ];
+};
+
+value treat_request conf base log = do {
+  match
+    (p_getenv conf.base_env "moved",
+     p_getenv conf.env "opt",
+     p_getenv conf.env "m")
+  with
+  [ (Some s, _, _) -> print_moved conf base s
+  | (_, Some "no_index", _) -> print_no_index conf base
+  | (_, _, Some "IM") -> Image.print conf base
+  | _ ->
+      do {
+        set_owner conf;
+        extract_henv conf base;
+        make_senv conf base;
+        if only_special_env conf.env then do {
+          let r = Srcfile.incr_welcome_counter conf in
+          log_count conf log r;
+          Srcfile.print_start conf base
+        }
+        else do {
+          let r = Srcfile.incr_request_counter conf in
+          log_count conf log r;
+          match p_getenv conf.env "ptempl" with
+          [ Some tname when p_getenv conf.base_env "ptempl" = Some "yes" ->
+              match find_person_in_env conf base "" with
+              [ Some p -> Perso.interp_templ tname conf base p
+              | None -> family_m conf base ]
+          | _ -> family_m conf base ];
+        };
+      } ];
+   Wserver.wflush ();
+};
 
 value treat_request_on_possibly_locked_base conf bfile log =
   match try Left (Gwdb.open_base bfile) with e -> Right e with

@@ -1,7 +1,7 @@
 #!/bin/sh
-# $Id: camlp4_comm.sh,v 5.1 2006/09/16 10:08:20 ddr Exp $
+# $Id: camlp5_comm.sh,v 5.1 2007/09/12 09:58:44 ddr Exp $
 
-ARGS1=
+ARGS1=pa_macro.cmo
 FILE=
 while test "" != "$1"; do
 	case $1 in
@@ -14,14 +14,14 @@ done
 head -1 $FILE >/dev/null || exit 1
 
 set - $(head -1 $FILE)
-if test "$2" = "camlp4r" -o "$2" = "camlp4o" -o "$2" = "camlp4"; then
-	COMM="$2"
+if test "$2" = "camlp5r" -o "$2" = "camlp5o" -o "$2" = "camlp5"; then
+	COMM=$(echo "$2" | sed -e 's/camlp5/camlp5/g')
 	shift; shift
 	ARGS2=$(echo $* | sed -e "s/[()*]//g")
 else
-	COMM=camlp4r
+	COMM=camlp5r
 	ARGS2=
 fi
 
-echo $COMM $ARGS2 $ARGS1 $FILE
+echo $COMM $ARGS2 $ARGS1 $FILE 1>&2
 $COMM $ARGS2 $ARGS1 $FILE

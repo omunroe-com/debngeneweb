@@ -1,5 +1,5 @@
-(* camlp4r ./def.syn.cmo ./pa_html.cmo *)
-(* $Id: birthDeath.ml,v 5.34 2007/02/25 12:02:26 ddr Exp $ *)
+(* camlp5r ./def.syn.cmo ./pa_html.cmo *)
+(* $Id: birthDeath.ml,v 5.39 2007/09/12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -294,7 +294,7 @@ value print_death conf base =
           xtag "input" "type=\"hidden\" name=\"m\" value=\"LD\"";
           let ds =
             Printf.sprintf
-              "<input name=\"k\" value=\"%d\" size=\"4\" maxlength=\"4\"%s"
+              "<input name=\"k\" value=\"%d\" size=\"4\" maxlength=\"4\"%s>"
               len conf.xhs
           in
           Wserver.wprint (fcapitale (ftransl conf "the latest %t deaths"))
@@ -384,14 +384,13 @@ value print_longest_lived conf base =
     Wserver.wprint "<ul>\n";
     List.iter
       (fun (p, d, cal) ->
-         do {
-           Wserver.wprint "<li>\n";
+         tag "li" begin
            Wserver.wprint "<strong>\n";
            Wserver.wprint "%s" (referenced_person_text conf base p);
            Wserver.wprint "</strong>%s" (Date.short_dates_text conf base p);
            Wserver.wprint "\n(%d %s)" d.year (transl conf "years old");
-           Wserver.wprint ".\n";
-         })
+           Wserver.wprint ".";
+         end)
       list;
     Wserver.wprint "</ul>\n\n";
     trailer conf;
@@ -480,8 +479,8 @@ value print_oldest_engagements conf base =
     select_family conf base
       (fun ifam fam ->
          if get_relation fam = Engaged then
-           let husb = poi base (get_father fam) in
-           let wife = poi base (get_mother fam) in
+           let husb = pget conf base (get_father fam) in
+           let wife = pget conf base (get_mother fam) in
            match (get_death husb, get_death wife) with
            [ (NotDead | DontKnowIfDead, NotDead | DontKnowIfDead) ->
                Adef.od_of_codate (get_marriage fam)
@@ -584,20 +583,21 @@ value print_population_pyramid conf base = do {
   in
   let at_date =
     match p_getint conf.env "y" with
-    [ Some i -> {year = i; month = 0; day = 0; prec = Sure; delta = 0}
+    [ Some i -> {year = i; month = 31; day = 12; prec = Sure; delta = 0}
     | None -> conf.today ]
   in
-  let nb_intervals = 150 /interval in
+  let at_year = at_date.year in
+  let nb_intervals = 150 / interval in
   let men = Array.create (nb_intervals + 1) 0 in
   let wom = Array.create (nb_intervals + 1) 0 in
   for i = 0 to nb_of_persons base - 1 do {
-    let p = poi base (Adef.iper_of_int i) in
+    let p = pget conf base (Adef.iper_of_int i) in
     let sex = get_sex p in
     let dea = get_death p in
     if sex <> Neuter then do {
       match Adef.od_of_codate (get_birth p) with
       [ Some (Dgreg dmy _) ->
-          if Date.before_date at_date dmy then
+          if not (Date.before_date dmy at_date) then
             let a = CheckItem.time_elapsed dmy at_date in
             let j = min nb_intervals (a.year / interval) in
             let ok =
@@ -625,7 +625,8 @@ value print_population_pyramid conf base = do {
       (Num.of_int n)
   in
   let title _ =
-    Wserver.wprint "%s" (capitale (transl conf "population pyramid"))
+    Wserver.wprint "%s (%d)" (capitale (transl conf "population pyramid"))
+      at_year
   in
   let print_image doit sex iname =
     stagn "td" begin
@@ -636,9 +637,8 @@ value print_population_pyramid conf base = do {
               Printf.sprintf " width=\"%d\" height=\"%d\"" wid hei
           | None -> "" ]
         in
-        xtag "img" "src=\"%s/%s\"%s alt=\"%s\"%s"
-          (Util.image_prefix conf) iname wid_hei
-          (transl_nth conf "M/F" sex) conf.xhs
+        xtag "img" "src=\"%s/%s\"%s alt=\"%s\""
+          (Util.image_prefix conf) iname wid_hei (transl_nth conf "M/F" sex)
       else Wserver.wprint "&nbsp;";
     end
   in
@@ -658,7 +658,7 @@ value print_population_pyramid conf base = do {
       else loop (i - 1)
   in
   tag "div" begin
-    let c = "cellspacing=\"0\" cellpadding=\"0\"" in
+    let c = " cellspacing=\"0\" cellpadding=\"0\"" in
     tag "table"
       "border=\"%d\"%s width=\"50%%\" style=\"margin: auto\"" conf.border c
     begin
@@ -667,7 +667,7 @@ value print_population_pyramid conf base = do {
         let nb_wom = wom.(i) in
         tag "tr" begin
           stagn "td" "style=\"font-size:60%%; font-style:italic\"" begin
-            Wserver.wprint "%d" (at_date.year - i * interval);
+            Wserver.wprint "%d" (at_year - i * interval);
           end;
           stagn "td" begin Wserver.wprint "&nbsp;"; end;
           print_image (i = 0) 0 "male.png";
@@ -714,7 +714,7 @@ value print_population_pyramid conf base = do {
           print_image (i = 0) 1 "female.png";
           stagn "td" begin Wserver.wprint "&nbsp;"; end;
           stagn "td" "style=\"font-size:60%%; font-style:italic\"" begin
-            Wserver.wprint "%d" (at_date.year - i * interval);
+            Wserver.wprint "%d" (at_year - i * interval);
           end;
         end;
       };
@@ -734,7 +734,7 @@ value print_population_pyramid conf base = do {
       xtag "input" "type=\"hidden\" name=\"i\" value=\"%d\"" interval;
       xtag "input" "type=\"hidden\" name=\"lim\" value=\"%d\"" limit;
       Wserver.wprint "%s\n" (transl_nth conf "year/month/day" 0);
-      xtag "input" "name=\"y\" value=\"%d\" size=\"5\"" at_date.year;
+      xtag "input" "name=\"y\" value=\"%d\" size=\"5\"" at_year;
     end;
   end;
   Hutil.trailer conf;

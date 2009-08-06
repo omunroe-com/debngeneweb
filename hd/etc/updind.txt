@@ -1,7 +1,7 @@
 %doctype;
-<html>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: updind.txt,v 5.10 2007/01/19 01:53:16 ddr Exp $ -->
+  <!-- $Id: updind.txt,v 5.13 2007/07/25 15:01:02 ddr Exp $ -->
   <!-- Copyright (c) 1998-2007 INRIA -->
   <meta name="robots" content="none"%/>
   <meta http-equiv="Content-Type" content="text/html; charset=%charset;"%/>
@@ -12,9 +12,10 @@
       [*modify::person/persons]0 # %index;
     %else;[*add::person/persons]0%end;
   </title>
-  <style type="text/css"><!--
+  <style type="text/css">
+    html { background:url('%image_prefix;/gwback.jpg') }
     .highlight { color: %highlight;; font-weight: bold }
-  --></style>
+  </style>
 %base_header;
 </head>
 <body%body_prop;>
@@ -708,11 +709,21 @@ function changeCalendar(e,v,m,c) {
 <h4><label for="notes">[*note/notes]1</label></h4>
 
 <p>
-%let;area;%sq;
-  <textarea name="notes" rows="12" cols="80" id="notes">%notes;</textarea>%sq;
-%in;
-%let;name;notes%in;
-%include.accent;
+<table>
+  <tr>
+    <td>
+      <textarea name="notes" rows="12" cols="80" id="notes">%sq;
+        %notes;%sq;
+      </textarea>%sq;
+    </td>
+  </tr>
+  <tr>
+    <td>
+      %let;name;notes%in;
+      %include.accent;
+    </td>
+  </tr>
+</table>
 </p>
 
 <h4><label for="src">[*source/sources]0</label></h4>
