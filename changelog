@@ -1,3 +1,11 @@
+geneweb (5.02~cvs20091031-1) unstable; urgency=low
+
+  * Release CVS snapshot as upstream didn't release for a while
+  * Add 0 and 6 runlevels to Should-Stop in init scripts
+  * Update Standards-Version to 3.8.3 (checked)
+
+ -- Christian Perrier <bubulle@debian.org>  Sat, 31 Oct 2009 19:02:25 +0100
+
 geneweb (5.01-9) unstable; urgency=low
 
   * First upload for squeeze
