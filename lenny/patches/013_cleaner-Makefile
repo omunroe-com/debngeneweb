@@ -1,0 +1,13 @@
+Index: geneweb-5.02/src/Makefile
+===================================================================
+--- geneweb-5.02.orig/src/Makefile
++++ geneweb-5.02/src/Makefile
+@@ -66,7 +66,7 @@
+ 	echo "Util.compilation_time_hook.val := ct;" >> compilation.ml
+ 
+ clean::
+-	$(RM) gwc gwc1 gwc2 consang gwd gwu update_nldb gwlib.ml
++	$(RM) gwc gwc1 gwc2 consang gwd gwu update_nldb gwlib.ml check_base
+ 
+ gwlib.ml:
+ 	echo "value prefix =" > gwlib.ml
