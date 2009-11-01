@@ -1,4 +1,4 @@
-(* $Id: wserver.ml,v 5.15 2007/09/12 09:42:26 ddr Exp $ *)
+(* $Id: wserver.ml,v 5.15 2007-09-12 09:42:26 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Printf;

@@ -1,5 +1,5 @@
 (* camlp5r ./pa_html.cmo *)
-(* $Id: mergeDup.ml,v 5.9 2007/09/12 09:58:44 ddr Exp $ *)
+(* $Id: mergeDup.ml,v 5.9 2007-09-12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 2007 INRIA *)
 
 open Config;

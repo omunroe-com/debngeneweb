@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: templAst.mli,v 5.4 2007/09/12 09:58:44 ddr Exp $ *)
+(* $Id: templAst.mli,v 5.4 2007-09-12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 type ast =

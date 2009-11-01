@@ -73,6 +73,13 @@ date.cmx: adef.cmx buff.cmx calendar.cmx checkItem.cmx config.cmi def.cmi \
     gutil.cmx gwdb.cmx hutil.cmx mutil.cmx templ.cmx templAst.cmi \
     templDate.cmx util.cmx ../wserver/wserver.cmx date.cmi 
 date.cmi: config.cmi def.cmi gwdb.cmi 
+db1link.cmo: adef.cmi check.cmi consangAll.cmi dbdisk.cmi def.cmi futil.cmi \
+    gwcomp.cmi gwdb.cmi iovalue.cmi mutil.cmi name.cmi notesLinks.cmi \
+    outbase.cmi db1link.cmi 
+db1link.cmx: adef.cmx check.cmx consangAll.cmx dbdisk.cmi def.cmi futil.cmx \
+    gwcomp.cmx gwdb.cmx iovalue.cmx mutil.cmx name.cmx notesLinks.cmx \
+    outbase.cmx db1link.cmi 
+db1link.cmi: def.cmi gwcomp.cmi 
 db2.cmo: adef.cmi db2.cmi 
 db2.cmx: adef.cmx db2.cmi 
 db2.cmi: adef.cmi 
@@ -81,6 +88,13 @@ db2disk.cmo: adef.cmi buff.cmo db2.cmi def.cmi iovalue.cmi mutil.cmi \
 db2disk.cmx: adef.cmx buff.cmx db2.cmx def.cmi iovalue.cmx mutil.cmx \
     name.cmx secure.cmx db2disk.cmi 
 db2disk.cmi: adef.cmi def.cmi 
+db2link.cmo: adef.cmi check.cmi consangAll.cmi db2.cmi db2out.cmi def.cmi \
+    futil.cmi gwcomp.cmi gwdb.cmi iochan.cmi iovalue.cmi mutil.cmi name.cmi \
+    notesLinks.cmi db2link.cmi 
+db2link.cmx: adef.cmx check.cmx consangAll.cmx db2.cmx db2out.cmx def.cmi \
+    futil.cmx gwcomp.cmx gwdb.cmx iochan.cmx iovalue.cmx mutil.cmx name.cmx \
+    notesLinks.cmx db2link.cmi 
+db2link.cmi: gwcomp.cmi 
 db2out.cmo: db2.cmi def.cmi futil.cmi iovalue.cmi mutil.cmi name.cmi \
     progrBar.cmi db2out.cmi 
 db2out.cmx: db2.cmx def.cmi futil.cmx iovalue.cmx mutil.cmx name.cmx \
@@ -118,20 +132,17 @@ gutil.cmo: adef.cmi buff.cmo checkItem.cmi def.cmi gwdb.cmi mutil.cmi \
 gutil.cmx: adef.cmx buff.cmx checkItem.cmx def.cmi gwdb.cmx mutil.cmx \
     name.cmx gutil.cmi 
 gutil.cmi: def.cmi gwdb.cmi 
-gwc.cmo: adef.cmi argl.cmo check.cmi consangAll.cmi dbdisk.cmi def.cmi \
-    futil.cmi gwcomp.cmo gwdb.cmi iovalue.cmi lock.cmi mutil.cmi name.cmi \
-    notesLinks.cmi outbase.cmi progrBar.cmi secure.cmi 
-gwc.cmx: adef.cmx argl.cmx check.cmx consangAll.cmx dbdisk.cmi def.cmi \
-    futil.cmx gwcomp.cmx gwdb.cmx iovalue.cmx lock.cmx mutil.cmx name.cmx \
-    notesLinks.cmx outbase.cmx progrBar.cmx secure.cmx 
-gwc2.cmo: adef.cmi argl.cmo db2.cmi db2out.cmi def.cmi futil.cmi gwcomp.cmo \
-    iochan.cmi iovalue.cmi lock.cmi mutil.cmi name.cmi notesLinks.cmi \
+gwc.cmo: argl.cmo db1link.cmi gwcomp.cmi lock.cmi mutil.cmi outbase.cmi \
     progrBar.cmi secure.cmi 
-gwc2.cmx: adef.cmx argl.cmx db2.cmx db2out.cmx def.cmi futil.cmx gwcomp.cmx \
-    iochan.cmx iovalue.cmx lock.cmx mutil.cmx name.cmx notesLinks.cmx \
+gwc.cmx: argl.cmx db1link.cmx gwcomp.cmx lock.cmx mutil.cmx outbase.cmx \
     progrBar.cmx secure.cmx 
-gwcomp.cmo: adef.cmi calendar.cmi def.cmi mutil.cmi 
-gwcomp.cmx: adef.cmx calendar.cmx def.cmi mutil.cmx 
+gwc2.cmo: argl.cmo db2link.cmi gwcomp.cmi lock.cmi mutil.cmi progrBar.cmi \
+    secure.cmi 
+gwc2.cmx: argl.cmx db2link.cmx gwcomp.cmx lock.cmx mutil.cmx progrBar.cmx \
+    secure.cmx 
+gwcomp.cmo: adef.cmi calendar.cmi def.cmi mutil.cmi gwcomp.cmi 
+gwcomp.cmx: adef.cmx calendar.cmx def.cmi mutil.cmx gwcomp.cmi 
+gwcomp.cmi: def.cmi 
 gwd.cmo: adef.cmi argl.cmo base64.cmo buff.cmo config.cmi def.cmi doc.cmo \
     gutil.cmi hutil.cmi image.cmo lock.cmi mutil.cmi name.cmi \
     relationLink.cmi request.cmi robot.cmo secure.cmi srcfile.cmi util.cmi \
@@ -394,7 +405,7 @@ wiznotes.cmx: buff.cmx config.cmi date.cmx def.cmi gutil.cmx gwdb.cmx \
 wiznotes.cmi: config.cmi gwdb.cmi 
 advSearchOk.cmo advSearchOk.cmx: pa_html.cmo
 alln.cmo alln.cmx: pa_html.cmo
-birthDeath.cmo birthDeath.cmx: def.syn.cmo pa_html.cmo
+birthDeath.cmo birthDeath.cmx: def_syn.cmo pa_html.cmo
 birthday.cmo birthday.cmx: pa_html.cmo
 changeChildren.cmo changeChildren.cmx: pa_html.cmo
 cousins.cmo cousins.cmx: pa_html.cmo
@@ -418,7 +429,7 @@ notes.cmo notes.cmx: pa_html.cmo
 place.cmo place.cmx: pa_html.cmo
 relation.cmo relation.cmx: pa_html.cmo
 relationLink.cmo relationLink.cmx: pa_html.cmo
-request.cmo request.cmx: def.syn.cmo pa_lock.cmo pa_html.cmo
+request.cmo request.cmx: def_syn.cmo pa_lock.cmo pa_html.cmo
 sendImage.cmo sendImage.cmx: pa_html.cmo
 some.cmo some.cmx: pa_html.cmo
 srcfile.cmo srcfile.cmx: pa_lock.cmo pa_html.cmo

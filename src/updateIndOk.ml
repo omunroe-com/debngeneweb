@@ -1,5 +1,5 @@
 (* camlp5r ./pa_html.cmo *)
-(* $Id: updateIndOk.ml,v 5.73 2007/09/12 09:58:44 ddr Exp $ *)
+(* $Id: updateIndOk.ml,v 5.75 2008-01-21 13:28:12 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -176,6 +176,7 @@ value reconstitute_death conf birth death_place burial burial_place =
   | "DeadYoung" when d = None -> DeadYoung
   | "DontKnowIfDead" when d = None -> DontKnowIfDead
   | "NotDead" -> NotDead
+  | "OfCourseDead" -> OfCourseDead
   | _ ->
       match d with
       [ Some d -> Death dr (Adef.cdate_of_date d)
@@ -543,17 +544,20 @@ value update_relations_of_related base ip old_related =
     old_related
 ;
 
-value effective_del conf base p = do {
+value effective_del conf base warning p = do {
   let none = Gwdb.insert_string base "?" in
   let empty = Gwdb.insert_string base "" in
   let ip = get_key_index p in
   match get_parents p with
   [ Some ifam -> do {
       let des = foi base ifam in
-      let des =
+      let des = do {
         let children = array_except ip (get_children des) in
-        let _ : option _ = CheckItem.sort_children base children in
+        match CheckItem.sort_children base children with
+        [ Some (b, a) -> warning (ChangedOrderOfChildren ifam des b a)
+        | None -> () ];
         {children = children}
+      }
       in
       patch_descend base ifam des;
       let asc = {parents = None; consang = Adef.fix (-1)} in
@@ -709,7 +713,8 @@ value print_del conf base =
       let k = (fn, sn, occ, ip) in
       let old_related = get_related p in
       update_relations_of_related base ip old_related;
-      let p = effective_del conf base p in
+      let warning _ = () in
+      let p = effective_del conf base warning p in
       patch_person base ip p;
       delete_key base fn sn occ;
       Notes.update_notes_links_db conf (NotesLinks.PgInd p.key_index) "";

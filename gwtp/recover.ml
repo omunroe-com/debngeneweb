@@ -1,5 +1,5 @@
 (* camlp5r *)
-(* $Id: recover.ml,v 5.3 2007/09/12 09:58:44 ddr Exp $ *)
+(* $Id: recover.ml,v 5.3 2007-09-12 09:58:44 ddr Exp $ *)
 
 open Printf;
 

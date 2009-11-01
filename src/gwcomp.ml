@@ -1,4 +1,4 @@
-(* $Id: gwcomp.ml,v 5.9 2007/01/19 01:53:16 ddr Exp $ *)
+(* $Id: gwcomp.ml,v 5.12 2008-11-04 13:03:13 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Def;
@@ -9,7 +9,7 @@ type key = { pk_first_name : string; pk_surname : string; pk_occ : int };
 
 type somebody = [ Undefined of key | Defined of gen_person iper string ];
 
-type syntax_o =
+type gw_syntax =
   [ Family of gen_couple somebody and sex and sex and
       list (somebody * sex) and gen_family (gen_person iper string) string and
       gen_descend (gen_person iper string)
@@ -89,7 +89,7 @@ value date_of_string s i =
     let (year, j) = champ i in
     if j = i + 1 && s.[i] = '0' then (True, year, j) else (False, year, j)
   in
-  let error () = failwith ("date_of_string " ^ s) in
+  let error n = failwith (Printf.sprintf "date_of_string%d %s" n s) in
   let date =
     match skip_slash i with
     [ Some i ->
@@ -100,9 +100,12 @@ value date_of_string s i =
             let day = month in
             let month = year in
             let (year, i) = champ i in
-            if year = 0 then if i = String.length s then None else error ()
-            else if month < 1 || month > 13 then error ()
-            else if day < 1 || day > 31 then error ()
+(*
+            if year = 0 then if i = String.length s then None else error 1
+            else
+*)
+            if month < 1 || month > 13 then error 2
+            else if day < 1 || day > 31 then error 3
             else
               let d =
                 {day = day; month = month; year = year; prec = precision;
@@ -111,7 +114,7 @@ value date_of_string s i =
               Some (Dgreg d Dgregorian, i)
         | None ->
             if year = 0 then None
-            else if month < 1 || month > 13 then error ()
+            else if month < 1 || month > 13 then error 4
             else
               let d =
                 {day = 0; month = month; year = year; prec = precision;
@@ -166,7 +169,7 @@ value date_of_string s i =
     | d -> d ]
   in
   match date with
-  [ Some (dt, i) -> if i = String.length s then Some dt else error ()
+  [ Some (dt, i) -> if i = String.length s then Some dt else error 5
   | None -> None ]
 ;
 
@@ -231,6 +234,7 @@ value get_optional_deathdate l =
   match l with
   [ ["?" :: l'] -> (Some DontKnowIfDead, l')
   | ["mj" :: l'] -> (Some DeadYoung, l')
+  | ["od" :: l'] -> (Some OfCourseDead, l')
   | [x :: l'] ->
       let i = 0 in
       let (dr, i) =
@@ -906,7 +910,7 @@ value comp_families x =
         let rec loop line encoding =
           match read_family_1 (ic, encoding) x line with
           [ F_some (family, line) ->
-              do { output_value oc (family : syntax_o); loop line encoding }
+              do { output_value oc (family : gw_syntax); loop line encoding }
           | F_enc_utf_8 ->
               loop (read_line (ic, E_utf_8)) E_utf_8
           | F_none -> ()

@@ -1,5 +1,5 @@
 #!/bin/sh
-# $Id: camlp5_comm.sh,v 5.1 2007/09/12 09:58:44 ddr Exp $
+# $Id: camlp5_comm.sh,v 5.1 2007-09-12 09:58:44 ddr Exp $
 
 ARGS1=pa_macro.cmo
 FILE=
