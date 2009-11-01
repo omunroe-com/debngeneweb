@@ -1,0 +1,22 @@
+Template: gwsetup/port
+Type: string
+DefaultChoice: 2316
+_Description: Gwsetup daemon listening port:
+ The port used by the gwsetup daemon for incoming connections may be configured here.
+ .
+ Choose a port number above 1023 for the port gwsetup will listen to.
+ .
+ If unsure, leave the default value of 2316.
+
+Template: gwsetup/run_mode
+Type: select
+__Choices: Always on, Manual
+Default: Manual
+_Description: Gwsetup start mode:
+ The Gwsetup daemon can be launched automatically at startup,
+ manually by the system administrator, or by any user when it is needed.
+ .
+ If you choose "Always on", gwsetup will be launched at the system startup.
+ .
+ If you want to prevent the automatic startup of gwsetup, then choose "Manual".
+
