@@ -17,7 +17,7 @@ endif
 
 configure:
 
-configure-stamp:	patch
+configure-stamp:
 	dh_testdir
 	touch configure-stamp
 
@@ -40,9 +40,7 @@ build-stamp:
 	$(MAKE) distrib
 	touch build-stamp
 
-clean:	clean-patched unpatch
-
-clean-patched:	
+clean:
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp install-stamp configure-stamp
