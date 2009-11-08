@@ -1,4 +1,4 @@
-#!/usr/bin/make -f
+#!/usr/bin/make -f
 
 PACKAGE=geneweb
 
@@ -15,18 +15,11 @@ else
         fi)
 endif
 
-# Use quilt for patches
-include /usr/share/quilt/quilt.make
-
 configure:
-
-configure-stamp:	patch
 	dh_testdir
-	touch configure-stamp
 
 
-build: configure-stamp build-stamp
-build-stamp:
+build: configure
 	dh_testdir
 	bash -n debian/geneweb.postinst
 	bash -n debian/geneweb.postrm
@@ -41,11 +34,8 @@ build-stamp:
 	$(MAKE) $(WAY)
 
 	$(MAKE) distrib
-	touch build-stamp
 
-clean:	clean-patched unpatch
-
-clean-patched:	
+clean:
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp install-stamp configure-stamp
@@ -134,4 +124,4 @@ binary-arch: build install
 	dh_builddeb
 
 binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install patch unpatch
+.PHONY: build clean binary-indep binary-arch binary install
