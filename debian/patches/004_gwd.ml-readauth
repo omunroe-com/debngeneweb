@@ -4,11 +4,11 @@ Fixes: #287392
 Status wrt upstream: will not be applied because of upstream design choices
 
 
-Index: geneweb-5.00/src/gwd.ml
+Index: b/src/gwd.ml
 ===================================================================
---- geneweb-5.00.orig/src/gwd.ml	2007-02-24 21:08:15.000000000 +0100
-+++ geneweb-5.00/src/gwd.ml	2007-02-28 21:05:29.893404569 +0100
-@@ -1355,7 +1355,7 @@
+--- a/src/gwd.ml	2009-11-08 17:26:10.000000000 +0100
++++ b/src/gwd.ml	2009-11-08 17:26:27.000000000 +0100
+@@ -1366,7 +1366,7 @@
      let auth = Wserver.extract_param "authorization: " '\r' request in
      if auth <> "" then
        match
