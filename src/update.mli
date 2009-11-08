@@ -1,4 +1,4 @@
-(* $Id: update.mli,v 5.10 2007/03/05 20:23:51 ddr Exp $ *)
+(* $Id: update.mli,v 5.12 2008-01-08 02:08:00 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -6,7 +6,14 @@ open Def;
 open Gwdb;
 
 exception ModErr;
-type create_info = (option date * string * death * option date * string);
+type create_info =
+  { ci_birth_date : option date;
+    ci_birth_place : string;
+    ci_death : death;
+    ci_death_date : option date;
+    ci_death_place : string;
+    ci_public : bool }
+;
 type create = [ Create of sex and option create_info | Link ];
 type key = (string * string * int * create * string);
 

@@ -1,5 +1,5 @@
 (* camlp5r ./pa_html.cmo *)
-(* $Id: relation.ml,v 5.20 2007/09/12 09:58:44 ddr Exp $ *)
+(* $Id: relation.ml,v 5.22 2008-01-12 01:49:50 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 DEFINE OLD;
@@ -839,8 +839,11 @@ value print_link_name conf base n p1 p2 sol =
     in
     let s =
       if sp1 then
-        transl_a_of_gr_eq_gen_lev conf s
-          (transl_nth conf "the spouse" (1 - index_of_sex (get_sex p1)))
+        match pp1 with
+        [ Some pp1 ->
+            transl_a_of_gr_eq_gen_lev conf s
+              (transl_nth conf "the spouse" (index_of_sex (get_sex pp1)))
+        | None -> s ]
       else s
     in
     let s1 = "<strong>" ^ std_color conf s ^ "</strong>" in
@@ -984,13 +987,13 @@ value print_solution_not_ancestor conf base long p1 p2 sol =
       let print pp p alab =
         let s = gen_person_title_text no_reference raw_access conf base p in
         let s =
-          if pp = None then transl_a_of_b conf alab s
-          else
-            transl_a_of_gr_eq_gen_lev conf
-              (transl_a_of_b conf alab
-                 (transl_nth conf "the spouse"
-                    (1 - index_of_sex (get_sex p))))
-              s
+          match pp with
+          [ None -> transl_a_of_b conf alab s
+          | Some pp ->
+              transl_a_of_gr_eq_gen_lev conf
+                (transl_a_of_b conf alab
+                   (transl_nth conf "the spouse" (index_of_sex (get_sex pp))))
+                s ]
         in
         Wserver.wprint "%s\n" (Util.translate_eval s)
       in

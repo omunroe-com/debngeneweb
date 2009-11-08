@@ -1,5 +1,5 @@
 (* camlp5r ./pa_html.cmo *)
-(* $Id: dag.ml,v 5.20 2007/09/12 09:58:44 ddr Exp $ *)
+(* $Id: dag.ml,v 5.20 2007-09-12 09:58:44 ddr Exp $ *)
 
 DEFINE OLD;
 

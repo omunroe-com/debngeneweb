@@ -1,5 +1,5 @@
 (* camlp5r ./pa_html.cmo ./pa_lock.cmo *)
-(* $Id: mergeInd.ml,v 5.52 2007/09/12 09:58:44 ddr Exp $ *)
+(* $Id: mergeInd.ml,v 5.55 2008-01-21 14:02:36 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -126,7 +126,7 @@ value print_differences conf base branches p1 p2 =
              s ^ " " ^ Date.string_of_ondate conf (Adef.date_of_cdate cd)
          | DeadYoung -> transl_nth conf "died young" is
          | DeadDontKnowWhen -> transl_nth conf "died" is
-         | DontKnowIfDead -> "" ]);
+         | DontKnowIfDead | OfCourseDead -> "" ]);
     string_field True (transl conf "death" ^ " / " ^ transl conf "place")
       "death_place" (fun p -> sou base (get_death_place p));
     string_field False (transl conf "burial") "burial"
@@ -290,7 +290,7 @@ value propose_merge_ind conf base branches p1 p2 =
   }
 ;
 
-value reparent_ind base ip1 ip2 =
+value reparent_ind base warning ip1 ip2 =
   let a1 = poi base ip1 in
   let a2 = poi base ip2 in
   match (get_parents a1, get_parents a2) with
@@ -305,12 +305,22 @@ value reparent_ind base ip1 ip2 =
       patch_ascend base ip1 a1;
       patch_descend base ifam des;
     }
+  | (Some ifam, None) -> do {
+      let fam = foi base ifam in
+      let children = get_children fam in
+      match CheckItem.sort_children base children with
+      [ Some (b, a) -> do {
+          let des = gen_descend_of_descend fam in
+          patch_descend base ifam des;
+          warning (ChangedOrderOfChildren ifam fam b a);
+        }
+      | None -> () ]
+    }
   | _ -> () ]
 ;
 
-value effective_merge_ind conf base p1 p2 =
+value effective_merge_ind conf base warning p1 p2 =
   do {
-    reparent_ind base (get_key_index p1) (get_key_index p2);
     let u2 = poi base (get_key_index p2) in
     if Array.length (get_family u2) <> 0 then do {
       for i = 0 to Array.length (get_family u2) - 1 do {
@@ -378,9 +388,10 @@ value effective_merge_ind conf base p1 p2 =
          else get_notes p1}
     in
     patch_person base p1.key_index p1;
+    reparent_ind base warning p1.key_index (get_key_index p2);
     delete_key base (sou base (get_first_name p2)) (sou base (get_surname p2))
       (get_occ p2);
-    let p2 = UpdateIndOk.effective_del conf base p2 in
+    let p2 = UpdateIndOk.effective_del conf base warning p2 in
     patch_person base p2.key_index p2;
     let s =
       let sl =
@@ -424,7 +435,7 @@ value error_loop conf base p =
   }
 ;
 
-value merge_ind conf base branches ip1 ip2 changes_done =
+value merge_ind conf base warning branches ip1 ip2 changes_done =
   let p1 = poi base ip1 in
   let p2 = poi base ip2 in
   if is_ancestor base ip1 ip2 then do {
@@ -436,7 +447,7 @@ value merge_ind conf base branches ip1 ip2 changes_done =
     (False, False)
   }
   else if compatible_ind base p1 p2 then do {
-    effective_merge_ind conf base p1 p2;
+    effective_merge_ind conf base warning p1 p2;
     (True, True)
   }
   else do {
@@ -550,7 +561,7 @@ value different_sexes conf =
   }
 ;
 
-value rec try_merge conf base branches ip1 ip2 changes_done =
+value rec try_merge conf base warning branches ip1 ip2 changes_done =
   let a1 = poi base ip1 in
   let a2 = poi base ip2 in
   let ok_so_far = True in
@@ -564,16 +575,18 @@ value rec try_merge conf base branches ip1 ip2 changes_done =
           if ok_so_far then
             if get_father cpl1 = get_father cpl2 then (True, changes_done)
             else
-              try_merge conf base branches (get_father cpl1) (get_father cpl2)
-                changes_done
+              let warning _ = () in
+              try_merge conf base warning branches (get_father cpl1)
+                (get_father cpl2) changes_done
           else (False, changes_done)
         in
         let (ok_so_far, changes_done) =
           if ok_so_far then
             if get_mother cpl1 = get_mother cpl2 then (True, changes_done)
             else
-              try_merge conf base branches (get_mother cpl1) (get_mother cpl2)
-                changes_done
+              let warning _ = () in
+              try_merge conf base warning branches (get_mother cpl1)
+                (get_mother cpl2) changes_done
           else (False, changes_done)
         in
         let (ok_so_far, changes_done) =
@@ -585,11 +598,11 @@ value rec try_merge conf base branches ip1 ip2 changes_done =
         (ok_so_far, changes_done)
     | _ -> (ok_so_far, changes_done) ]
   in
-  if ok_so_far then merge_ind conf base branches ip1 ip2 changes_done
+  if ok_so_far then merge_ind conf base warning branches ip1 ip2 changes_done
   else (False, changes_done)
 ;
 
-value print_merged conf base p = do {
+value print_merged conf base wl p = do {
   let title _ = Wserver.wprint "%s" (capitale (transl conf "merge done")) in
   Wserver.wrap_string.val := Util.xml_pretty_print;
   header conf title;
@@ -621,6 +634,7 @@ value print_merged conf base p = do {
                 (poi base (Adef.iper_of_int ip))));
       end
   | _ -> () ];
+  Update.print_warnings conf base wl;
   trailer conf;
 };
 
@@ -657,8 +671,11 @@ value print conf base =
       else if is_ancestor base (get_key_index p2) (get_key_index p1) then
         error_loop conf base p1
       else
+        let rev_wl = ref [] in
+        let warning w = rev_wl.val := [w :: rev_wl.val] in
         let (ok, changes_done) =
-          try_merge conf base [] (get_key_index p1) (get_key_index p2) False
+          try_merge conf base warning [] (get_key_index p1) (get_key_index p2)
+            False
         in
         do {
           if changes_done then Util.commit_patches conf base else ();
@@ -669,7 +686,7 @@ value print conf base =
             in
             History.record conf base key "fp";
             Update.delete_topological_sort conf base;
-            print_merged conf base p1;
+            print_merged conf base (List.rev rev_wl.val) p1;
           }
           else ();
         }
@@ -694,7 +711,8 @@ value rec kill_ancestors conf base included_self p nb_ind nb_fam =
     | None -> () ];
     if included_self then do {
       let ip = get_key_index p in
-      let p = UpdateIndOk.effective_del conf base p in
+      let warning _ = () in
+      let p = UpdateIndOk.effective_del conf base warning p in
       patch_person base ip p;
       incr nb_ind;
     }

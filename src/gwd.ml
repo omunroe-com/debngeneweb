@@ -1,5 +1,5 @@
 (* camlp5r pa_extend.cmo ./pa_html.cmo ./pa_lock.cmo *)
-(* $Id: gwd.ml,v 5.59 2007/09/12 09:58:44 ddr Exp $ *)
+(* $Id: gwd.ml,v 5.61 2009-03-11 10:56:09 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
@@ -39,8 +39,15 @@ value use_auth_digest_scheme = ref False;
 
 value log_oc () =
   if log_file.val <> "" then
-    try open_out_gen log_flags 0o644 log_file.val with
-    [ Sys_error _ -> do { log_file.val := ""; stderr } ]
+    match
+      try Some (open_out_gen log_flags 0o644 log_file.val) with
+      [ Sys_error _ -> None ]
+    with
+    [ Some oc -> do {
+        Unix.dup2 (Unix.descr_of_out_channel oc) Unix.stderr;
+        oc
+      }
+    | None -> do { log_file.val := ""; stderr } ]
   else stderr
 ;
 
@@ -2043,7 +2050,11 @@ GeneWeb with another port number (option -p)
         prerr_endline (Unix.error_message err);
         flush stderr;
       }
-  | _ -> try Printexc.print raise exc with _ -> () ]
+  | _ ->
+      do {
+        eprintf "%s\n" (Printexc.to_string exc);
+        flush stderr
+      } ]
 ;
 
 try main () with exc -> print_exc exc;

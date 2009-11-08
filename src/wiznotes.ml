@@ -1,5 +1,5 @@
 (* camlp5r ./pa_html.cmo *)
-(* $Id: wiznotes.ml,v 5.54 2007/09/12 09:58:44 ddr Exp $ *)
+(* $Id: wiznotes.ml,v 5.54 2007-09-12 09:58:44 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Config;
