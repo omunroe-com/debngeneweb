@@ -15,9 +15,12 @@ else
         fi)
 endif
 
+# Use quilt for patches
+include /usr/share/quilt/quilt.make
+
 configure:
 
-configure-stamp:
+configure-stamp:	patch
 	dh_testdir
 	touch configure-stamp
 
@@ -40,7 +43,9 @@ build-stamp:
 	$(MAKE) distrib
 	touch build-stamp
 
-clean:
+clean:	clean-patched unpatch
+
+clean-patched:	
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp install-stamp configure-stamp
@@ -129,4 +134,4 @@ binary-arch: build install
 	dh_builddeb
 
 binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install
+.PHONY: build clean binary-indep binary-arch binary install patch unpatch
