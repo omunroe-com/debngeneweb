@@ -55,8 +55,7 @@ clean:
 
 	dh_clean
 
-install: install-stamp
-install-stamp: build-stamp
+install: build
 	dh_testdir
 	dh_testroot
 	dh_prep
