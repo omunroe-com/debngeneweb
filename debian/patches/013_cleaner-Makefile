@@ -1,13 +1,13 @@
 Index: trunk/src/Makefile
 ===================================================================
---- trunk.orig/src/Makefile	2009-11-07 14:03:28.000000000 +0100
-+++ trunk/src/Makefile	2009-11-08 13:04:54.000000000 +0100
-@@ -64,7 +64,7 @@
+--- trunk.orig/src/Makefile	2009-11-08 14:38:30.000000000 +0100
++++ trunk/src/Makefile	2009-11-08 14:58:21.000000000 +0100
+@@ -66,7 +66,7 @@
  	echo "Util.compilation_time_hook.val := ct;" >> compilation.ml
  
  clean::
--	$(RM) gwc gwc2 consang gwd gwu update_nldb gwlib.ml
-+	$(RM) gwc gwc2 consang gwd gwu update_nldb gwlib.ml check_base
+-	$(RM) gwc gwc1 gwc2 consang gwd gwu update_nldb gwlib.ml
++	$(RM) gwc gwc1 gwc2 consang gwd gwu update_nldb gwlib.ml check_base
  
  gwlib.ml:
  	echo "value prefix =" > gwlib.ml
