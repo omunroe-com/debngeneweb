@@ -167,6 +167,10 @@ case "$1" in
 	#
 	# Thanks to Russell Sutherland for pointing this to me
 	# Bug: 179918
+	#
+	# Deal properly with database names that contain spaces
+	OLDIFS=${IFS}
+	IFS=$(printf '\n')
 	for base in `find $GENEWEBDB -type d -name \*.gwb`
 	do
 	    chgrp $USERS_GROUP "$base"
@@ -183,6 +187,7 @@ case "$1" in
 	    chgrp $USERS_GROUP "$imagedir"
 	    chmod g+w,g+s "$imagedir"
 	done
+	IFS=${OLDIFS}
 
 	# Values are read from debconf
 	# to update variables

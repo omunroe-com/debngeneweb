@@ -1,3 +1,10 @@
+geneweb (5.02~cvs20091031-4) UNRELEASED; urgency=low
+
+  * Better deal with databases containing whitespaces in postinst
+    script. Thanks to Christian Gennerat for reporting this privately.
+
+ -- Christian Perrier <bubulle@debian.org>  Sun, 20 Dec 2009 16:30:56 +0100
+
 geneweb (5.02~cvs20091031-3) unstable; urgency=low
 
   * Proper quoting of variables in postinst script to prevent
