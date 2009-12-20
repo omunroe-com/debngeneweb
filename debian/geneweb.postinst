@@ -170,7 +170,8 @@ case "$1" in
 	#
 	# Deal properly with database names that contain spaces
 	OLDIFS=${IFS}
-	IFS=$(printf '\n')
+	IFS='
+'
 	for base in `find $GENEWEBDB -type d -name \*.gwb`
 	do
 	    chgrp $USERS_GROUP "$base"
