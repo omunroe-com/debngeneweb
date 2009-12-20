@@ -1489,7 +1489,7 @@ br: goude
 ca: després de
 cs: po
 da: efter
-de: nachher
+de: nach
 en: after
 eo: post
 es: después de
@@ -2108,7 +2108,7 @@ br: a-raok
 ca: abans de
 cs: pøed
 da: før
-de: vorher
+de: vor
 en: before
 eo: antaù
 es: antes
