@@ -6,6 +6,8 @@ open Printf;
 value port = ref 2316;
 value default_lang = ref "en";
 value setup_dir = ref ".";
+value only_dir = ref ".";
+value comm_log = ref ".";
 value bin_dir = ref "";
 value lang_param = ref "";
 value only_file = ref "";
@@ -319,7 +321,7 @@ value referer conf =
 ;
 
 value only_file_name () =
-  if only_file.val = "" then Filename.concat setup_dir.val "only.txt"
+  if only_file.val = "" then Filename.concat only_dir.val "only.txt"
   else only_file.val
 ;
 
@@ -710,7 +712,7 @@ value error conf str =
 ;
 
 value exec_f comm =
-  let s = comm ^ " > " ^ "comm.log" in
+  let s = comm ^ " > " ^ comm_log.val in
   do {
     eprintf "$ cd \"%s\"\n" (Sys.getcwd ());
     flush stderr;
@@ -835,7 +837,7 @@ value infer_rc conf rc =
 
 value gwc conf =
   let rc =
-    let comm = stringify (Filename.concat bin_dir.val "gwc") in
+    let comm = "gwc" in
     exec_f (comm ^ parameters conf.env)
   in
   let rc = IFDEF WIN95 THEN infer_rc conf rc ELSE rc END in
@@ -1055,7 +1057,7 @@ value recover_2 conf =
       Sys.chdir dir;
       let c =
         Filename.concat bin_dir.val src_to_new ^ " " ^ tmp ^ " -f -o " ^
-          out_file ^ " > " ^ "comm.log"
+          out_file ^ " > " ^ comm_log.val
       in
       eprintf "$ %s\n" c;
       flush stderr;
@@ -1138,7 +1140,7 @@ value cleanup_1 conf =
     Sys.rename in_base_dir (Filename.concat "old" in_base_dir);
     let c =
       Filename.concat bin_dir.val "gwc" ^ " tmp.gw -nofail -o " ^ in_base ^
-        " > comm.log "
+        " > " ^ comm_log.val
     in
     eprintf "$ %s\n" c;
     flush stderr;
@@ -1262,7 +1264,7 @@ value merge_1 conf =
               (fun s b ->
                  if s = "" then " " ^ b ^ ".gw" else s ^ " -sep " ^ b ^ ".gw")
               "" bases ^
-            " -f -o " ^ out_file ^ " > comm.log"
+            " -f -o " ^ out_file ^ " > " ^ comm_log.val
         in
         eprintf "$ %s\n" c;
         flush stderr;
@@ -1783,8 +1785,12 @@ value speclist =
       string_of_int port.val ^ "); > 1024 for normal users.");
    ("-only", Arg.String (fun s -> only_file.val := s),
     "<file>: File containing the only authorized address");
+   ("-only", Arg.String (fun x -> only_dir.val := x),
+    "<string>: directory for gwsetup_only.txt file") ;
+   ("-log", Arg.String (fun x -> comm_log.val := x),
+    "<string>: full path for last command log file") ;
    ("-gd", Arg.String (fun x -> setup_dir.val := x),
-    "<string>: gwsetup directory");
+    "<string>: geneweb share directory") ;
    ("-bindir", Arg.String (fun x -> bin_dir.val := x),
     "<string>: binary directory (default = value of option -gd)") ::
    IFDEF SYS_COMMAND THEN
