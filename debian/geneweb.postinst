@@ -169,22 +169,28 @@ case "$1" in
 	#
 	# Thanks to Russell Sutherland for pointing this to me
 	# Bug: 179918
+	#
+	# Deal properly with database names that contain spaces
+	OLDIFS=${IFS}
+	IFS='
+'
 	for base in `find $GENEWEBDB -type d -name \*.gwb`
 	do
-	    chgrp $USERS_GROUP $base
-	    chmod g+w,g+s $base
+	    chgrp $USERS_GROUP "$base"
+	    chmod g+w,g+s "$base"
 	    # Fix files permissions. See #219779
 	    for file in `find $base -type f`
 	    do
-		chgrp $USERS_GROUP $file
-		chmod g+w $file
+		chgrp $USERS_GROUP "$file"
+		chmod g+w "$file"
 	    done
 	done
 	for imagedir in `find $GENEWEBDB/images -type d`
 	do
-	    chgrp $USERS_GROUP $imagedir
-	    chmod g+w,g+s $imagedir
+	    chgrp $USERS_GROUP "$imagedir"
+	    chmod g+w,g+s "$imagedir"
 	done
+	IFS=${OLDIFS}
 
 	# Values are read from debconf
 	# to update variables

@@ -1,3 +1,11 @@
+geneweb (5.01-8lenny1) stable-proposed-updates-UNRELEASED; urgency=low
+
+  * Better deal with databases containing whitespaces in postinst
+    script. Thanks to Christian Gennerat for reporting this privately.
+    Closes: #562147, #559411
+
+ -- Christian Perrier <bubulle@debian.org>  Thu, 24 Dec 2009 18:43:29 +0100
+
 geneweb (5.01-8) unstable; urgency=low
 
   * Add "-bindir" to gwsetup's invocation in the wrapper script.
