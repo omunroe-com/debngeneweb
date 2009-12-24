@@ -1,0 +1,50 @@
+Source: geneweb
+Section: misc
+Priority: optional
+Maintainer: Christian Perrier <bubulle@debian.org>
+Standards-Version: 3.8.0
+Build-Depends: debhelper (>= 5.0.0), ocaml-best-compilers, ocaml (>= 3.04), camlp5, doc-base, dh-buildinfo, iso-codes, po-debconf, quilt (>= 0.40)
+Homepage: http://www.geneweb.org/
+
+
+Package: geneweb
+Section: misc
+Architecture: any
+Depends: ${shlibs:Depends},perl5-base, lsb-base (>= 3.0-6)
+Pre-Depends: ${misc:Depends}, iso-codes, adduser
+Suggests: menu (>=2.1.35), gwtp, gwsetup, lynx | www-browser
+Priority: optional
+Description: genealogy software with web interface
+ Geneweb allows to keep track of ancestral data. It is a powerful
+ system for maintaining a set of data about your family history. It
+ supports much of the GEDCOM tag system for data storage, and can be
+ used either as your primary system for archiving genealogical data,
+ or as a web service (through a CGI interface) for publishing your
+ data for others to use.
+ .
+ Geneweb is under active use and development, so its feature set
+ is constantly improving. It already boasts features not found in
+ most off-the-shelf products, such as consanguinity and relationship
+ calculations, as well as other statistical analysis tools.
+
+Package: gwtp
+Section: misc
+Architecture: any
+Depends: ${shlibs:Depends}, geneweb
+Suggests: httpd
+Priority: optional
+Description: web interface interacting with Geneweb databases
+ Gwtp is a CGI program allowing owners of databases hosted on a
+ GeneWeb site to upload and download their databases on the site and
+ change their configuration parameters.
+
+Package: gwsetup
+Section: misc
+Architecture: any
+Pre-Depends: adduser
+Depends: ${misc:Depends}, ${shlibs:Depends}, geneweb
+Priority: optional
+Description: utilities to configure and manipulate Geneweb databases
+ Gwsetup is a command-line program which also includes a mini web server
+ to help Geneweb users to setup and manipulate genealogical databases
+ to be used with the main Geneweb program.

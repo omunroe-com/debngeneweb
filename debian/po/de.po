@@ -1,0 +1,294 @@
+# Translators, if you are not familiar with the PO format, gettext
+# documentation is worth reading, especially sections dedicated to
+# this format, e.g. by running:
+# info -n '(gettext)PO Files'
+# info -n '(gettext)Header Entry'
+# Some information specific to po-debconf are available at
+# /usr/share/doc/po-debconf/README-trans
+# or http://www.debian.org/intl/l10n/po-debconf/README-trans
+# Developers do not need to manually edit POT or PO files.
+# Holger Wansing <h.wansing@onlinehome.de>, 2005.
+#
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: geneweb 4.09-7\n"
+"Report-Msgid-Bugs-To: geneweb@packages.debian.org\n"
+"POT-Creation-Date: 2008-01-05 10:13+0100\n"
+"PO-Revision-Date: 2006-03-04 17:50+0100\n"
+"Last-Translator: Holger Wansing <h.wansing@onlinehome.de>\n"
+"Language-Team: German <debian-l10n-german@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=iso-8859-15\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: select
+#. Default
+#. This is the default choice. Translators may put their own language here
+#. instead of the default.
+#. WARNING : you MUST use the ENGLISH NAME of your language
+#: ../geneweb.templates.master:1001
+msgid "English[ translators, please see comment in PO files]"
+msgstr "German"
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:1002
+msgid "Geneweb default language:"
+msgstr "Standardsprache in Geneweb:"
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:1002
+msgid "Geneweb can display its prompts in a number of languages."
+msgstr "Geneweb kann Meldungen in verschiedenen Sprachen anzeigen."
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:1002
+msgid "Select a default language for Geneweb to use in its page rendering."
+msgstr ""
+"Bitte wählen Sie die Standardsprache aus, in der Geneweb die Seiten "
+"erstellen soll."
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:1002
+msgid "Other languages will still be available."
+msgstr "Andere Sprachen bleiben weiterhin verfügbar."
+
+#. Type: string
+#. Description
+#: ../geneweb.templates.master:2001
+msgid "Geneweb daemon listening port:"
+msgstr "Port für den Geneweb-Daemon:"
+
+#. Type: string
+#. Description
+#: ../geneweb.templates.master:2001
+msgid ""
+"The port used by the geneweb daemon (gwd) for incoming connections may be "
+"configured here."
+msgstr ""
+"Der Port, auf dem der Geneweb-Daemon »lauschen« soll, kann hier konfiguriert "
+"werden."
+
+#. Type: string
+#. Description
+#: ../geneweb.templates.master:2001
+msgid "Choose a port number above 1023 for the port gwd will listen to."
+msgstr ""
+"Wählen Sie eine Portnummer über 1023 für den Port, auf dem gwd »lauschen« "
+"soll."
+
+#. Type: string
+#. Description
+#: ../geneweb.templates.master:2001
+msgid "If unsure, leave the default value of 2317."
+msgstr "Wenn Sie sich unsicher sind, belassen Sie den Standardwert auf 2317."
+
+#. Type: select
+#. Choices
+#: ../geneweb.templates.master:3001 ../gwsetup.templates:2001
+msgid "Always on"
+msgstr "Immer aktiv"
+
+#. Type: select
+#. Choices
+#: ../geneweb.templates.master:3001 ../gwsetup.templates:2001
+msgid "Manual"
+msgstr "Manuell"
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:3002
+msgid "Geneweb start mode:"
+msgstr "Geneweb Start-Modus:"
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:3002
+msgid ""
+"The Geneweb daemon gwd can be launched automatically at startup, manually by "
+"the system administrator, or by any user when it is needed."
+msgstr ""
+"Der Geneweb-Daemon gwd kann automatisch beim Startvorgang, manuell vom "
+"Systemadministrator oder bei Bedarf von einem Benutzer gestartet werden."
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:3002
+msgid ""
+"If you choose \"Always on\", Geneweb will be launched at the system startup."
+msgstr ""
+"Wenn Sie »Immer aktiv« auswählen, wird Geneweb bei jedem Startvorgang "
+"gestartet."
+
+#. Type: select
+#. Description
+#: ../geneweb.templates.master:3002
+msgid ""
+"If you want to prevent the automatic startup of Geneweb, for example if you "
+"prefer to run it as a CGI program, then choose \"Manual\"."
+msgstr ""
+"Wenn Sie den automatischen Start von Geneweb verhindern möchten, z.B. weil "
+"Sie es vorziehen, das Programm als CGI laufen zu lassen, dann wählen Sie "
+"bitte »Manuell«."
+
+#. Type: note
+#. Description
+#: ../geneweb.templates.master:4001
+msgid "Old directory /var/geneweb not removed"
+msgstr "Altes Verzeichnis /var/geneweb wurde nicht gelöscht."
+
+#. Type: note
+#. Description
+#: ../geneweb.templates.master:4001
+msgid ""
+"Previous versions of both official and unofficial packages for Geneweb used "
+"non FHS-compliant /var/geneweb directory for storing databases."
+msgstr ""
+"Die vorherigen beiden offiziellen und inoffiziellen Paketversionen von "
+"Geneweb benutzten eine nicht FHS-kompatible Verzeichnisstruktur, um die "
+"Datenbank zu speichern."
+
+#. Type: note
+#. Description
+#: ../geneweb.templates.master:4001
+msgid ""
+"It has been detected that this directory was used on your system. Some files "
+"have been moved from there to /var/lib/geneweb but the geneweb installation "
+"scripts found some unexpected files in /var/geneweb."
+msgstr ""
+"Es wurde auf Ihrem System festgestellt, dass dieses Verzeichnis benutzt "
+"wurde. Einige Dateien wurden von dort nach /var/lib/geneweb verschoben, aber "
+"die geneweb-Installationsskripte haben einige unerwartete Dateien in /var/"
+"geneweb gefunden."
+
+#. Type: note
+#. Description
+#: ../geneweb.templates.master:4001
+msgid ""
+"Thus the directory has been left intact. It is highly recommended that you "
+"check the remaining files there and move them to /var/lib/geneweb, then "
+"remove the /var/geneweb directory."
+msgstr ""
+"Deswegen wurde das Verzeichnis nicht verändert. Es wird dringend empfohlen, "
+"dass Sie die dortigen Dateien prüfen, nach /var/lib/geneweb verschieben und "
+"dann /var/geneweb löschen."
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid "Remove Geneweb database directory on package purge?"
+msgstr ""
+"Soll das Datenbank-Verzeichnis beim Entfernen von geneweb mit gelöscht "
+"werden?"
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid ""
+"Geneweb's databases will be stored in the database directory /var/lib/"
+"geneweb. These databases may be put there by authorized users who must be "
+"members of the \"geneweb\" group."
+msgstr ""
+"Genewebs Datenbanken werden im Datenbank-Verzeichnis /var/lib/geneweb "
+"gespeichert. Diese Datenbanken können dort von autorisierten Benutzern "
+"(Mitgliedern der Gruppe »geneweb«) angelegt werden."
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid ""
+"Please choose whether you want to remove databases automatically when "
+"purging the package (completely removing it)."
+msgstr ""
+"Bitte wählen Sie aus, ob Sie beim Entfernen des Paketes (vollständiges "
+"Entfernen) die Datenbanken automatisch mit löschen möchten."
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid ""
+"THIS WOULD ERASE USER-OWNED DATA. You have to be sure if you accept the "
+"purge."
+msgstr ""
+"DIES LÖSCHT BENUTZEREIGENE DATEN. Sie sollten sich sicher sein, wenn Sie die "
+"nächste Frage mit »Ja« beantworten."
+
+#. Type: boolean
+#. Description
+#: ../geneweb.templates.master:5001
+msgid ""
+"Note that if this directory is empty at the time you purge or simply remove "
+"the package, it will always be automatically removed."
+msgstr ""
+"Beachten Sie: Falls das Verzeichnis beim Entfernen des Pakets leer ist, wird "
+"das Verzeichnis automatisch mit entfernt."
+
+#. Type: string
+#. Description
+#: ../gwsetup.templates:1001
+msgid "Gwsetup daemon listening port:"
+msgstr "Port für den gwsetup-Daemon:"
+
+#. Type: string
+#. Description
+#: ../gwsetup.templates:1001
+msgid ""
+"The port used by the gwsetup daemon for incoming connections may be "
+"configured here."
+msgstr ""
+"Der Port, der vom gwsetup-Daemon für ankommende Verbindungen genutzt wird, "
+"kann hier konfiguriert werden."
+
+#. Type: string
+#. Description
+#: ../gwsetup.templates:1001
+msgid "Choose a port number above 1023 for the port gwsetup will listen to."
+msgstr ""
+"Wählen Sie eine Portnummer über 1023 für den Port, auf dem gwsetup »lauschen« "
+"soll."
+
+#. Type: string
+#. Description
+#: ../gwsetup.templates:1001
+msgid "If unsure, leave the default value of 2316."
+msgstr "Wenn Sie sich unsicher sind, belassen Sie den Standardwert auf 2316."
+
+#. Type: select
+#. Description
+#: ../gwsetup.templates:2002
+msgid "Gwsetup start mode:"
+msgstr "Gwsetup Start-Modus:"
+
+#. Type: select
+#. Description
+#: ../gwsetup.templates:2002
+msgid ""
+"The Gwsetup daemon can be launched automatically at startup, manually by the "
+"system administrator, or by any user when it is needed."
+msgstr ""
+"Der Gwsetup-Daemon gwd kann automatisch beim Startvorgang, manuell vom "
+"Systemadministrator oder bei Bedarf von einem Benutzer gestartet werden."
+
+#. Type: select
+#. Description
+#: ../gwsetup.templates:2002
+msgid ""
+"If you choose \"Always on\", gwsetup will be launched at the system startup."
+msgstr ""
+"Wenn Sie »Immer aktiv« auswählen, wird gwsetup bei jedem Starvorgang "
+"gestartet."
+
+#. Type: select
+#. Description
+#: ../gwsetup.templates:2002
+msgid ""
+"If you want to prevent the automatic startup of gwsetup, then choose \"Manual"
+"\"."
+msgstr ""
+"Wenn Sie den automatischen Start von gwsetup verhindern möchten, z.B. weil "
+"Sie es vorziehen, das Programm als CGI laufen zu lassen, dann wählen Sie "
+"bitte »Manuell«."
