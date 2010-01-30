@@ -1,9 +1,9 @@
-geneweb (5.02~cvs20091031-5) UNRELEASED; urgency=low
+geneweb (5.02~cvs20091031-5) unstable; urgency=low
 
   * Drop the use of a wrapper whose only purpose was wroking with
     a proper umask. Use the --umask option of s-s-d instead
 
- -- Christian Perrier <bubulle@debian.org>  Sat, 30 Jan 2010 15:04:40 +0100
+ -- Christian Perrier <bubulle@debian.org>  Sat, 30 Jan 2010 15:14:36 +0100
 
 geneweb (5.02~cvs20091031-4) unstable; urgency=low
 
