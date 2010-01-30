@@ -71,7 +71,6 @@ install: build
 	# The CGI script
 	chmod 755 `pwd`/debian/gwtp/usr/lib/cgi-bin/gwtp/gwtp.cgi
 	# The wrappers
-	chmod 755 `pwd`/debian/geneweb/usr/lib/geneweb/gwd.wrapper
 	chmod 755 `pwd`/debian/gwsetup/usr/lib/geneweb/gwsetup.wrapper
 
 # Build architecture-independent files here.
