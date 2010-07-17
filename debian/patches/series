@@ -6,3 +6,4 @@
 012_gwc.1-syntax
 013_cleaner-Makefile
 014_no-warn-error
+015_fix-amd64.patch
