@@ -2,7 +2,7 @@ geneweb (5.02~cvs20091031-6) UNRELEASED; urgency=low
 
   * Drop extra debian/geneweb.init.old file
   * Add $remote_fs to Required-Stop in geneweb and gwsetup init scripts
-  * Bump Standards to 3.8.4 (checked, no change)
+  * Bump Standards to 3.9.0 (checked, no change)
   * Force 4-byte, big endian in input_binary_int/output_binary_int
     Closes: #557553 
 
