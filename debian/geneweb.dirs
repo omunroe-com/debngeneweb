@@ -6,7 +6,6 @@ usr/share/doc/geneweb/examples
 usr/share/geneweb/images
 usr/share/geneweb/lang
 usr/share/geneweb/etc
-usr/share/lintian/overrides
 usr/share/pixmaps
 var/lib/geneweb
 var/lib/geneweb/images

@@ -99,6 +99,7 @@ binary-arch: build install
 	dh_installlogrotate
 	# gwtp does not have any manpage
 	dh_installman -pgeneweb
+	dh_lintian
 
 	# Grab ISO 639 language code translations
 	chmod u+x debian/get-iso-codes

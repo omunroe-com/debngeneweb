@@ -5,6 +5,7 @@ geneweb (5.02~cvs20091031-6) UNRELEASED; urgency=low
   * Bump Standards to 3.9.0 (checked, no change)
   * Force 4-byte, big endian in input_binary_int/output_binary_int
     Closes: #557553 
+  * Use dh_lintian to install lintian overrides
 
  -- Christian Perrier <bubulle@debian.org>  Mon, 24 May 2010 22:26:30 +0200
 
