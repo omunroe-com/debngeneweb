@@ -1,3 +1,9 @@
+geneweb (5.02~cvs20091031-7) unstable; urgency=low
+
+  * Upgrade to debhelper v7.
+
+ -- Christian Perrier <bubulle@debian.org>  Sun, 18 Jul 2010 18:43:13 +0200
+
 geneweb (5.02~cvs20091031-6) unstable; urgency=low
 
   * Drop extra debian/geneweb.init.old file
