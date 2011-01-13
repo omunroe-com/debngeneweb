@@ -10,6 +10,7 @@ msgstr ""
 "PO-Revision-Date: 2005-12-01 23:46+0100\n"
 "Last-Translator: Jordi Mallach <jordi@debian.org>\n"
 "Language-Team: Debian L10n Catalan <debian-l10n-catalan@lists.debian.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -112,7 +113,8 @@ msgstr ""
 msgid ""
 "If you choose \"Always on\", Geneweb will be launched at the system startup."
 msgstr ""
-"Si seleccioneu «Sempre iniciat», Geneweb s'executarà quan s'inicia el sistema."
+"Si seleccioneu «Sempre iniciat», Geneweb s'executarà quan s'inicia el "
+"sistema."
 
 #. Type: select
 #. Description
@@ -264,7 +266,8 @@ msgstr ""
 msgid ""
 "If you choose \"Always on\", gwsetup will be launched at the system startup."
 msgstr ""
-"Si seleccioneu «Sempre iniciat», gwsetup s'executarà quan s'inicia el sistema."
+"Si seleccioneu «Sempre iniciat», gwsetup s'executarà quan s'inicia el "
+"sistema."
 
 #. Type: select
 #. Description
