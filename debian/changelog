@@ -1,9 +1,9 @@
-geneweb (5.02~cvs20091031-8) UNRELEASED; urgency=low
+geneweb (5.02~cvs20091031-8) unstable; urgency=low
 
   * Don't strip Ocaml bytecode executables on arches where there
     is no native compiler. Closes: #603580
 
- -- Christian Perrier <bubulle@debian.org>  Thu, 13 Jan 2011 19:57:42 +0100
+ -- Christian Perrier <bubulle@debian.org>  Thu, 13 Jan 2011 20:09:22 +0100
 
 geneweb (5.02~cvs20091031-7) unstable; urgency=low
 
