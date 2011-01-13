@@ -8,6 +8,12 @@ WAY=$(shell if [ -f "/usr/bin/ocamlc.opt" ]; then echo "opt"; \
 else echo "out"; \
 fi)
 
+ifeq ($(WAY),out)
+override_dh_strip:
+	# Don't strip ocaml bytecode executables
+endif   
+
+
 override_dh_installdeb:
 	# Use of the dh-buildinfo package: see http://people.debian.org/~dirson/buildinfo/
 	dh_buildinfo
