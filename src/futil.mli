@@ -1,4 +1,4 @@
-(* $Id: futil.mli,v 5.5 2007/03/05 05:18:23 ddr Exp $ *)
+(* $Id: futil.mli,v 5.5 2007-03-05 05:18:23 ddr Exp $ *)
 (* Copyright (c) 2006-2007 INRIA *)
 
 open Def;

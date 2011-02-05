@@ -1,4 +1,4 @@
-(* $Id: check.mli,v 5.7 2007/01/19 01:53:16 ddr Exp $ *)
+(* $Id: check.mli,v 5.7 2007-01-19 01:53:16 ddr Exp $ *)
 (* Copyright (c) 2006-2007 INRIA *)
 
 (* checking database ; independant from its implementation on disk *)

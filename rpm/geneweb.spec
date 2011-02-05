@@ -1,4 +1,4 @@
-# $Id: geneweb.spec,v 5.0 2005/12/13 11:51:26 ddr Exp $
+# $Id: geneweb.spec,v 5.0 2005-12-13 11:51:26 ddr Exp $
 
 Summary: Genealogy software with a Web interface
 Name: geneweb

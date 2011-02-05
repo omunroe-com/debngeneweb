@@ -1,4 +1,4 @@
-(* $Id: gwdb.mli,v 5.102 2007/03/02 11:44:13 ddr Exp $ *)
+(* $Id: gwdb.mli,v 5.102 2007-03-02 11:44:13 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Adef;

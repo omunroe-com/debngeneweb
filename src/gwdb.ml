@@ -1,4 +1,4 @@
-(* $Id: gwdb.ml,v 5.238 2007/04/05 09:22:53 ddr Exp $ *)
+(* $Id: gwdb.ml,v 5.238 2007-04-05 09:22:53 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Dbdisk;

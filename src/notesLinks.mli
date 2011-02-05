@@ -1,4 +1,4 @@
-(* $Id: notesLinks.mli,v 5.5 2007/03/25 11:30:05 ddr Exp $ *)
+(* $Id: notesLinks.mli,v 5.5 2007-03-25 11:30:05 ddr Exp $ *)
 (* Copyright (c) 2006-2007 INRIA *)
 
 type page =

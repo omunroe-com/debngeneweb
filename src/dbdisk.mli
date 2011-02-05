@@ -1,4 +1,4 @@
-(* $Id: dbdisk.mli,v 5.14 2006/12/23 23:41:28 ddr Exp $ *)
+(* $Id: dbdisk.mli,v 5.14 2006-12-23 23:41:28 ddr Exp $ *)
 
 open Def;
 

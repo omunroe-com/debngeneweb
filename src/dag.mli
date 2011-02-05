@@ -1,4 +1,4 @@
-(* $Id: dag.mli,v 5.1 2006/09/15 11:45:37 ddr Exp $ *)
+(* $Id: dag.mli,v 5.1 2006-09-15 11:45:37 ddr Exp $ *)
 
 open Config;
 open Dag2html;

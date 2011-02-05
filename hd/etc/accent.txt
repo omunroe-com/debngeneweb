@@ -1,4 +1,4 @@
-<!-- $Id: accent.txt,v 5.6 2007/04/04 02:17:36 ddr Exp $ -->
+<!-- $Id: accent.txt,v 5.6 2007-04-04 02:17:36 ddr Exp $ -->
 
 <script type="text/javascript"><!--
 function write_version_ie(t, v)

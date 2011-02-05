@@ -1,4 +1,4 @@
-(* $Id: hutil.mli,v 5.4 2007/01/17 15:07:26 ddr Exp $ *)
+(* $Id: hutil.mli,v 5.4 2007-01-17 15:07:26 ddr Exp $ *)
 (* Copyright (c) 2007 INRIA *)
 
 open Config;

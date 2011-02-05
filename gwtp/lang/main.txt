@@ -1,7 +1,7 @@
 <html>
 <head>
   <!-- Copyright (c) 1998-2007 INRIA - GeneWeb -->
-  <!-- $Id: main.txt,v 5.2 2007/01/19 01:53:16 ddr Exp $ -->
+  <!-- $Id: main.txt,v 5.2 2007-01-19 01:53:16 ddr Exp $ -->
   <title>Gwtp - %b</title>
 </head>
 <body>

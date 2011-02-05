@@ -1,4 +1,4 @@
-(* $Id: adef.ml,v 5.6 2007/02/21 18:14:01 ddr Exp $ *)
+(* $Id: adef.ml,v 5.6 2007-02-21 18:14:01 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 type iper = int;

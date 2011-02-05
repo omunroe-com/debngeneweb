@@ -1,4 +1,4 @@
-(* $Id: secure.mli,v 5.2 2007/01/19 01:53:17 ddr Exp $ *)
+(* $Id: secure.mli,v 5.2 2007-01-19 01:53:17 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 value lang_path : unit -> list string;
