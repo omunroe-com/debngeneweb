@@ -10,7 +10,7 @@ value fun_tag = Obj.tag (Obj.repr (fun x -> x));
    read inside a value output by output_value (no headers) must
    match OCaml's input_value system (intern.c) *)
 
-value sizeof_long = 32 / 8;
+value sizeof_long = Sys.word_size / 8;
 value sign_extend_shift = (sizeof_long - 1) * 8 - 1;
 value sign_extend x = (x lsl sign_extend_shift) asr sign_extend_shift;
 
