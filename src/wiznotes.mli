@@ -1,4 +1,4 @@
-(* $Id: wiznotes.mli,v 5.3 2007/01/19 01:53:17 ddr Exp $ *)
+(* $Id: wiznotes.mli,v 5.3 2007-01-19 01:53:17 ddr Exp $ *)
 (* Copyright (c) 2006-2007 INRIA *)
 
 open Config;

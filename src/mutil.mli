@@ -1,4 +1,4 @@
-(* $Id: mutil.mli,v 5.16 2007/02/24 16:16:57 ddr Exp $ *)
+(* $Id: mutil.mli,v 5.16 2007-02-24 16:16:57 ddr Exp $ *)
 (* Copyright (c) 2006-2007 INRIA *)
 
 value int_size : int;

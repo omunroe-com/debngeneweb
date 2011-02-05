@@ -1,4 +1,4 @@
-(* $Id: diff.mli,v 5.1 2006/11/03 10:31:18 ddr Exp $ *)
+(* $Id: diff.mli,v 5.1 2006-11-03 10:31:18 ddr Exp $ *)
 
 (** Differences between two arrays. *)
 

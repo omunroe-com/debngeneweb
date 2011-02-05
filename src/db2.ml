@@ -1,4 +1,4 @@
-(* $Id: db2.ml,v 5.4 2007/02/22 03:50:29 ddr Exp $ *)
+(* $Id: db2.ml,v 5.4 2007-02-22 03:50:29 ddr Exp $ *)
 (* Copyright (c) 2006-2007 INRIA *)
 
 value first_item_pos = 25;

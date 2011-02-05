@@ -1,4 +1,4 @@
-(* $Id: name.ml,v 5.12 2007/03/20 10:34:14 ddr Exp $ *)
+(* $Id: name.ml,v 5.12 2007-03-20 10:34:14 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 value utf_8_db = ref True;

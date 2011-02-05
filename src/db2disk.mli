@@ -1,4 +1,4 @@
-(* $Id: db2disk.mli,v 5.10 2007/03/03 05:27:21 ddr Exp $ *)
+(* $Id: db2disk.mli,v 5.10 2007-03-03 05:27:21 ddr Exp $ *)
 (* Copyright (c) 2006-2007 INRIA *)
 
 open Def;

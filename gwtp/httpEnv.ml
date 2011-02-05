@@ -1,4 +1,4 @@
-(* $Id: httpEnv.ml,v 5.1 2006/10/15 15:39:38 ddr Exp $ *)
+(* $Id: httpEnv.ml,v 5.1 2006-10-15 15:39:38 ddr Exp $ *)
 
 open Printf;
 

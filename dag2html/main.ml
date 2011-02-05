@@ -1,4 +1,4 @@
-(* $Id: main.ml,v 5.1 2006/10/15 15:39:38 ddr Exp $ *)
+(* $Id: main.ml,v 5.1 2006-10-15 15:39:38 ddr Exp $ *)
 
 open Dag2html;
 open Printf;

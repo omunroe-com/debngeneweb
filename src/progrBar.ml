@@ -1,4 +1,4 @@
-(* $Id: progrBar.ml,v 5.4 2007/02/01 10:28:55 ddr Exp $ *)
+(* $Id: progrBar.ml,v 5.4 2007-02-01 10:28:55 ddr Exp $ *)
 
 value size = 60;
 value draw_rep = 5;

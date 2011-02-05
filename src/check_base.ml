@@ -1,4 +1,4 @@
-(* $Id: check_base.ml,v 5.5 2007/03/19 10:59:31 ddr Exp $ *)
+(* $Id: check_base.ml,v 5.5 2007-03-19 10:59:31 ddr Exp $ *)
 
 open Printf;
 

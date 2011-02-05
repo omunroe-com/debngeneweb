@@ -1,4 +1,4 @@
-(* $Id: diff.ml,v 5.1 2006/11/03 10:31:18 ddr Exp $ *)
+(* $Id: diff.ml,v 5.1 2006-11-03 10:31:18 ddr Exp $ *)
 
 (* Parts of Code of GNU diff (analyze.c) translated from C to OCaml
    and adjusted. Basic algorithm described by Eugene W.Myers in:

@@ -1,4 +1,4 @@
-(* $Id: perso.mli,v 5.7 2007/03/30 18:57:19 ddr Exp $ *)
+(* $Id: perso.mli,v 5.7 2007-03-30 18:57:19 ddr Exp $ *)
 (* Copyright (c) 1998-2007 INRIA *)
 
 open Gwdb;

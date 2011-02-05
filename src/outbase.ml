@@ -1,4 +1,4 @@
-(* $Id: outbase.ml,v 5.21 2007/01/19 01:53:16 ddr Exp $ *)
+(* $Id: outbase.ml,v 5.21 2007-01-19 01:53:16 ddr Exp $ *)
 (* Copyright (c) 2006-2007 INRIA *)
 
 open Dbdisk;
