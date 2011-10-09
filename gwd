@@ -1,4 +1,0 @@
-#!/bin/sh
-mkdir -p bases
-cd bases
-exec ../gw/gwd -hd ../gw "$@"

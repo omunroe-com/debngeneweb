@@ -1,0 +1,6 @@
+gwdiff
+*.out
+*.opt
+*.lib
+*.cm[ioxa]
+*.cmxa
