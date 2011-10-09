@@ -40,6 +40,7 @@ install:
 	cp src/gwd $(PREFIX)/bin/gwd$(EXE)
 	cp src/gwu $(PREFIX)/bin/gwu$(EXE)
 	cp ged2gwb/ged2gwb $(PREFIX)/bin/ged2gwb$(EXE)
+	cp ged2gwb/ged2gwb2 $(PREFIX)/bin/ged2gwb2$(EXE)
 	cp gwb2ged/gwb2ged $(PREFIX)/bin/gwb2ged$(EXE)
 	mkdir -p $(DOCDIR)
 	cp doc/*.htm $(DOCDIR)/.
@@ -52,7 +53,7 @@ install:
 	mkdir -p $(LANGDIR)/lang
 	cp hd/lang/*.txt $(LANGDIR)/lang/.
 	mkdir -p $(LANGDIR)/images
-	cp hd/images/*.jpg hd/images/*.png $(LANGDIR)/images/.
+	cp hd/images/*.jpg hd/images/*.png hd/images/*.ico $(LANGDIR)/images/.
 	mkdir -p $(LANGDIR)/etc
 	cp hd/etc/*.txt $(LANGDIR)/etc/.
 	mkdir -p $(MANDIR)
@@ -74,10 +75,16 @@ distrib: new_distrib wrappers
 
 wrappers:
 	if test "$(CAMLP5F)" = "-DWIN95"; then \
-	  echo 'cd gw' > $(DESTDIR)/gwd.bat; \
-	  echo 'gwd' >> $(DESTDIR)/gwd.bat; \
-	  echo 'cd gw' > $(DESTDIR)/gwsetup.bat; \
-	  echo 'gwsetup' >> $(DESTDIR)/gwsetup.bat; \
+	  echo -ne 'setlocal enableextensions\r\n' > $(DESTDIR)/gwd.bat; \
+	  echo -ne 'md bases\r\n' >> $(DESTDIR)/gwd.bat; \
+	  echo -ne 'endlocal\r\n' >> $(DESTDIR)/gwd.bat; \
+	  echo -ne 'cd bases\r\n' >> $(DESTDIR)/gwd.bat; \
+	  echo -ne 'start /MIN ..\\gw\\gwd -hd ..\\gw\r\n' >> $(DESTDIR)/gwd.bat; \
+	  echo -ne 'setlocal enableextensions\r\n' > $(DESTDIR)/gwsetup.bat; \
+	  echo -ne 'md bases\r\n' >> $(DESTDIR)/gwsetup.bat; \
+	  echo -ne 'endlocal\r\n' >> $(DESTDIR)/gwsetup.bat; \
+	  echo -ne 'cd bases\r\n' >> $(DESTDIR)/gwsetup.bat; \
+	  echo -ne 'start /MIN ..\\gw\\gwsetup -lang fr -gd ..\\gw\r\n' >> $(DESTDIR)/gwsetup.bat; \
 	else \
 	  (echo '#!/bin/sh'; \
 	   echo 'mkdir -p bases'; \
@@ -152,9 +159,11 @@ classical_distrib:
 	mkdir $(DESTDIR)/lang
 	cp hd/lang/*.txt $(DESTDIR)/lang/.
 	mkdir $(DESTDIR)/images
-	cp hd/images/*.jpg hd/images/*.png $(DESTDIR)/images/.
+	cp hd/images/*.jpg hd/images/*.png hd/images/*.ico $(DESTDIR)/images/.
 	mkdir $(DESTDIR)/etc
 	cp hd/etc/*.txt $(DESTDIR)/etc/.
+	mkdir $(DESTDIR)/css
+	cp hd/css/*.css $(DESTDIR)/css/.
 
 windows_files:
 	@for i in distribution/*.txt distribution/gw/*.txt; do \

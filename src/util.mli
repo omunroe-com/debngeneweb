@@ -102,6 +102,7 @@ value string_with_macros :
 value filter_html_tags : string -> string;
 value allowed_tags_file : ref string;
 value body_prop : config -> string;
+value css_prop : config -> string;
 value url_no_index : config -> base -> string;
 value message_to_wizard : config -> unit;
 value check_xhtml : string -> string;
@@ -233,3 +234,6 @@ value xml_pretty_print : string -> string;
 
 value wprint_in_columns :
   config -> ('a -> string) -> ('a -> unit) -> list 'a -> unit;
+
+(* Variable that use also private flag of person *)
+value is_hide_names : config -> person -> bool;
