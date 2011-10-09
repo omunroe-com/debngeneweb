@@ -21,14 +21,11 @@
   <meta name="robots" content="none"%/>
   <meta http-equiv="Content-Type" content="text/html; charset=%charset;"%/>
   <meta http-equiv="Content-Style-Type" content="text/css"%/>
-  <style type="text/css"><!--
-    .highlight { color: %highlight;; font-weight: bold }
-    hr { border: 0; border-bottom: 1px solid }
-    a.date { text-decoration: none; color: black }
-  --></style>
+  <link rel="shortcut icon" href="%image_prefix;/favicon_gwd.png"%/>
+  <link rel="stylesheet" type="text/css" href="css/%css_prop" />
 %base_header;
 </head>
-<body%body_prop;>
+<body %body_prop;>
 %message_to_wizard;
 
 <h1 style="text-align:center" class="highlight">%nn;
@@ -47,10 +44,12 @@
   <table style="float:%right;"><tr><td>
     %if;(referer != "")
       <a href="%referer;"><img
-       src="%image_prefix;/left.jpg"%wid_hei;left.jpg; alt="&lt;&lt;"%/></a>
+       src="%image_prefix;/left.jpg"%wid_hei;left.jpg; 
+       style="border: 0" title="&lt;&lt;"%/></a>
     %end;
     <a href="%prefix;"><img%sp;
-    src="%image_prefix;/up.jpg"%wid_hei;up.jpg; alt="^^"%/></a>
+    src="%image_prefix;/up.jpg"%wid_hei;up.jpg; 
+    style="border: 0" title="^^"%/></a>
   </td></tr></table>
 %end;
 
@@ -103,27 +102,27 @@
   %end;
   %if;(xx.has_birth_date or xx.has_birth_place)
     , %if;xx.is_male;[born]0%elseif;xx.is_female;[born]1%else;[born]2%end;
-    %if;xx.has_birth_date; %xx.on_birth_date;%end;
+    %if;xx.has_birth_date; %xx.on_birth_long_date;%end;
     %if;xx.has_birth_place;, %xx.birth_place;%end;
   %end;
   %if;(xx.has_baptism_date or xx.has_baptism_place)
     , %if;xx.is_male;[baptized]0%elseif;xx.is_female;[baptized]1%nn;
     %else;[baptized]2%end;
-    %if;xx.has_baptism_date; %xx.on_baptism_date;%end;
+    %if;xx.has_baptism_date; %xx.on_baptism_long_date;%end;
     %if;xx.has_baptism_place;, %xx.baptism_place;%end;
   %end;
   %if;xx.is_dead;, %xx.died;
-    %if;(xx.has_death_date) %xx.on_death_date;%end;
+    %if;(xx.has_death_date) %xx.on_death_long_date;%end;
     %if;(xx.has_death_place), %xx.death_place;%end;
   %end;
   %if;xx.is_buried;,
     %if;xx.is_male;[buried]0%else;[buried]1%end;
-    %if;xx.has_burial_date; %xx.on_burial_date;%end;
+    %if;xx.has_burial_date; %xx.on_burial_long_date;%end;
     %if;xx.has_burial_place;, %xx.burial_place;%end;%nl;
   %end;
   %if;xx.is_cremated;,
     %if;xx.is_male;[cremated]0%else;[cremated]1%end;
-    %if;xx.has_cremation_date; %xx.on_cremation_date;%end;
+    %if;xx.has_cremation_date; %xx.on_cremation_long_date;%end;
     %if;xx.has_cremation_place;, %xx.cremation_place;%end;%nl;
   %end;
   %if;xx.computable_death_age;%sp;
@@ -331,7 +330,7 @@
             %ancestor.is_male;
           %and;
             %if;(ancestor.index != index) (%family_cnt;)%end;
-            %if;(on_marriage_date != "") %on_marriage_date;%end;
+            %if;(on_marriage_date != "") %on_marriage_long_date;%end;
             %if;(marriage_place != ""), %marriage_place;, %end;
           %end;%sp;
         %end;
@@ -366,7 +365,7 @@
         %apply;married_to%with;
           %child.is_male;
         %and;
-          %if;(on_marriage_date != "") %on_marriage_date;%end;
+          %if;(on_marriage_date != "") %on_marriage_long_date;%end;
           %if;(marriage_place != ""), %marriage_place;, %end;
         %end;%sp;
       %end;
@@ -404,7 +403,7 @@
         %apply;married_to%with
           %ancestor.is_male;
         %and;
-          %if;(on_marriage_date != "") %on_marriage_date;%end;
+          %if;(on_marriage_date != "") %on_marriage_long_date;%end;
           %if;(marriage_place != ""), %marriage_place;, %end;
         %end;...
       %end;
@@ -710,7 +709,11 @@
                   %apply;link(ancestor.access, ancestor)
                 %end;
               %end;
-              %ancestor.title;%ancestor.dates;
+              %ancestor.title;%sp;
+              %apply;somebody_long_info("ancestor")
+              %if;ancestor.has_occupation;
+                , %apply;capitalize(ancestor.occupation)%nn;
+              %end;
               </li>%nl;
             %end;
           %elseif;(evar.ms = "on" and ancestor.has_parents)
@@ -723,8 +726,11 @@
                   %apply;link(ancestor.father.access, [husband/wife]0)
                 %and;
                   %ancestor.mother;
-                  %ancestor.mother.title;
-                  %ancestor.mother.dates;
+                  %ancestor.mother.title;%sp
+                  %apply;somebody_long_info("ancestor.mother")
+                  %if;ancestor.mother.has_occupation;
+                    , %apply;capitalize(ancestor.mother.occupation)%nn;
+                  %end;
                 %end;
                 </li>%nl;
               %end;
@@ -738,8 +744,11 @@
                   %apply;link(ancestor.mother.access, [husband/wife]1)
                 %and;
                   %ancestor.father;
-                  %ancestor.father.title;
-                  %ancestor.father.dates;
+                  %ancestor.father.title;%sp;
+                  %apply;somebody_long_info("ancestor.father")
+                  %if;ancestor.father.has_occupation;
+                    , %apply;capitalize(ancestor.father.occupation)%nn;
+                  %end;
                 %end;
                 </li>%nl;
               %end;
@@ -813,12 +822,13 @@
   </ul>
 %end;
 
-<div>
-<a href="%prefix;"><img src="%image_prefix;/gwlogo.png"
- alt="..." width="64" height="72" style="border:0;float:%right;"%/></a>
-<br%/>
-</div>
+
+<br />
+<div id="footer">
+<hr />
 %copyright;
 %base_trailer;
+</div>
+
 </body>
 </html>

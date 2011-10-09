@@ -66,7 +66,7 @@ value gen_record conf base changed action =
             | Rnotes (Some num) file -> [| file; string_of_int num |]
             | Rnotes None file -> [| file |] ]
           in
-          let args = Array.append [| comm; conf.user; action |] args in
+          let args = Array.append [| comm; conf.bname; conf.user; action |] args in
           match Unix.fork () with
           [ 0 ->
               if Unix.fork () <> 0 then exit 0
@@ -86,6 +86,21 @@ value record conf base (fn, sn, occ, i) action =
 
 value record_notes conf base (num, file) action =
   gen_record conf base (Rnotes num file) action
+;
+
+value record_key conf base old_key new_key =
+  match p_getenv conf.base_env "notify_key" with
+  [ Some comm ->
+    let args = [| comm; conf.bname; old_key; new_key |] in
+    match Unix.fork () with
+    [ 0 ->
+      if Unix.fork () <> 0 then exit 0
+      else do {
+        try Unix.execvp comm args with _ -> ();
+        exit 0
+      }
+    | id -> ignore (Unix.waitpid [] id) ]
+  | None -> () ]
 ;
 
 (* Request for history printing *)
@@ -348,7 +363,7 @@ value print_foreach conf base print_ast eval_expr =
           let not_displayed =
             match hist_item with
             [ HI_ind p ->
-                is_hidden p || (conf.hide_names && not (fast_auth_age conf p))
+                is_hidden p || ((is_hide_names conf p) && not (fast_auth_age conf p))
             | _ -> False ]
           in
           if not_displayed then i

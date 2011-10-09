@@ -241,6 +241,28 @@ value find_sosa conf base a sosa_ref_l =
   | None -> None ]
 ;
 
+(* ******************************************************************** *)
+(*  [Fonc] p_sosa : config -> base -> person -> Num.t                   *)
+(** [Description] : Recherche si la personne passée en argument a un
+                    numéro de sosa.
+    [Args] :
+      - conf : configuration de la base
+      - base : la base de donnée
+      - a    : la person dont on cherche si elle a un numéro sosa
+    [Retour] :
+      - Num.t : retourne Num.zero si la personne n'a pas de numéro de
+                sosa, et retourne son numéro de sosa sinon
+    [Rem] : Exporté en clair hors de ce module.                         *)
+(* ******************************************************************** *)
+value p_sosa conf base a = 
+  match Util.find_sosa_ref conf base with
+  [ Some p -> 
+    match find_sosa_aux conf base a p with
+    [ Some (q,s) -> q
+    | None -> Num.zero ]
+  | None -> Num.zero ]
+;
+
 value max_ancestor_level conf base ip max_lev =
   let x = ref 0 in
   let mark = Array.create (nb_of_persons base) False in
@@ -802,7 +824,7 @@ value build_surnames_list conf base v p =
   let rec loop lev sosa p surn dp =
     if mark.(Adef.int_of_iper (get_key_index p)) = 0 then ()
     else if lev = v then
-      if conf.hide_names && not (fast_auth_age conf p) then ()
+      if (is_hide_names conf p) && not (fast_auth_age conf p) then ()
       else add_surname sosa p surn dp
     else do {
       mark.(Adef.int_of_iper (get_key_index p)) :=
@@ -1292,6 +1314,14 @@ and eval_simple_str_var conf base env (_, p_auth) =
           [ (True, Some s) -> Date.string_of_ondate conf s
           | _ -> "" ] 
       | _ -> raise Not_found ]
+  | "on_marriage_long_date" ->
+      match get_env "fam" env with
+      [ Vfam _ fam _ m_auth ->
+          match (m_auth, Adef.od_of_codate (get_marriage fam)) with
+          [ (True, Some s) -> 
+            (Date.string_of_ondate conf s) ^ (Date.get_wday conf s)
+          | _ -> "" ] 
+      | _ -> raise Not_found ]
   | "origin_file" ->
       if conf.wizard then
         match get_env "fam" env with
@@ -1375,10 +1405,7 @@ and eval_compound_var conf base env ((a, _) as ep) loc =
   | ["child" :: sl] ->
       match get_env "child" env with
       [ Vind p ->
-          let auth =
-            match get_env "auth" env with
-            [ Vbool True -> authorized_age conf base p
-            | _ -> False ]
+          let auth = authorized_age conf base p
           in
           let ep = (p, auth) in
           eval_person_field_var conf base env ep loc sl
@@ -1921,7 +1948,7 @@ and eval_bool_person_field conf base env (p, p_auth) =
       [ Some ifam -> Array.length (get_children (foi base ifam)) > 1
       | None -> False ]
   | "has_sources" ->
-      if conf.hide_names && not p_auth then False
+      if (is_hide_names conf p) && not p_auth then False
       else if sou base (get_psources p) <> "" then True
       else if
         p_auth &&
@@ -1994,7 +2021,7 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
             p_surname base (pget conf base (get_father (foi base ifam))) <>
               p_surname base p ]
       in
-      if not p_auth && conf.hide_names then "x x"
+      if not p_auth && (is_hide_names conf p) then "x x"
       else if force_surname then person_text conf base p
       else person_text_no_surn_no_acc_chk conf base p
   | "consanguinity" ->
@@ -2032,13 +2059,16 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
       | _ -> raise Not_found ]
   | "father_age_at_birth" -> string_of_parent_age conf base ep get_father
   | "first_name" ->
-      if not p_auth && conf.hide_names then "x" else p_first_name base p
+      if not p_auth && (is_hide_names conf p) then "x" else p_first_name base p
   | "first_name_key" ->
-      if conf.hide_names && not p_auth then ""
+      if (is_hide_names conf p) && not p_auth then ""
       else code_varenv (Name.lower (p_first_name base p))
   | "first_name_key_val" ->
-      if conf.hide_names && not p_auth then ""
+      if (is_hide_names conf p) && not p_auth then ""
       else Name.lower (p_first_name base p)
+  | "first_name_key_strip" ->
+      if (is_hide_names conf p) && not p_auth then ""
+      else Name.lower (Name.strip_c (p_surname base p) '"')
   | "image" -> if not p_auth then "" else sou base (get_image p)
   | "image_html_url" -> string_of_image_url conf base env ep True
   | "image_size" -> string_of_image_size conf base env ep
@@ -2136,15 +2166,33 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
       match (p_auth, Adef.od_of_codate (get_baptism p)) with
       [ (True, Some d) -> Date.string_of_ondate conf d
       | _ -> "" ]
+  | "on_baptism_long_date" ->
+      match (p_auth, Adef.od_of_codate (get_baptism p)) with
+      [ (True, Some d) -> 
+        (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
+      | _ -> "" ]
   | "on_birth_date" ->
       match (p_auth, Adef.od_of_codate (get_birth p)) with
       [ (True, Some d) -> Date.string_of_ondate conf d
+      | _ -> "" ]
+  | "on_birth_long_date" ->
+      match (p_auth, Adef.od_of_codate (get_birth p)) with
+      [ (True, Some d) -> 
+        (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
       | _ -> "" ]
   | "on_burial_date" ->
       match get_burial p with
       [ Buried cod ->
           match (p_auth, Adef.od_of_codate cod) with
           [ (True, Some d) -> Date.string_of_ondate conf d
+          | _ -> "" ]
+      | _ -> raise Not_found ]
+  | "on_burial_long_date" ->
+      match get_burial p with
+      [ Buried cod ->
+          match (p_auth, Adef.od_of_codate cod) with
+          [ (True, Some d) -> 
+            (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
           | _ -> "" ]
       | _ -> raise Not_found ]
   | "on_cremation_date" ->
@@ -2154,11 +2202,25 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
           [ (True, Some d) -> Date.string_of_ondate conf d
           | _ -> "" ]
       | _ -> raise Not_found ]
+  | "on_cremation_long_date" ->
+      match get_burial p with
+      [ Cremated cod ->
+          match (p_auth, Adef.od_of_codate cod) with
+          [ (True, Some d) -> 
+            (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
+          | _ -> "" ]
+      | _ -> raise Not_found ]
   | "on_death_date" ->
       match (p_auth, get_death p) with
       [ (True, Death _ d) ->
           let d = Adef.date_of_cdate d in
           Date.string_of_ondate conf d
+      | _ -> "" ]
+  | "on_death_long_date" ->
+      match (p_auth, get_death p) with
+      [ (True, Death _ d) ->
+          let d = Adef.date_of_cdate d in
+          (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
       | _ -> "" ]
   | "prev_fam_father" ->
       match get_env "prev_fam" env with
@@ -2213,19 +2275,22 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
           string_with_macros conf env s
       | _ -> raise Not_found ]
   | "surname" ->
-      if not p_auth && conf.hide_names then "x" else p_surname base p
+      if not p_auth && (is_hide_names conf p) then "x" else p_surname base p
   | "surname_begin" ->
-      if not p_auth && conf.hide_names then ""
+      if not p_auth && (is_hide_names conf p) then ""
       else surname_begin base (p_surname base p)
   | "surname_end" ->
-      if not p_auth && conf.hide_names then "x"
+      if not p_auth && (is_hide_names conf p) then "x"
       else surname_end base (p_surname base p)
   | "surname_key" ->
-      if conf.hide_names && not p_auth then ""
+      if (is_hide_names conf p) && not p_auth then ""
       else code_varenv (Name.lower (p_surname base p))
   | "surname_key_val" ->
-      if conf.hide_names && not p_auth then ""
+      if (is_hide_names conf p) && not p_auth then ""
       else Name.lower (p_surname base p)
+  | "surname_key_strip" ->
+      if (is_hide_names conf p) && not p_auth then ""
+      else Name.lower (Name.strip_c (p_surname base p) '"')
   | "title" -> person_title conf base p
   | _ -> raise Not_found ]
 and eval_witness_relation_var conf base env
@@ -2281,7 +2346,7 @@ and simple_person_text conf base p p_auth =
     match main_title conf base p with
     [ Some t -> titled_person_text conf base p t
     | None -> person_text conf base p ]
-  else if conf.hide_names then "x x"
+  else if (is_hide_names conf p) then "x x"
   else person_text conf base p
 and string_of_died conf base env p p_auth =
   if p_auth then
@@ -2485,9 +2550,10 @@ value print_foreach conf base print_ast eval_expr =
     | _ -> raise Not_found ]
   and print_foreach_alias env al ((p, p_auth) as ep) =
     if p_auth then
-      List.iter
-        (fun a ->
+      list_iter_first
+        (fun first a ->
            let env = [("alias", Vstring (sou base a)) :: env] in
+           let env = [("first", Vbool first) :: env] in
            List.iter (print_ast env ep) al)
         (get_aliases p)
     else ()
@@ -2822,7 +2888,7 @@ value print_foreach conf base print_ast eval_expr =
     let insert typ src srcl = insert_loop (Util.translate_eval typ) src srcl in
     let srcl = [] in
     let srcl =
-      if not conf.hide_names || p_auth then
+      if not (is_hide_names conf p) || p_auth then
         insert (transl_nth conf "person/persons" 0) (get_psources p) srcl
       else srcl
     in
