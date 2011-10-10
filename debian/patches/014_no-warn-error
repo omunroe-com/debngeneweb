@@ -4,10 +4,10 @@ Date:   Sun Mar 29 14:00:48 2009 +0200
 
     Remove "-warn-error A" to work around FTBFS (Closes: #521674)
 
-Index: b/tools/Makefile.inc.opt
+Index: trunk/tools/Makefile.inc.opt
 ===================================================================
---- a/tools/Makefile.inc.opt	2009-11-08 17:26:24.000000000 +0100
-+++ b/tools/Makefile.inc.opt	2009-11-08 17:26:28.000000000 +0100
+--- trunk.orig/tools/Makefile.inc.opt
++++ trunk/tools/Makefile.inc.opt
 @@ -5,8 +5,8 @@
  CAMLP5F=-DUNIX
  CAMLP5D=+camlp5
@@ -19,10 +19,10 @@ Index: b/tools/Makefile.inc.opt
  OCAMLI=
  OCAMLD=
  STRIP=strip
-Index: b/tools/Makefile.inc.out
+Index: trunk/tools/Makefile.inc.out
 ===================================================================
---- a/tools/Makefile.inc.out	2009-11-08 17:26:24.000000000 +0100
-+++ b/tools/Makefile.inc.out	2009-11-08 17:26:28.000000000 +0100
+--- trunk.orig/tools/Makefile.inc.out
++++ trunk/tools/Makefile.inc.out
 @@ -5,8 +5,8 @@
  CAMLP5F=-DUNIX
  CAMLP5D=+camlp5
@@ -34,25 +34,10 @@ Index: b/tools/Makefile.inc.out
  OCAMLI=
  OCAMLD=
  STRIP=strip
-Index: b/tools/Makefile.inc.unix
+Index: trunk/tools/Makefile.inc.win
 ===================================================================
---- a/tools/Makefile.inc.unix	2009-11-08 17:26:10.000000000 +0100
-+++ b/tools/Makefile.inc.unix	2009-11-08 17:26:28.000000000 +0100
-@@ -5,8 +5,8 @@
- CAMLP5F=-DUNIX
- CAMLP5D=+camlp5
- LIBUNIX=-cclib -lunix
--OCAMLC=ocamlc.opt -warn-error A
--OCAMLOPT=ocamlopt.opt -warn-error A
-+OCAMLC=ocamlc.opt
-+OCAMLOPT=ocamlopt.opt
- OCAMLI=
- OCAMLD=
- STRIP=strip
-Index: b/tools/Makefile.inc.win
-===================================================================
---- a/tools/Makefile.inc.win	2009-11-08 17:26:10.000000000 +0100
-+++ b/tools/Makefile.inc.win	2009-11-08 17:26:28.000000000 +0100
+--- trunk.orig/tools/Makefile.inc.win
++++ trunk/tools/Makefile.inc.win
 @@ -5,8 +5,8 @@
  CAMLP5F=-DWIN95
  CAMLP5D=+camlp5
