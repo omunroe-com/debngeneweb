@@ -1,7 +1,6 @@
 geneweb (6.00-1) UNRELEASED; urgency=low
 
   * New upstream version
-  * Drop 004_gwd.ml-readauth patch which was applied upstream
 
  -- Christian Perrier <bubulle@debian.org>  Mon, 10 Oct 2011 21:52:17 +0200
 
