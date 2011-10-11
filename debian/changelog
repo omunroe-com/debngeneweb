@@ -3,6 +3,7 @@ geneweb (6.00-1) UNRELEASED; urgency=low
   * New upstream version
   * Bump Standards to 3.9.2 (checked)
   * Fix grammar error in package description ("allows keeping")
+  * Drop installation of CHANGES that's already installed as "changelog"
 
  -- Christian Perrier <bubulle@debian.org>  Mon, 10 Oct 2011 21:52:17 +0200
 
