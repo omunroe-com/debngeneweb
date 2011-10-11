@@ -16,7 +16,7 @@ Pre-Depends: ${misc:Depends}, iso-codes, isoquery, adduser
 Suggests: menu (>=2.1.35), gwtp, gwsetup, lynx | www-browser
 Priority: optional
 Description: genealogy software with web interface
- Geneweb allows to keep track of ancestral data. It is a powerful
+ Geneweb allows keeping track of ancestral data. It is a powerful
  system for maintaining a set of data about your family history. It
  supports much of the GEDCOM tag system for data storage, and can be
  used either as your primary system for archiving genealogical data,
