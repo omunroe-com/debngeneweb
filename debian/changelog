@@ -1,11 +1,17 @@
-geneweb (6.00-1) UNRELEASED; urgency=low
+geneweb (6.00-2) unstable; urgency=low
+
+  * No longer Suggests: menu
+
+ -- Christian Perrier <bubulle@debian.org>  Sun, 30 Oct 2011 16:16:05 +0100
+
+geneweb (6.00-1) unstable; urgency=low
 
   * New upstream version
   * Bump Standards to 3.9.2 (checked)
   * Fix grammar error in package description ("allows keeping")
   * Drop installation of CHANGES that's already installed as "changelog"
 
- -- Christian Perrier <bubulle@debian.org>  Mon, 10 Oct 2011 21:52:17 +0200
+ -- Christian Perrier <bubulle@debian.org>  Mon, 17 Oct 2011 21:17:21 +0200
 
 geneweb (5.02-1) unstable; urgency=low
 
