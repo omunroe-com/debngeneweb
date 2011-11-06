@@ -2,10 +2,6 @@ geneweb (6.00-3) UNRELEASED; urgency=low
 
   * Change default for running gwsetup at boot
     Closes: #500165
-  * No longer use clumsy back and forth between language names and
-    codes, thanks to the use of Choices-C in debconf templates
-    It means we no longer need to have isoquery during
-    config script. Closes: #629101
 
  -- Christian Perrier <bubulle@sesostris.kheops.frmug.org>  Sun, 06 Nov 2011 15:08:10 +0100
 

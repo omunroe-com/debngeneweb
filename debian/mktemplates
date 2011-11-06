@@ -7,13 +7,28 @@ set -e
 # in debian/po/*.po and country names translations from the
 # iso-codes package
 #
+# Some variables
+ISOQUERY=/usr/bin/isoquery
 # Translations location (relative to the build root directory)
 ISO639TRANSLATIONS=debian/iso-codes
 #
+# This file will have all wanted languages, one ISO-639 code per line
+LANGUAGELIST=debian/languages
+
+# For each supported language, get the language name from ISO 639 list
+(for lang in `cat debian/languages | grep -v "^#"` ; do
+  $ISOQUERY --iso=639 $lang | cut -f4
+done) | \
+(read a; echo -n "$a"; while read b; do echo -n ", $b"; done; echo) \
+>debian/languagelist
+
+CHOICES=`cat debian/languagelist`
+rm debian/languagelist || true
 
 # Now put this list as the choices in the templates
 # and defined this field as translatable (__Choices hack)
 cat debian/geneweb.templates.master | \
+    perl -pe 's/\@LANGUAGELIST\@/'"$CHOICES"'/g' | \
     sed '/Choices:.*English/s/Choices/__Choices/g' \
     >debian/geneweb.templates.tmp
 

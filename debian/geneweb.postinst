@@ -24,6 +24,7 @@ LOGFILE=/var/log/geneweb.log
 
 # Default settings
 DEFAULTLNG="en"
+DEFAULTFULLLNG="English"
 DEFAULTPORT=2317
 DEFAULTRUNMODE="Always on"
 DEFAULTREMOVE=false
@@ -75,12 +76,15 @@ get_debconf() {
 
 
     db_get geneweb/lang
-    LNG=$RET
+    FULLLNG=$RET
     # If not present, use default
-    if [ "$LNG" = "" ]
+    if [ "$FULLLNG" = "" ]
     then
-	LNG=$DEFAULTLNG
+	FULLLNG=$DEFAULTFULLLNG
     fi
+    # Find the two letter code for language
+    # LNG=`echo $FULLLNG | cut -f 2 -d "(" | cut -f 1 -d ")"`
+    LNG=`$ISOQUERY --iso=639 | grep "${FULLLNG}\$" | cut -f3`
 
 
     db_get geneweb/run_mode
