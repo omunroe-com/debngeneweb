@@ -11,7 +11,7 @@ _Description: Gwsetup daemon listening port:
 Template: gwsetup/run_mode
 Type: select
 __Choices: Always on, Manual
-Default: Manual
+Default: Always on
 _Description: Gwsetup start mode:
  The Gwsetup daemon can be launched automatically at startup,
  manually by the system administrator, or by any user when it is needed.

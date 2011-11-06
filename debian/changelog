@@ -1,3 +1,10 @@
+geneweb (6.00-3) UNRELEASED; urgency=low
+
+  * Change default for running gwsetup at boot
+    Closes: #500165
+
+ -- Christian Perrier <bubulle@sesostris.kheops.frmug.org>  Sun, 06 Nov 2011 15:08:10 +0100
+
 geneweb (6.00-2) unstable; urgency=low
 
   * No longer Suggests: menu
