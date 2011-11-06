@@ -1,7 +1,7 @@
 Template: geneweb/lang
 Type: select
-# This is a comment
-Choices: @LANGUAGELIST@
+Choices-C: af,bg,br,ca,zh,cs,da,nl,en,eo,et,fi,fr,de,he,is,it,lv,no,pl,pt,ro,ru,sl,es,sv
+Choices: Afrikaans, Bulgarian, Breton, Catalan, Chinese, Czech, Danish, Dutch, English, Esperanto, Estonian, Finnish, French, German, Hebrew, Icelandic, Italian, Latvian, Norwegian, Polish, Portuguese, Romanian, Russian, Slovenian, Spanish, Swedish
 # This is the default choice. Translators may put their own language here
 # instead of the default.
 # WARNING : you MUST use the ENGLISH NAME of your language
