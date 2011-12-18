@@ -11,6 +11,10 @@ open Hutil;
 open Mutil;
 open Util;
 
+(* Liste des string dont on a supprimé un caractère.       *)
+(* Utilisé pour le message d'erreur lors de la validation. *)
+value removed_string = ref [] ;
+
 value raw_get conf key =
   match p_getenv conf.env key with
   [ Some v -> v
@@ -117,6 +121,19 @@ value reconstitute_relation_parent conf var key sex =
   | (fn, sn) ->
       let fn = only_printable fn in
       let sn = only_printable sn in
+      (* S'il y a des caractères interdits, on les supprime *)
+      let (fn, sn) =
+        let contain_fn = String.contains fn in
+        let contain_sn = String.contains sn in
+        if (List.exists contain_fn Name.forbidden_char) || 
+           (List.exists contain_sn Name.forbidden_char) then
+          do {
+            removed_string.val := 
+              [(Name.purge fn ^ " " ^ Name.purge sn) :: removed_string.val];
+            (Name.purge fn, Name.purge sn)
+          }
+        else (fn, sn)
+      in
       let occ =
         try int_of_string (getn conf var (key ^ "_occ")) with
         [ Failure _ -> 0 ]
@@ -176,9 +193,9 @@ value reconstitute_death conf birth death_place burial burial_place =
   | "DeadYoung" when d = None -> DeadYoung
   | "DontKnowIfDead" when d = None -> DontKnowIfDead
   | "NotDead" -> NotDead
-  | "OfCourseDead" -> OfCourseDead
-  | _ ->
-      match d with
+  | "OfCourseDead" when d = None -> OfCourseDead
+  | _ ->   
+      match d with 
       [ Some d -> Death dr (Adef.cdate_of_date d)
       | _ -> DeadDontKnowWhen ] ]
 ;
@@ -204,6 +221,19 @@ value reconstitute_person conf =
   in
   let first_name = no_html_tags (only_printable (get conf "first_name")) in
   let surname = no_html_tags (only_printable (get conf "surname")) in
+  (* S'il y a des caractères interdits, on les supprime *)
+  let (first_name, surname) =
+    let contain_fn = String.contains first_name in
+    let contain_sn = String.contains surname in
+    if (List.exists contain_fn Name.forbidden_char) ||
+       (List.exists contain_sn Name.forbidden_char) then
+      do {
+        removed_string.val := 
+          [(Name.purge first_name ^ " " ^ Name.purge surname) :: removed_string.val];
+        (Name.purge first_name, Name.purge surname)
+      }
+    else (first_name, surname)
+  in
   let occ =
     try int_of_string (strip_spaces (get conf "occ")) with [ Failure _ -> 0 ]
   in
@@ -235,12 +265,12 @@ value reconstitute_person conf =
     | _ -> Neuter ]
   in
   let birth = Update.reconstitute_date conf "birth" in
-  let birth_place = only_printable (get conf "birth_place") in
+  let birth_place = no_html_tags (only_printable (get conf "birth_place")) in
   let bapt = Adef.codate_of_od (Update.reconstitute_date conf "bapt") in
-  let bapt_place = only_printable (get conf "bapt_place") in
-  let burial_place = only_printable (get conf "burial_place") in
+  let bapt_place = no_html_tags (only_printable (get conf "bapt_place")) in
+  let burial_place = no_html_tags (only_printable (get conf "burial_place")) in
   let burial = reconstitute_burial conf burial_place in
-  let death_place = only_printable (get conf "death_place") in
+  let death_place = no_html_tags (only_printable (get conf "death_place")) in
   let death = reconstitute_death conf birth death_place burial burial_place in
   let death_place =
     match death with
@@ -311,35 +341,35 @@ value print_conflict conf base p =
   do {
     rheader conf title;
     Update.print_error conf base (AlreadyDefined p);
-    html_p conf;
     let free_n =
       Gutil.find_free_occ base (p_first_name base p) (p_surname base p) 0
     in
     tag "ul" begin
-      html_li conf;
-      Wserver.wprint "%s: %d.\n" (capitale (transl conf "first free number"))
-        free_n;
-      Wserver.wprint (fcapitale (ftransl conf "click on \"%s\""))
-        (transl conf "create");
-      Wserver.wprint "%s.\n" (transl conf " to try again with this number");
-      html_li conf;
-      Wserver.wprint "%s " (capitale (transl conf "or"));
-      Wserver.wprint (ftransl conf "click on \"%s\"") (transl conf "back");
-      Wserver.wprint " %s %s." (transl_nth conf "and" 0)
-        (transl conf "change it (the number) yourself");
+      stag "li" begin
+        Wserver.wprint "%s: %d.\n" (capitale (transl conf "first free number"))
+          free_n;
+        Wserver.wprint (fcapitale (ftransl conf "click on \"%s\""))
+          (transl conf "create");
+        Wserver.wprint "%s.\n" (transl conf " to try again with this number");
+      end;
+      stag "li" begin
+        Wserver.wprint "%s " (capitale (transl conf "or"));
+        Wserver.wprint (ftransl conf "click on \"%s\"") (transl conf "back");
+        Wserver.wprint " %s %s." (transl_nth conf "and" 0)
+          (transl conf "change it (the number) yourself");
+      end;
     end;
-    html_p conf;
     tag "form" "method=\"post\" action=\"%s\"" conf.command begin
       List.iter
         (fun (x, v) ->
-           Wserver.wprint "<input type=\"hidden\" name=\"%s\" value=\"%s\">\n" x
+           xtag "input" "type=\"hidden\" name=\"%s\" value=\"%s\"" x
              (quote_escaped (decode_varenv v)))
         (conf.henv @ conf.env);
-      Wserver.wprint "<input type=\"hidden\" name=\"free_occ\" value=\"%d\">\n"
+      xtag "input" "type=\"hidden\" name=\"free_occ\" value=\"%d\""
         free_n;
-      Wserver.wprint "<input type=\"submit\" name=\"create\" value=\"%s\">\n"
+      xtag "input" "type=\"submit\" name=\"create\" value=\"%s\""
         (capitale (transl conf "create"));
-      Wserver.wprint "<input type=\"submit\" name=\"return\" value=\"%s\">\n"
+      xtag "input" "type=\"submit\" name=\"return\" value=\"%s\""
         (capitale (transl conf "back"));
     end;
     Update.print_same_name conf base p;
@@ -584,7 +614,21 @@ value print_mod_ok conf base wl p =
   do {
     header conf title;
     print_link_to_welcome conf True;
-    Wserver.wprint "\n%s"
+    (* Si on a supprimé des caractères interdits *)
+    if List.length removed_string.val > 0 then
+      do {
+         Wserver.wprint "<h3 class=\"error\">" ;
+         Wserver.wprint 
+           (fcapitale (ftransl conf "%s forbidden char")) 
+           (List.fold_left 
+              (fun acc c -> acc ^ "'" ^ Char.escaped c ^ "' ") 
+              " " 
+              Name.forbidden_char);
+         Wserver.wprint "</h3>\n" ;
+         List.iter (Wserver.wprint "<p>%s</p>") removed_string.val
+      }
+    else ();
+    Wserver.wprint "\n<p>%s</p>"
       (referenced_person_text conf base (poi base p.key_index));
     Wserver.wprint "\n";
     Update.print_warnings conf base wl;
@@ -646,6 +690,13 @@ value print_add_ok conf base wl p =
   do {
     header conf title;
     print_link_to_welcome conf True;
+    (* Si on a supprimé des caractères interdits *)
+    if List.length removed_string.val > 0 then
+      do {
+         Wserver.wprint "<h2 class=\"error\">%s</h2>\n" (capitale (transl conf "forbidden char"));
+         List.iter (Wserver.wprint "<p>%s</p>") removed_string.val
+      }
+    else ();
     Wserver.wprint "\n%s"
       (referenced_person_text conf base (poi base p.key_index));
     Wserver.wprint "\n";
@@ -674,6 +725,9 @@ value print_del_ok conf base wl =
 ;
 
 value print_add o_conf base =
+  (* Attention ! On pense à remettre les compteurs à *)
+  (* zéro pour la détection des caractères interdits *)
+  let () = removed_string.val := [] in
   let conf = Update.update_conf o_conf in
   try
     let (sp, ext) = reconstitute_person conf in
@@ -762,6 +816,9 @@ value get_old_key conf base =
 ;
 
 value print_mod o_conf base =
+  (* Attention ! On pense à remettre les compteurs à *)
+  (* zéro pour la détection des caractères interdits *)
+  let () = removed_string.val := [] in
   let old_key = get_old_key o_conf base in
   let conf = Update.update_conf o_conf in
   let callback sp = do {

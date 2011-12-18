@@ -643,7 +643,7 @@ value display_spouse_index conf base max_level ancestor =
                  let c = pget conf base c in
                  if p_first_name base c <> "?" && p_surname base c <> "?" &&
                     p_first_name base p <> "x" &&
-                    (not (is_hide_names conf p) || fast_auth_age conf c) &&
+                    (not (is_hide_names conf c) || fast_auth_age conf c) &&
                     not (List.mem (get_key_index c) list.val)
                  then
                    list.val := [get_key_index c :: list.val]
@@ -717,10 +717,10 @@ value make_tree_hts conf base gv p =
     | _ ->
         match Util.p_getenv conf.env "color" with
         [ None | Some "" -> ""
-        | Some x -> " style=\"background:" ^ x ^ "\"" ] ]
+        | Some x -> " class=\"" ^ x ^ "\"" ] ]
   in
   let rec nb_column n v u =
-    if v = 0 then n + 1
+    if v = 0 then n + (max 1 (Array.length (get_family u)))
     else if Array.length (get_family u) = 0 then n + 1
     else
       List.fold_left (fun n ifam -> fam_nb_column n v (foi base ifam)) n
@@ -840,11 +840,11 @@ value make_tree_hts conf base gv p =
     let td =
       match po with
       [ Some (p, auth) ->
-          let ncol = nb_column 0 (v - 1) p in
-          let txt =
-            if v = 1 then person_text_without_surname conf base p
-            else person_title_text conf base p
+          let ncol = 
+            if v > 1 then nb_column 0 (v - 1) p
+            else Array.length (get_family p)
           in
+          let txt = person_title_text conf base p in
           let txt = reference conf base p txt in
           let txt =
             if auth then txt ^ Date.short_dates_text conf base p else txt
@@ -878,7 +878,10 @@ value make_tree_hts conf base gv p =
             in
             let td =
               let fam = foi base ifam in
-              let ncol = fam_nb_column 0 (v - 1) fam in
+              let ncol = 
+                if v > 1 then fam_nb_column 0 (v - 1) fam
+                else 1
+              in
               let s =
                 let sp = pget conf base (spouse (get_key_index p) fam) in
                 let txt = person_title_text conf base sp in
@@ -948,9 +951,11 @@ value make_tree_hts conf base gv p =
           let tdl = List.fold_left (person_txt v) [] gen in
           [Array.of_list (List.rev tdl) :: tdal]
         in
-        if v > 1 then
+        let tdal =
           let tdl = List.fold_left (spouses_txt v) [] gen in
-          let tdal = [Array.of_list (List.rev tdl) :: tdal] in
+          [Array.of_list (List.rev tdl) :: tdal] 
+        in
+        if v > 1 then
           loop tdal gen (next_gen gen) (v - 1)
         else tdal
     in

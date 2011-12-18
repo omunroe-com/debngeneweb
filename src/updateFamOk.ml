@@ -11,6 +11,10 @@ open Hutil;
 open Mutil;
 open Util;
 
+(* Liste des string dont on a supprimé un caractère.       *)
+(* Utilisé pour le message d'erreur lors de la validation. *)
+value removed_string = ref [] ;
+
 type create_info =
   Update.create_info ==
     { ci_birth_date : option date;
@@ -42,6 +46,19 @@ value getn conf var key =
 value reconstitute_somebody conf var =
   let first_name = no_html_tags (only_printable (getn conf var "fn")) in
   let surname = no_html_tags (only_printable (getn conf var "sn")) in
+  (* S'il y a des caractères interdits, on les supprime *)
+  let (first_name, surname) =
+    let contain_fn = String.contains first_name in
+    let contain_sn = String.contains surname in
+    if (List.exists contain_fn Name.forbidden_char) ||
+       (List.exists contain_sn Name.forbidden_char) then
+      do {
+        removed_string.val := 
+          [(Name.purge first_name ^ " " ^ Name.purge surname) :: removed_string.val];
+        (Name.purge first_name, Name.purge surname)
+      }
+    else (first_name, surname)
+  in
   let occ = try int_of_string (getn conf var "occ") with [ Failure _ -> 0 ] in
   let sex =
     match p_getenv conf.env (var ^ "_sex") with
@@ -62,6 +79,19 @@ value reconstitute_parent_or_child conf var default_surname =
   let surname =
     let surname = no_html_tags (only_printable (getn conf var "sn")) in
     if surname = "" then default_surname else surname
+  in
+  (* S'il y a des caractères interdits, on les supprime *)
+  let (first_name, surname) =
+    let contain_fn = String.contains first_name in
+    let contain_sn = String.contains surname in
+    if (List.exists contain_fn Name.forbidden_char) ||
+       (List.exists contain_sn Name.forbidden_char) then
+      do {
+        removed_string.val := 
+          [(Name.purge first_name ^ " " ^ Name.purge surname) :: removed_string.val];
+        (Name.purge first_name, Name.purge surname)
+      }
+    else (first_name, surname)
   in
   let occ = try int_of_string (getn conf var "occ") with [ Failure _ -> 0 ] in
   let create_info =
@@ -151,7 +181,7 @@ value reconstitute_family conf =
     | _ -> Married ]
   in
   let marriage = Update.reconstitute_date conf "marr" in
-  let marriage_place = only_printable (get conf "marr_place") in
+  let marriage_place = no_html_tags (only_printable (get conf "marr_place")) in
   let (witnesses, ext) =
     loop 1 ext where rec loop i ext =
       match
@@ -312,15 +342,7 @@ value print_error_disconnected conf =
   do {
     rheader conf title;
     Hutil.print_link_to_welcome conf True;
-    Wserver.wprint "\
-Sorry, you can add only families connected to the rest.<br>
-This restriction has been added by this database owner.
-<p>
-D&eacute;sol&eacute;, vous ne pouvez ajouter que des familles
-connect&eacute;es au reste.<br>
-Cette restriction a &eacute;t&eacute; ajout&eacute;e par le
-propri&eacute;taire de cette base de donn&eacute;es.
-";
+    Wserver.wprint "%s" (capitale (transl conf "msg error disconnected"));
     trailer conf;
     raise Update.ModErr
   }
@@ -664,9 +686,11 @@ value is_created_or_already_there ochil_arr nchil schil =
    3/ or the new family have the same parents than the old one *and*
       all linked (not created) new children were already children.
 *)
+(* Replaced && by || to do more checks. *)
+(* Improvement : check the name on the parents/children if they linked *)
 
 value need_check_noloop (scpl, sdes, onfs) =
-  if array_exists is_a_link (parent_array scpl) &&
+  if array_exists is_a_link (parent_array scpl) ||
      array_exists is_a_link sdes.children
   then
     match onfs with
@@ -708,27 +732,25 @@ value print_family conf base wl cpl des = do {
         else ()
       }
   | None -> () ];
-  Wserver.wprint "<ul>\n";
-  html_li conf;
-  Wserver.wprint "\n%s"
-    (referenced_person_text conf base (poi base (Adef.father cpl)));
-  Wserver.wprint "\n";
-  html_li conf;
-  Wserver.wprint "\n%s"
-    (referenced_person_text conf base (poi base (Adef.mother cpl)));
-  Wserver.wprint "</ul>\n";
+  tag "ul" begin
+    stag "li" begin
+      Wserver.wprint "%s" (referenced_person_text conf base (poi base (Adef.father cpl)));
+    end;
+    Wserver.wprint "\n";
+    stag "li" begin
+      Wserver.wprint "%s" (referenced_person_text conf base (poi base (Adef.mother cpl)));
+    end;
+  end;
   if des.children <> [| |] then do {
-    html_p conf;
-    Wserver.wprint "<ul>\n";
-    Array.iter
-      (fun ip -> do {
-         html_li conf;
-         Wserver.wprint "\n%s"
-           (referenced_person_text conf base (poi base ip));
-         Wserver.wprint "\n"
-       })
-      des.children;
-    Wserver.wprint "</ul>\n"
+    tag "ul" begin
+      Array.iter
+        (fun ip ->
+          stag "li" begin
+            Wserver.wprint "%s" (referenced_person_text conf base (poi base ip));
+          end
+        )
+        des.children;
+    end;
   }
   else ();
   Update.print_warnings conf base wl
@@ -741,6 +763,20 @@ value print_mod_ok conf base wl cpl des =
   do {
     header conf title;
     print_link_to_welcome conf True;
+    (* Si on a supprimé des caractères interdits *)
+    if List.length removed_string.val > 0 then
+      do {
+         Wserver.wprint "<h3 class=\"error\">" ;
+         Wserver.wprint 
+           (fcapitale (ftransl conf "%s forbidden char")) 
+           (List.fold_left 
+              (fun acc c -> acc ^ "'" ^ Char.escaped c ^ "' ") 
+              " " 
+              Name.forbidden_char);
+         Wserver.wprint "</h3>\n" ;
+         List.iter (Wserver.wprint "<p>%s</p>") removed_string.val
+      }
+    else ();
     print_family conf base wl cpl des;
     trailer conf
   }
@@ -751,6 +787,13 @@ value print_add_ok conf base wl cpl des =
   do {
     header conf title;
     print_link_to_welcome conf True;
+    (* Si on a supprimé des caractères interdits *)
+    if List.length removed_string.val > 0 then
+      do {
+         Wserver.wprint "<h2 class=\"error\">%s</h2>\n" (capitale (transl conf "forbidden char"));
+         List.iter (Wserver.wprint "<p>%s</p>") removed_string.val
+      }
+    else ();
     print_family conf base wl cpl des;
     trailer conf
   }
@@ -808,6 +851,9 @@ value forbidden_disconnected conf sfam scpl sdes =
 ;
 
 value print_add o_conf base =
+  (* Attention ! On pense à remettre les compteurs à *)
+  (* zéro pour la détection des caractères interdits *)
+  let () = removed_string.val := [] in
   let conf = Update.update_conf o_conf in
   try
     let (sfam, scpl, sdes, ext) = reconstitute_family conf in
@@ -921,6 +967,9 @@ value family_structure conf base ifam =
 ;
 
 value print_mod o_conf base =
+  (* Attention ! On pense à remettre les compteurs à *)
+  (* zéro pour la détection des caractères interdits *)
+  let () = removed_string.val := [] in
   let conf = Update.update_conf o_conf in
   let callback sfam scpl sdes = do {
     let ofs = family_structure conf base sfam.fam_index in

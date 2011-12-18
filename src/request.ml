@@ -164,10 +164,12 @@ value find_all conf base an =
             if is_hidden p then [] else [p]
           in
           let pl =
-            if not conf.wizard && not conf.friend && conf.hide_names then
+            if not conf.wizard && not conf.friend then
               List.fold_right
                 (fun p pl ->
-                   if Util.fast_auth_age conf p then [p :: pl] else pl)
+                   if not (is_hide_names conf p) || Util.fast_auth_age conf p 
+                   then [p :: pl] 
+                   else pl)
                 pl []
             else pl
           in
@@ -197,10 +199,12 @@ value find_all conf base an =
             else spl
           in
           let pl =
-            if not conf.wizard && not conf.friend && conf.hide_names then
+            if not conf.wizard && not conf.friend then
               List.fold_right
                 (fun p pl ->
-                   if Util.fast_auth_age conf p then [p :: pl] else pl)
+                   if not (is_hide_names conf p) || Util.fast_auth_age conf p 
+                   then [p :: pl] 
+                   else pl)
                 pl []
             else pl
           in
@@ -259,7 +263,7 @@ value specify conf base n pl =
          tag "li" begin
            let sosa_num = Perso.p_sosa conf base p in
            if Num.gt sosa_num Num.zero then
-             Wserver.wprint "<img src=\"%s/%s\" title=\"sosa\"/> " 
+             Wserver.wprint "<img src=\"%s/%s\" alt=\"sosa\" title=\"sosa\"/> " 
                (Util.image_prefix conf) "sosa.png"
            else () ;
            match tl with
@@ -417,14 +421,36 @@ value family_m conf base =
       SendImage.print_del_ok conf base
   | Some "DEL_IND" when conf.wizard -> UpdateInd.print_del conf base
   | Some "DEL_IND_OK" when conf.wizard -> UpdateIndOk.print_del conf base
-  | Some "DOC" -> Doc.print conf
-  | Some "FORUM" -> Forum.print conf base
-  | Some "FORUM_ADD" -> Forum.print_add conf base
-  | Some "FORUM_ADD_OK" -> Forum.print_add_ok conf base
-  | Some "FORUM_DEL" -> Forum.print_del conf base
-  | Some "FORUM_SEARCH" -> Forum.print_search conf base
-  | Some "FORUM_VAL" -> Forum.print_valid conf base
-  | Some "FORUM_VIEW" -> Forum.print conf base
+  (* Fonction obsolète, la documentation n'étant plus à jour *)
+  (* | Some "DOC" -> Doc.print conf *)
+  | Some "FORUM" -> 
+      match p_getenv conf.base_env "disable_forum" with
+      [ Some "yes" -> incorrect_request conf
+      | _ -> Forum.print conf base ]
+  | Some "FORUM_ADD" -> 
+      match p_getenv conf.base_env "disable_forum" with
+      [ Some "yes" -> incorrect_request conf
+      | _ -> Forum.print_add conf base ]
+  | Some "FORUM_ADD_OK" -> 
+      match p_getenv conf.base_env "disable_forum" with
+      [ Some "yes" -> incorrect_request conf
+      | _ -> Forum.print_add_ok conf base ]
+  | Some "FORUM_DEL" -> 
+      match p_getenv conf.base_env "disable_forum" with
+      [ Some "yes" -> incorrect_request conf
+      | _ -> Forum.print_del conf base ]
+  | Some "FORUM_SEARCH" -> 
+      match p_getenv conf.base_env "disable_forum" with
+      [ Some "yes" -> incorrect_request conf
+      | _ -> Forum.print_search conf base ]
+  | Some "FORUM_VAL" -> 
+      match p_getenv conf.base_env "disable_forum" with
+      [ Some "yes" -> incorrect_request conf
+      | _ -> Forum.print_valid conf base ]
+  | Some "FORUM_VIEW" -> 
+      match p_getenv conf.base_env "disable_forum" with
+      [ Some "yes" -> incorrect_request conf
+      | _ -> Forum.print conf base ]
   | Some "H" ->
       match p_getenv conf.env "v" with
       [ Some f -> Srcfile.print conf base f
@@ -456,10 +482,15 @@ value family_m conf base =
   | Some "MOD_IND_OK" when conf.wizard -> UpdateIndOk.print_mod conf base
   | Some "MOD_NOTES" when conf.wizard -> Notes.print_mod conf base
   | Some "MOD_NOTES_OK" when conf.wizard -> Notes.print_mod_ok conf base
-  | Some "MOD_WDOC" when conf.wizard -> Doc.print_mod_wdoc conf
-  | Some "MOD_WDOC_OK" when conf.wizard -> Doc.print_mod_wdoc_ok conf base
-  | Some "MOD_WIZNOTES" -> Wiznotes.print_mod conf base
-  | Some "MOD_WIZNOTES_OK" -> Wiznotes.print_mod_ok conf base
+  | Some "MOD_P" when conf.wizard -> Place.print_mod conf base
+  | Some "MOD_P_OK" when conf.wizard -> Place.print_mod_ok conf base
+  (* Fonction obsolète, la documentation n'étant plus à jour *)
+  (* | Some "MOD_WDOC" when conf.wizard -> Doc.print_mod_wdoc conf *)
+  (* | Some "MOD_WDOC_OK" when conf.wizard -> Doc.print_mod_wdoc_ok conf base *)
+  | Some "MOD_WIZNOTES" when conf.authorized_wizards_notes -> 
+      Wiznotes.print_mod conf base
+  | Some "MOD_WIZNOTES_OK" when conf.authorized_wizards_notes -> 
+      Wiznotes.print_mod_ok conf base
   | Some "MRG" when conf.wizard ->
       match find_person_in_env conf base "" with
       [ Some p -> Merge.print conf base p
@@ -559,10 +590,14 @@ value family_m conf base =
       match find_person_in_env conf base "" with
       [ Some p -> updmenu_print conf base p
       | _ -> very_unknown conf ]
-  | Some "VIEW_WIZNOTES" when conf.wizard -> Wiznotes.print_view conf base
-  | Some "WDOC" -> Doc.print_wdoc conf
-  | Some "WIZNOTES" -> Wiznotes.print conf base
-  | Some "WIZNOTES_SEARCH" -> Wiznotes.print_search conf base
+  | Some "VIEW_WIZNOTES" when conf.wizard && conf.authorized_wizards_notes -> 
+      Wiznotes.print_view conf base
+  (* Fonction obsolète, la documentation n'étant plus à jour *)
+  (* | Some "WDOC" -> Doc.print_wdoc conf *)
+  | Some "WIZNOTES" when conf.authorized_wizards_notes -> 
+      Wiznotes.print conf base
+  | Some "WIZNOTES_SEARCH" when conf.authorized_wizards_notes -> 
+      Wiznotes.print_search conf base
   | Some mode -> incorrect_request conf
   | None ->
       match find_person_in_env conf base "" with
@@ -571,7 +606,7 @@ value family_m conf base =
 ;
 
 value print_no_index conf base =
-  let title _ = Wserver.wprint "Link to use" in
+  let title _ = Wserver.wprint "%s" (Util.capitale (transl conf "link to use")) in
   let link = url_no_index conf base in
   do {
     header conf title;
@@ -661,11 +696,11 @@ value log_count conf (log_file, log_oc, flush_log) r =
 value print_moved conf base s =
   match Util.open_etc_file "moved" with
   [ Some ic ->
-      let env = [('b', fun () -> conf.bname); ('t', fun () -> s)] in
+      let env = [("bname", conf.bname)] in
       do {
         Util.html conf;
         Util.nl ();
-        Util.copy_from_etc env conf.lang conf.indep_command ic;
+        Templ.copy_from_templ conf env ic;
       }
   | None ->
       let title _ = Wserver.wprint "%s -&gt; %s" conf.bname s in
@@ -724,13 +759,19 @@ value treat_request conf base log = do {
         extract_henv conf base;
         make_senv conf base;
         if only_special_env conf.env then do {
-          let r = Srcfile.incr_welcome_counter conf in
-          log_count conf log r;
+          match p_getenv conf.base_env "counter" with
+          [ Some "no" -> ()
+          | _ -> 
+              let r = Srcfile.incr_welcome_counter conf in
+              log_count conf log r ];
           Srcfile.print_start conf base
         }
         else do {
-          let r = Srcfile.incr_request_counter conf in
-          log_count conf log r;
+          match p_getenv conf.base_env "counter" with
+          [ Some "no" -> ()
+          | _ -> 
+              let r = Srcfile.incr_request_counter conf in
+              log_count conf log r ] ;
           match p_getenv conf.env "ptempl" with
           [ Some tname when p_getenv conf.base_env "ptempl" = Some "yes" ->
               match find_person_in_env conf base "" with
@@ -794,7 +835,7 @@ value this_request_updates_database conf =
         "KILL_ANC" | "MOD_FAM_OK" | "MOD_IND_OK" | "MOD_NOTES_OK" |
         "MOD_WIZNOTES_OK" | "MRG_DUP_IND_Y_N" | "MRG_DUP_FAM_Y_N" |
         "MRG_IND" | "MRG_MOD_FAM_OK" | "MRG_MOD_IND_OK" |
-        "SND_IMAGE_OK" -> True
+        "MOD_P_OK" | "SND_IMAGE_OK" -> True
       | _ -> False ]
   | _ -> False ]
 ;

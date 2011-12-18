@@ -16,13 +16,13 @@
   <meta http-equiv="Content-Type" content="text/html; charset=%charset;"%/>
   <meta http-equiv="Content-Style-Type" content="text/css"%/>
   <link rel="shortcut icon" href="%image_prefix;/favicon_gwd.png"%/>
-  <link rel="stylesheet" type="text/css" href="css/%css_prop" />
+%include.css;
 %base_header;
 </head>
-<body %body_prop;>
+<body%body_prop;>
 %message_to_wizard;
 
-<h1 style="text-align:center" class="highlight">%nn;
+<h1>%nn;
   %apply;a_of_b_gr_eq_lev%with;
     [*descendants]%nn;
   %and;
@@ -41,12 +41,12 @@
   <table style="float:%right;"><tr><td>
     %if;(referer != "")
       <a href="%referer;"><img
-       src="%image_prefix;/left.jpg"%wid_hei;left.jpg; 
-       style="border: 0" title="&lt;&lt;"%/></a>
+       src="%image_prefix;/left.png"%wid_hei;left.png; 
+       alt="&lt;&lt;" title="&lt;&lt;"%/></a>
     %end;
     <a href="%prefix;"><img%sp;
-    src="%image_prefix;/up.jpg"%wid_hei;up.jpg; 
-    style="border: 0" title="^^"%/></a>
+    src="%image_prefix;/up.png"%wid_hei;up.png; 
+    alt="^^" title="^^"%/></a>
   </td></tr></table>
 %end;
 
@@ -111,6 +111,21 @@
           </label>
           <br%/>
           <label>
+            - [note/notes]1
+            <input type="checkbox" name="notes" value="on"%/>
+          </label>
+          <br%/>
+          <label>
+            - [source/sources]1
+            <input type="checkbox" name="src" value="on"%/>
+          </label>
+          <br%/>
+          <label>
+            - [relation/relations]1
+            <input type="checkbox" name="rel" value="on"%/>
+          </label>
+          <br%/>
+          <label>
             - [with::surname/surnames]1
             <input type="checkbox" name="alwsurn" value="yes"%/>
           </label>
@@ -123,11 +138,6 @@
           <label>
             - [comment] ([marriage/marriages]1)
             <input type="checkbox" name="comm" value="on"%/>
-          </label>
-          <br%/>
-          <label>
-            - [relation/relations]1
-            <input type="checkbox" name="rel" value="on"%/>
           </label>
         </td>
         <td align="%left;" valign="top">
@@ -159,23 +169,23 @@
               <td>
                 <input type="radio" name="color" value="" checked="checked"%/>
               </td>
-              <td style="background:#FFC0C0">
-                <input type="radio" name="color" value="#FFC0C0"%/>
+              <td class="bg1">
+                <input type="radio" name="color" value="bg1"%/>
               </td>
-              <td style="background:#FFFFC0">
-                <input type="radio" name="color" value="#FFFFC0"%/>
+              <td class="bg2">
+                <input type="radio" name="color" value="bg2"%/>
               </td>
-              <td style="background:#C0FFC0">
-                <input type="radio" name="color" value="#C0FFC0"%/>
+              <td class="bg3">
+                <input type="radio" name="color" value="bg3"%/>
               </td>
-              <td style="background:#C0FFFF">
-                <input type="radio" name="color" value="#C0FFFF"%/>
+              <td class="bg4">
+                <input type="radio" name="color" value="bg4"%/>
               </td>
-              <td style="background:#C0C0FF">
-                <input type="radio" name="color" value="#C0C0FF"%/>
+              <td class="bg5">
+                <input type="radio" name="color" value="bg5"%/>
               </td>
-              <td style="background:#FFC0FF">
-                <input type="radio" name="color" value="#FFC0FF"%/>
+              <td class="bg6">
+                <input type="radio" name="color" value="bg6"%/>
               </td>
             </tr>
           </table>
@@ -225,13 +235,7 @@
 </table>
 </td></tr></table>
 
-
-<br />
-<div id="footer">
-<hr />
-%copyright;
 %base_trailer;
-</div>
-
+%copyright;
 </body>
 </html>

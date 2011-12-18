@@ -97,8 +97,14 @@ moderator_file=
 supervisor=
 
 # Notify change program (e.g. shell script) to be executed for each
-# database change.
+# database change. First argument is the name of the base, then the
+# individual and finaly the action performed.
 # notify_change=
+
+# Notify key program (e.g. shell script) to be executed for each
+# database individual's name change. First argument is the name of the base,
+# then the old key of the individual and finaly the new key of the individual.
+# notify_key=
 
 # Wizard loosing his powers, becoming just a "friend"
 # Set it to "yes" or "no"
@@ -320,3 +326,23 @@ expand_env=no
 
 # Display the compilation time at bottom of pages.
 # display_compilation_time=off
+
+# Display the date with the explicit day in parenthesis.
+# Only works if the date is "exact" and *not* enter in "text mode"
+#long_date=yes/no
+
+# If disable_forum is set to yes, then all the request on the forum
+# are considered 'incorect request'. Default behaviour is that the forum
+# is *not* disable
+#disable_forum=yes/no
+
+# If counter is set to no, the counter for visiting geneweb's web pages is 
+# *not* incremented. Default behaviour is that the counter is on (set to yes).
+#counter=yes/no
+
+# Default value if not specified is 5000 (which means that it will
+# take at most 5 seconds to modify the "set of places".
+#max_places_update=...
+
+# Authorized wizards notes. By default, wizards notes are not allowed.
+#authorized_wizards_notes=yes/no

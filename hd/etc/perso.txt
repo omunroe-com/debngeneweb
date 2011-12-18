@@ -16,10 +16,10 @@
   <meta http-equiv="Content-Type" content="text/html; charset=%charset;"%/>
   <meta name="robots" content="none"%/>
   <link rel="shortcut icon" href="%image_prefix;/favicon_gwd.png"%/>
-  <link rel="stylesheet" type="text/css" href="css/%css_prop" />
+%include.css;
 %base_header;
 </head>
-<body %body_prop;>
+<body%body_prop;>
 %message_to_wizard;
 
 
@@ -27,24 +27,28 @@
   <table style="float:%right;"><tr><td>
     %if;(referer != "")
       <a href="%referer;"><img
-       src="%image_prefix;/left.jpg"%wid_hei;left.jpg; 
-       style="border: 0" title="&lt;&lt;"%/></a>
+       src="%image_prefix;/left.png"%wid_hei;left.png; 
+       style="border: 0" alt="&lt;&lt;" title="&lt;&lt;"%/></a>
     %end;
     <a href="%prefix;"><img%sp;
-    src="%image_prefix;/up.jpg"%wid_hei;up.jpg; 
-    style="border: 0" title="^^"%/></a>
+    src="%image_prefix;/up.png"%wid_hei;up.png; 
+    style="border: 0" alt="^^" title="^^"%/></a>
   </td></tr></table>
 %end;
 
-<h1 style="text-align:center" class="highlight">
+<h1>
 %if;(is_male or is_female or
      bvar.show_invisible = "on" and wizard and is_invisible)
   %if;is_male;
-    <img src="%image_prefix;/male.png"%wid_hei;male.png; title="[M/F]0"%/>%nn;
+    <img src="%image_prefix;/male.png"%wid_hei;male.png; alt="[M/F]0" title="[M/F]0"%/>%nn;
   %elseif;is_female;
-    <img src="%image_prefix;/female.png"%wid_hei;female.png; title="[M/F]1"%/>%nn;
+    <img src="%image_prefix;/female.png"%wid_hei;female.png; alt="[M/F]1" title="[M/F]1"%/>%nn;
   %end;
-  %if;(bvar.show_invisible = "on" and wizard and is_invisible) (x)%end;
+  %if;(bvar.show_invisible = "on" and wizard and is_invisible)
+    <div style="float:%left;">%nn;
+      <img src="%image_prefix;/restricted.png"%wid_hei;restricted.png; alt=" (x)"%/>%nn;
+    </div>
+  %end;
   %sp;
 %end;
 %if;has_public_name;
@@ -69,7 +73,7 @@
   <table border="%border;" cellspacing="0" cellpadding="0">
   <tr><td>
   %if;has_sosa;
-    <img src="%image_prefix/sosa.png" title="sosa"/>
+    <img src="%image_prefix/sosa.png" alt="sosa" title="sosa"/>
     <em>[*Sosa]:
     %if;cancel_links;%sosa;
     %else;<a href="%prefix;%sosa_link;">%sosa;</a>%end;
@@ -117,8 +121,8 @@
   <table border="%border;" width="90%%">
   <tr><td>
    <a href="%image_html_url;"><img
-    src="%image_url;"%image_size; style="border:0"
-    title="[image/images]0"%/></a></td>
+    src="%image_url;"%image_size;
+    alt="[image/images]0" title="[image/images]0"%/></a></td>
 %end;
 %if;(has_occupation or has_birth_date or has_birth_place or
      has_baptism_date or has_baptism_place or is_dead or is_buried or
@@ -130,7 +134,7 @@
       <li>%apply;capitalize(linked_page.OCCU)</li>
     %end;
     %if;has_birth_date;
-      <li>%apply;capitalize(nth([born],sex)) %on_birth_long_date;
+      <li>%apply;capitalize(nth([born],sex)) %on_birth_date;
       %if;birthday; ([happy birthday to you!])%end;
       %if;has_birth_place; - %birth_place;%end;</li>
     %else;
@@ -139,7 +143,7 @@
       %end;
     %end;
     %if;has_baptism_date;
-      <li>%apply;capitalize(nth([baptized],sex)) %on_baptism_long_date;
+      <li>%apply;capitalize(nth([baptized],sex)) %on_baptism_date;
       %if;has_baptism_place; - %baptism_place;%end;</li>
     %else;
       %if;has_baptism_place;
@@ -148,7 +152,7 @@
     %end;
     %if;is_dead;
       <li>%apply;capitalize(died)
-      %if;has_death_date; %on_death_long_date;%end;
+      %if;has_death_date; %on_death_date;%end;
       %if;has_death_place; -&nbsp;%death_place;%end;
       %if;has_linked_page.DEATH; %linked_page.DEATH;%end;</li>
     %end;
@@ -160,28 +164,29 @@
     %end;
     %if;is_buried;
       <li>%apply;capitalize(nth([buried],sex))
-      %if;has_burial_date; %on_burial_long_date;%end;
+      %if;has_burial_date; %on_burial_date;%end;
       %if;has_burial_place; -&nbsp;%burial_place;%end;</li>
     %end;
     %if;is_cremated;
       <li>%apply;capitalize(nth([cremated],sex))
-      %if;has_cremation_date; %on_cremation_long_date;%end;
+      %if;has_cremation_date; %on_cremation_date;%end;
       %if;has_cremation_place; -&nbsp;%cremation_place;%end;</li>
     %end;
     %if;(has_consanguinity and (bvar.show_consang != "no" or manitou))
       <li>[*consanguinity]: %consanguinity;</li>%nl;
     %end;
   </ul>
+  %if;has_image;</td>%end;
 %end;
 %if;has_image;
-  </td></tr></table>
+  </tr></table>
 %end;
 
 %if;has_parents;
   <h3 class="highlight">[*parents]</h3>
   <ul>
   %foreach;parent;
-    <li style="list-style-type:%if;parent.has_parents;disc%else;circle%end;">
+    <li class="%if;parent.has_parents;goway%else;noway%end;">
     %if;(cancel_links or parent.is_restricted)%parent;
     %else;<a href="%prefix;%parent.access;">%parent;</a>%end;
     %parent.title;%parent.dates;</li>%nl;
@@ -215,14 +220,14 @@
   <h3 class="highlight">[*marriage/marriages]1 [and::child/children]1</h3>
   <ul>
   %foreach;family;
-    <li style="list-style-type:%if;spouse.has_parents;disc%else;circle%end;">
+    <li class="%if;spouse.has_parents;goway%else;noway%end;">
     %apply;married_to%with;
       %if;(marriage_place = "")
         %if;(on_marriage_date = "")
-        %else; <em>%on_marriage_long_date;</em>%end;
+        %else; <em>%on_marriage_date;</em>%end;
       %else;
         %if;(on_marriage_date = "")<em>, %marriage_place;, </em>
-        %else; <em>%on_marriage_long_date;, %marriage_place, </em>%end;
+        %else; <em>%on_marriage_date;, %marriage_place, </em>%end;
       %end;
     %end;
     %if;(cancel_links or spouse.is_restricted)%spouse;
@@ -244,8 +249,7 @@
       , [having as children]0
       <ul>
         %foreach;child;
-          <li style="list-style-type:%if;child.has_families;disc%else;
-           circle%end;">
+          <li class="%if;child.has_families;goway%else;noway%end;">
           %if;(cancel_links or child.is_restricted)%child.child_name;
           %else;
             <a href="%prefix;%child.access;">%child.child_name;</a>%nn;
@@ -268,13 +272,11 @@
       %if;(has_relation_him and has_relation_her)
         %nl;
         <ul>
-        <li style="list-style-type:%if;relation_him.has_families;disc%else;
-         circle%end;">
+        <li class="%if;relation_him.has_families;goway%else;noway%end;">
         %if;(cancel_links or relation_him.is_restricted)%relation_him;
         %else;<a href="%prefix;%relation_him.access">%relation_him;</a>%end;
         %relation_him.title;%relation_him.dates;</li>%nl;
-        <li style="list-style-type:%if;relation_her.has_families;disc%else;
-         circle%end;">
+        <li class="%if;relation_her.has_families;goway%else;noway%end;">
         %if;(cancel_links or relation_her.is_restricted)%relation_her;
         %else;<a href="%prefix;%relation_her.access">%relation_her;</a>%end;
         %relation_her.title;%relation_her.dates;</li>%nl;
@@ -291,14 +293,14 @@
       </li>
     %end;
     %foreach;related;
-      <li style="list-style-type:%if;related.has_families;disc%else;
-       circle%end;">%apply;capitalize(related_type):
+      <li class="%if;related.has_families;goway%else;
+       noway%end;">%apply;capitalize(related_type):
       %if;cancel_links;%related;
       %else;<a href="%prefix;%related.access">%related;</a>%end;
       %related.title;%related.dates;</li>%nl;
     %end;
     %foreach;witness_relation;
-      <li style="list-style-type:disc">%nn;
+      <li class="noway">%nn;
         %apply;witness_relation%with;
           %if;cancel_links;%witness_relation.father;
           %else<a href="%prefix;%witness_relation.father.access;
@@ -345,37 +347,7 @@
 %end;
 
 <div id="navigation">
-  <h3>
-[
-af: Navigation
-bg: Navigation
-br: Navigation
-ca: Navigation
-cs: Navigation
-da: Navigation
-de: Navigation
-en: Navigation
-eo: Navigation
-es: Navigation
-et: Navigation
-fi: Navigation
-fr: Navigation
-fr-cr: Navigation
-he: Navigation
-is: Navigation
-it: Navigation
-lv: Navigation
-nl: Navigation
-no: Navigation
-pl: Navigation
-pt: Navigation
-ro: Navigation
-ru: Navigation
-sl: Navigation
-sv: Navigation
-zh: Navigation
-]
-  </h3>
+  <h3>[*navigation]</h3>
   %if;not cancel_links;
     <div id="list_left">
     <ul>
@@ -438,12 +410,7 @@ zh: Navigation
 %if;(evar.opt = "misc")%misc_names;<p>%end;
 
 
-<br />
-<div id="footer">
-<hr />
-%copyright;
 %base_trailer;
-</div>
-
+%copyright;
 </body>
 </html>

@@ -85,8 +85,9 @@ value print_elem conf base is_surname (p, xl) =
          if not first then Wserver.wprint "</li>\n<li>\n  " else ();
          let sosa_num = Perso.p_sosa conf base x in
          if Num.gt sosa_num Num.zero then
-           Wserver.wprint "<img src=\"%s/%s\" title=\"sosa\"/> "
-             (Util.image_prefix conf) "sosa.png"
+           Wserver.wprint "<img src=\"%s/%s\" alt=\"sosa\" title=\"sosa: %s\"/> "
+             (Util.image_prefix conf) "sosa.png" 
+             (Perso.string_of_num (Util.transl conf "(thousand separator)") sosa_num)
          else ();
          Wserver.wprint "<a href=\"%s%s\">" (commd conf) (acces conf base x);
          if is_surname then
@@ -338,8 +339,9 @@ value print_branch conf base psn name =
     print_selection_bullet conf first_select;
     let sosa_num = Perso.p_sosa conf base p in
     if Num.gt sosa_num Num.zero then
-      Wserver.wprint "<img src=\"%s/%s\" title=\"sosa\"/> "
-        (Util.image_prefix conf) "sosa.png"
+      Wserver.wprint "<img src=\"%s/%s\" alt=\"sosa\" title=\"sosa: %s\"/> "
+        (Util.image_prefix conf) "sosa.png" 
+        (Perso.string_of_num (Util.transl conf "(thousand separator)") sosa_num)
     else ();
     stag "strong" begin
       Wserver.wprint "%s"
@@ -363,8 +365,9 @@ value print_branch conf base psn name =
                  print_selection_bullet conf select;
                  let sosa_num = Perso.p_sosa conf base p in
                  if Num.gt sosa_num Num.zero then
-                   Wserver.wprint "<img src=\"%s/%s\" title=\"sosa\"/> "
-                     (Util.image_prefix conf) "sosa.png"
+                   Wserver.wprint "<img src=\"%s/%s\" alt=\"sosa\" title=\"sosa: %s\"/> "
+                     (Util.image_prefix conf) "sosa.png" 
+                     (Perso.string_of_num (Util.transl conf "(thousand separator)") sosa_num)
                  else ();
                  stag "em" begin
                    Wserver.wprint "%s"
@@ -383,8 +386,9 @@ value print_branch conf base psn name =
                  (Date.short_marriage_date_text conf base fam p c);
                let sosa_num = Perso.p_sosa conf base c in
                if Num.gt sosa_num Num.zero then
-                 Wserver.wprint "<img src=\"%s/%s\" title=\"sosa\"/> "
+                 Wserver.wprint "<img src=\"%s/%s\" alt=\"sosa\" title=\"sosa: %s\"/> "
                    (Util.image_prefix conf) "sosa.png"
+                   (Perso.string_of_num (Util.transl conf "(thousand separator)") sosa_num)
                else ();
                stag "strong" begin
                  Wserver.wprint "%s"
@@ -443,7 +447,7 @@ value print_one_branch conf base bh psn lev =
     } ]
 ;
 
-value print_one_surname_by_branch conf base (bhl, str) = do {
+value print_one_surname_by_branch conf base x xl (bhl, str) = do {
   let ancestors =
     match p_getenv conf.env "order" with
     [ Some "d" ->
@@ -471,7 +475,15 @@ value print_one_surname_by_branch conf base (bhl, str) = do {
         try List.assoc "always_surname" conf.base_env = "yes" with
         [ Not_found -> False ] ]
   in
-  let title _ = Wserver.wprint "%s" str in
+  let title h = 
+    if h || p_getenv conf.env "t" = Some "A" then Wserver.wprint "%s" x
+    else
+      Mutil.list_iter_first
+        (fun first x ->
+           Wserver.wprint "%s<a href=\"%sm=N;v=%s;t=A\">%s</a>"
+             (if first then "" else ", ") (commd conf) (code_varenv x) x)
+        (StrSet.elements xl)
+  in
   let br = p_getint conf.env "br" in
   Wserver.wrap_string.val := Util.xml_pretty_print;
   header conf title;
@@ -480,8 +492,12 @@ value print_one_surname_by_branch conf base (bhl, str) = do {
     tag "p" begin
       Wserver.wprint "<em style=\"font-size:80%%\">\n";
       Wserver.wprint "%s " (capitale (transl conf "click"));
-      Wserver.wprint "<a href=\"%sm=N;o=i;v=%s\">%s</a>\n" (commd conf)
-        (code_varenv str ^ ";t=A") (transl conf "here");
+      if p_getenv conf.env "t" = Some "A" then 
+        Wserver.wprint "<a href=\"%sm=N;o=i;v=%s\">%s</a>\n" (commd conf)
+          (code_varenv x ^ ";t=A") (transl conf "here")
+      else
+        Wserver.wprint "<a href=\"%sm=N;o=i;v=%s\">%s</a>\n" (commd conf)
+          (code_varenv x ^ ";t=N") (transl conf "here");
       Wserver.wprint "%s"
         (transl conf "for the first names by alphabetic order");
       Wserver.wprint ".</em>\n";
@@ -554,7 +570,7 @@ value print_several_possible_surnames x conf base (bhl, homonymes) = do {
   in
   let list = List.sort compare list in
   let access txt sn =
-    geneweb_link conf ("m=N;v=" ^ code_varenv sn ^ ";t=A") txt
+    geneweb_link conf ("m=N;v=" ^ code_varenv sn ^ ";t=N") txt
   in
   Util.wprint_in_columns conf
     (fun (ord, _, _) -> ord)
@@ -704,7 +720,7 @@ value persons_of_absolute_surname conf base x =
 module PerSet = Set.Make (struct type t = iper; value compare = compare; end);
 
 value surname_print conf base not_found_fun x =
-  let (l, name_inj) =
+  let (list, name_inj) =
     if Mutil.utf_8_db.val && p_getenv conf.env "t" = Some "A" then
       (persons_of_absolute_surname conf base x, fun x -> x)
     else if x = "" then ([], fun [])
@@ -712,9 +728,16 @@ value surname_print conf base not_found_fun x =
       persons_of_fsname conf base base_strings_of_surname
         (spi_find (persons_of_surname base)) get_surname x
   in
+  let list =
+    List.map
+      (fun (str, istr, iperl) ->
+         (Name.lower str, (StrSet.add str StrSet.empty, iperl)))
+      list
+  in
+  let list = List.fold_right merge_insert list [] in
   let (iperl, strl) =
     List.fold_right
-      (fun (str, istr, iperl1) (iperl, strl) ->
+      (fun (str, (istr, iperl1)) (iperl, strl) ->
          let len = List.length iperl1 in
          let strl =
            try
@@ -724,9 +747,18 @@ value surname_print conf base not_found_fun x =
            [ Not_found -> [(str, len) :: strl] ]
          in
          (List.fold_right PerSet.add iperl1 iperl, strl))
-      l (PerSet.empty, [])
+      list (PerSet.empty, [])
   in
   let iperl = PerSet.elements iperl in
+  let bhl = select_ancestors conf base name_inj iperl in
+  let bhl =
+    List.map
+      (fun bh ->
+        {bh_ancestor = pget conf base bh.bh_ancestor;
+         bh_well_named_ancestors =
+         List.map (pget conf base) bh.bh_well_named_ancestors})
+      bhl
+  in
   match p_getenv conf.env "o" with
   [ Some "i" ->
       let pl =
@@ -735,28 +767,19 @@ value surname_print conf base not_found_fun x =
       let pl =
         List.fold_right
           (fun p pl -> 
-            if not (is_hide_names conf p) || (Util.fast_auth_age conf p)
-            then [p :: pl] 
-            else pl)
+	    if not (is_hide_names conf p) || (fast_auth_age conf p) 
+	    then [p :: pl] 
+	    else pl)
           pl []
       in
       print_family_alphabetic x conf base pl
   | _ -> 
-      let strl =
-        List.sort (fun (_, len1) (_, len2) -> compare len2 len1) strl
-      in
-      let strl = List.map fst strl in
-      let bhl = select_ancestors conf base name_inj iperl in
-      let bhl =
-        List.map
-          (fun bh ->
-             {bh_ancestor = pget conf base bh.bh_ancestor;
-              bh_well_named_ancestors =
-                List.map (pget conf base) bh.bh_well_named_ancestors})
-          bhl
-      in
-      match (bhl, strl) with
-      [ ([], _) -> not_found_fun conf x
-      | (_, [str]) -> print_one_surname_by_branch conf base (bhl, str)
-      | _ -> print_several_possible_surnames x conf base (bhl, strl) ] ]
+    match (bhl, list) with
+    [ ([], _) -> not_found_fun conf x
+    | (_, [(s, (strl, iperl))]) -> 
+        print_one_surname_by_branch conf base x strl (bhl, s)
+    | _ -> 
+        let strl = List.map (fun (s, (strl, _)) -> s) list in
+        print_several_possible_surnames x conf base (bhl, strl) ]]
 ;
+

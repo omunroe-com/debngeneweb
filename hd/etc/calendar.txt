@@ -8,26 +8,26 @@
   <meta http-equiv="Content-Type" content="text/html; charset=%charset;"%/>
   <meta http-equiv="Content-Style-Type" content="text/css"%/>
   <link rel="shortcut icon" href="%image_prefix;/favicon_gwd.png"%/>
-  <link rel="stylesheet" type="text/css" href="css/%css_prop" />
+%include.css;
 %base_header;
 </head>
-<body %body_prop;>
+<body%body_prop;>
 %message_to_wizard;
 
 %if;not cancel_links;
   <table style="float:%right;"><tr><td>
     %if;(referer != "")
       <a href="%referer;"><img
-       src="%image_prefix;/left.jpg"%wid_hei;left.jpg; 
-       style="border: 0" title="&lt;&lt;"%/></a>
+       src="%image_prefix;/left.png"%wid_hei;left.png; 
+       alt="&lt;&lt;" title="&lt;&lt;"%/></a>
     %end;
     <a href="%prefix;"><img%sp;
-    src="%image_prefix;/up.jpg"%wid_hei;up.jpg; 
-    style="border: 0" title="^^"%/></a>
+    src="%image_prefix;/up.png"%wid_hei;up.png; 
+    alt="^^" title="^^"%/></a>
   </td></tr></table>
 %end;
 
-<h1 style="text-align:center" class="highlight">[*calendar/calendars]1</h1>
+<h1>[*calendar/calendars]1</h1>
 
 %define;day(ccc, nnn)
   <td><input type="submit" name="dccc1" value=" &lt; "%/></td>
@@ -155,13 +155,7 @@
 
 </td></tr></table>
 
-
-<br />
-<div id="footer">
-<hr />
-%copyright;
 %base_trailer;
-</div>
-
+%copyright;
 </body>
 </html>
