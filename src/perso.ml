@@ -171,6 +171,13 @@ value string_of_titles conf base cap and_txt p =
 
 (* Version matching the Sosa number of the "ancestor" pages *)
 
+(*                       !!! FIX ME !!!                                *)
+(* J'ai rajouté un try catch qui ignore qu'on pointe en dehors du      *)
+(* tableau, mais ce n'est pas une bonne solution. Il faut corriger en  *)
+(* en profondeur ce problème d'index de tableau qui semble se produire *)
+(* lorsqu'on ajoute des personnes puis en supprime. Le calcul de sosa  *)
+(* ne se fait pas alors correctement et on plante à l'affichage par    *)
+(* branche *)
 value find_sosa_aux conf base a p =
   let tstab = Util.create_topological_sort conf base in
   let mark = Array.create (nb_of_persons base) False in
@@ -182,8 +189,14 @@ value find_sosa_aux conf base a p =
         else if mark.(Adef.int_of_iper ip) then gene_find zil
         else do {
           mark.(Adef.int_of_iper ip) := True;
-          if tstab.(Adef.int_of_iper (get_key_index a)) <=
-               tstab.(Adef.int_of_iper ip) then
+          (* FIX ME : Util.create_topological_sort *)
+          let bool =
+            try 
+              tstab.(Adef.int_of_iper (get_key_index a)) <=
+               tstab.(Adef.int_of_iper ip)
+            with [ Invalid_argument "index out of bounds" -> True ]
+          in
+          if bool then
             gene_find zil
           else
             let asc = pget conf base ip in
@@ -247,18 +260,18 @@ value find_sosa conf base a sosa_ref_l =
                     numéro de sosa.
     [Args] :
       - conf : configuration de la base
-      - base : la base de donnée
-      - a    : la person dont on cherche si elle a un numéro sosa
+      - base : base de donnée
+      - p    : personne dont on cherche si elle a un numéro sosa
     [Retour] :
       - Num.t : retourne Num.zero si la personne n'a pas de numéro de
-                sosa, et retourne son numéro de sosa sinon
+                sosa, ou retourne son numéro de sosa sinon
     [Rem] : Exporté en clair hors de ce module.                         *)
 (* ******************************************************************** *)
-value p_sosa conf base a = 
+value p_sosa conf base p = 
   match Util.find_sosa_ref conf base with
-  [ Some p -> 
-    match find_sosa_aux conf base a p with
-    [ Some (q,s) -> q
+  [ Some per -> 
+    match find_sosa_aux conf base p per with
+    [ Some (n,_) -> n
     | None -> Num.zero ]
   | None -> Num.zero ]
 ;
@@ -621,7 +634,12 @@ value tree_generation_list conf base gv p =
 ;
 
 value string_of_place conf base istr =
-  string_with_macros conf [] (sou base istr)
+  (* Astuce temporaire pour supprimer les crochets dans un lieu-dit  *)
+  (* A l'avenir, il faudra revoir comment sont implémentés les lieux *)
+    List.fold_left
+      (fun s c -> Name.strip_c s c)
+      (string_with_macros conf [] (sou base istr))
+      [ '[' ; ']' ]
 ;
 
 (* Ancestors surnames list *)
@@ -1243,7 +1261,10 @@ and eval_simple_str_var conf base env (_, p_auth) =
               let d = Adef.od_of_codate d in
               match d with
               [ Some d when m_auth ->
-                  " <em>" ^ Date.string_of_ondate conf d ^ "</em>"
+                match p_getenv conf.base_env "long_date" with
+                [ Some "yes" -> " <em>" ^ (Date.string_of_ondate conf d) 
+                                ^ (Date.get_wday conf d) ^ "</em>"
+                | _ -> " <em>" ^ Date.string_of_ondate conf d ^ "</em>" ]
               | _ -> "" ]
           | _ -> raise Not_found ]
       | _ -> raise Not_found ]
@@ -1311,15 +1332,10 @@ and eval_simple_str_var conf base env (_, p_auth) =
       match get_env "fam" env with
       [ Vfam _ fam _ m_auth ->
           match (m_auth, Adef.od_of_codate (get_marriage fam)) with
-          [ (True, Some s) -> Date.string_of_ondate conf s
-          | _ -> "" ] 
-      | _ -> raise Not_found ]
-  | "on_marriage_long_date" ->
-      match get_env "fam" env with
-      [ Vfam _ fam _ m_auth ->
-          match (m_auth, Adef.od_of_codate (get_marriage fam)) with
           [ (True, Some s) -> 
-            (Date.string_of_ondate conf s) ^ (Date.get_wday conf s)
+            match p_getenv conf.base_env "long_date" with
+            [ Some "yes" -> (Date.string_of_ondate conf s) ^ (Date.get_wday conf s)
+            | _ -> Date.string_of_ondate conf s ]
           | _ -> "" ] 
       | _ -> raise Not_found ]
   | "origin_file" ->
@@ -1361,6 +1377,23 @@ and eval_simple_str_var conf base env (_, p_auth) =
       match get_env "count" env with
       [ Vcnt c -> do { c.val := 0; "" }
       | _ -> "" ]
+  | "reset_desc_level" ->
+      let flevt_save =
+        match get_env "desc_level_table_save" env with
+        [ Vdesclevtab levt -> 
+            let (_, flevt) = Lazy.force levt in
+            flevt
+        | _ -> raise Not_found ]
+      in
+      match get_env "desc_level_table" env with
+      [ Vdesclevtab levt -> do {
+          let (_, flevt) = Lazy.force levt in
+          for i = 0 to Array.length flevt - 1 do {
+            flevt.(i) := flevt_save.(i);
+          };
+          ""
+        }
+      | _ -> raise Not_found ]
   | "source_type" ->
        match get_env "src_typ" env with
        [ Vstring s -> s
@@ -1405,8 +1438,7 @@ and eval_compound_var conf base env ((a, _) as ep) loc =
   | ["child" :: sl] ->
       match get_env "child" env with
       [ Vind p ->
-          let auth = authorized_age conf base p
-          in
+          let auth = authorized_age conf base p in
           let ep = (p, auth) in
           eval_person_field_var conf base env ep loc sl
       | _ -> raise Not_found ]
@@ -2068,7 +2100,7 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
       else Name.lower (p_first_name base p)
   | "first_name_key_strip" ->
       if (is_hide_names conf p) && not p_auth then ""
-      else Name.lower (Name.strip_c (p_surname base p) '"')
+      else Name.strip_c (p_first_name base p) '"'
   | "image" -> if not p_auth then "" else sou base (get_image p)
   | "image_html_url" -> string_of_image_url conf base env ep True
   | "image_size" -> string_of_image_size conf base env ep
@@ -2116,7 +2148,7 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
         in
         if list <> [] then
           "<ul>\n" ^
-          List.fold_left (fun s n -> s ^ "<li>" ^ n ^ "\n") "" list ^
+          List.fold_left (fun s n -> s ^ "<li>" ^ n ^ "</li>\n") "" list ^
           "</ul>\n"
         else ""
       else ""
@@ -2147,7 +2179,9 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
         let s = Wiki.syntax_links conf wi (String.concat "\n" lines) in
         if conf.pure_xhtml then Util.check_xhtml s else s
       else ""
-  | "occ" -> if p_auth then string_of_int (get_occ p) else ""
+  | "occ" -> 
+      if (is_hide_names conf p) && not p_auth then ""
+      else string_of_int (get_occ p)
   | "occupation" ->
       if p_auth then
         let s = sou base (get_occupation p) in
@@ -2164,63 +2198,45 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
       else ""
   | "on_baptism_date" ->
       match (p_auth, Adef.od_of_codate (get_baptism p)) with
-      [ (True, Some d) -> Date.string_of_ondate conf d
-      | _ -> "" ]
-  | "on_baptism_long_date" ->
-      match (p_auth, Adef.od_of_codate (get_baptism p)) with
       [ (True, Some d) -> 
-        (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
+          match p_getenv conf.base_env "long_date" with
+          [ Some "yes" -> (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
+          | _ -> Date.string_of_ondate conf d ]
       | _ -> "" ]
   | "on_birth_date" ->
       match (p_auth, Adef.od_of_codate (get_birth p)) with
-      [ (True, Some d) -> Date.string_of_ondate conf d
-      | _ -> "" ]
-  | "on_birth_long_date" ->
-      match (p_auth, Adef.od_of_codate (get_birth p)) with
       [ (True, Some d) -> 
-        (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
+          match p_getenv conf.base_env "long_date" with
+          [ Some "yes" -> (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
+          | _ -> Date.string_of_ondate conf d ]
       | _ -> "" ]
   | "on_burial_date" ->
       match get_burial p with
       [ Buried cod ->
           match (p_auth, Adef.od_of_codate cod) with
-          [ (True, Some d) -> Date.string_of_ondate conf d
-          | _ -> "" ]
-      | _ -> raise Not_found ]
-  | "on_burial_long_date" ->
-      match get_burial p with
-      [ Buried cod ->
-          match (p_auth, Adef.od_of_codate cod) with
           [ (True, Some d) -> 
-            (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
+              match p_getenv conf.base_env "long_date" with
+              [ Some "yes" -> (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
+              | _ -> Date.string_of_ondate conf d ]
           | _ -> "" ]
       | _ -> raise Not_found ]
   | "on_cremation_date" ->
       match get_burial p with
       [ Cremated cod ->
           match (p_auth, Adef.od_of_codate cod) with
-          [ (True, Some d) -> Date.string_of_ondate conf d
-          | _ -> "" ]
-      | _ -> raise Not_found ]
-  | "on_cremation_long_date" ->
-      match get_burial p with
-      [ Cremated cod ->
-          match (p_auth, Adef.od_of_codate cod) with
           [ (True, Some d) -> 
-            (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
+              match p_getenv conf.base_env "long_date" with
+              [ Some "yes" -> (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
+              | _ -> Date.string_of_ondate conf d ]
           | _ -> "" ]
       | _ -> raise Not_found ]
   | "on_death_date" ->
       match (p_auth, get_death p) with
       [ (True, Death _ d) ->
           let d = Adef.date_of_cdate d in
-          Date.string_of_ondate conf d
-      | _ -> "" ]
-  | "on_death_long_date" ->
-      match (p_auth, get_death p) with
-      [ (True, Death _ d) ->
-          let d = Adef.date_of_cdate d in
-          (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
+          match p_getenv conf.base_env "long_date" with
+          [ Some "yes" -> (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
+          | _ -> Date.string_of_ondate conf d ]
       | _ -> "" ]
   | "prev_fam_father" ->
       match get_env "prev_fam" env with
@@ -2290,7 +2306,7 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
       else Name.lower (p_surname base p)
   | "surname_key_strip" ->
       if (is_hide_names conf p) && not p_auth then ""
-      else Name.lower (Name.strip_c (p_surname base p) '"')
+      else Name.strip_c (p_surname base p) '"'
   | "title" -> person_title conf base p
   | _ -> raise Not_found ]
 and eval_witness_relation_var conf base env
@@ -2476,11 +2492,7 @@ value print_foreach conf base print_ast eval_expr =
       | ["child" :: sl] ->
           match get_env "child" env with
           [ Vind p ->
-              let auth =
-                match get_env "auth" env with
-                [ Vbool True -> authorized_age conf base p
-                | _ -> False ]
-              in
+              let auth = authorized_age conf base p in
               let ep = (p, auth) in
               loop ep efam sl
           | _ -> raise Not_found ]
@@ -2886,6 +2898,10 @@ value print_foreach conf base print_ast eval_expr =
       | [] -> [(typ, src)] ]
     in
     let insert typ src srcl = insert_loop (Util.translate_eval typ) src srcl in
+    (* On brise la logique interne de GeneWeb en constituant les      *)
+    (* notes/sources de la personne sans ses informations de décès,   *)
+    (* puis les notes/sources de sa famille et enfin ses informations *)
+    (* de décès. Ce qui évite : naissance, baptême, décès, mariage.   *)
     let srcl = [] in
     let srcl =
       if not (is_hide_names conf p) || p_auth then
@@ -2900,11 +2916,6 @@ value print_foreach conf base print_ast eval_expr =
         let srcl =
           insert (transl_nth conf "baptism" 0) (get_baptism_src p) srcl
         in
-        let srcl =
-          insert (transl_nth conf "death" 0) (get_death_src p) srcl
-        in
-        let srcl =
-          insert (transl_nth conf "burial" 0) (get_burial_src p) srcl in
         srcl
       else srcl
     in
@@ -2925,6 +2936,16 @@ value print_foreach conf base print_ast eval_expr =
            let src_typ = transl_nth conf "family/families" 0 in
            (insert (src_typ ^ lab) (get_fsources fam) srcl, i + 1))
         (srcl, 1) (get_family p)
+    in
+    let srcl = 
+      if p_auth then
+        let srcl =
+          insert (transl_nth conf "death" 0) (get_death_src p) srcl
+        in
+        let srcl =
+          insert (transl_nth conf "burial" 0) (get_burial_src p) srcl in
+        srcl
+      else srcl
     in
     let print_src (src_typ, src) =
       let s = sou base src in
@@ -3055,6 +3076,10 @@ value interp_templ templ_fname conf base p = do {
       let dlt () = make_desc_level_table conf base emal p in
       Lazy.lazy_from_fun dlt
     in
+    let desc_level_table_l_save =
+      let dlt () = make_desc_level_table conf base emal p in
+      Lazy.lazy_from_fun dlt
+    in
     let mal () =
       Vint (max_ancestor_level conf base (get_key_index p) emal + 1)
     in
@@ -3080,6 +3105,7 @@ value interp_templ templ_fname conf base p = do {
      ("max_cous_level", Vlazy (Lazy.lazy_from_fun mcl));
      ("max_desc_level", Vlazy (Lazy.lazy_from_fun mdl));
      ("desc_level_table", Vdesclevtab desc_level_table_l);
+     ("desc_level_table_save", Vdesclevtab desc_level_table_l_save);
      ("nldb", Vlazy (Lazy.lazy_from_fun nldb));
      ("all_gp", Vlazy (Lazy.lazy_from_fun all_gp))]
   in

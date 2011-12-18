@@ -16,13 +16,13 @@
   <meta http-equiv="Content-Type" content="text/html; charset=%charset;"%/>
   <meta http-equiv="Content-Style-Type" content="text/css"%/>
   <link rel="shortcut icon" href="%image_prefix;/favicon_gwd.png"%/>
-  <link rel="stylesheet" type="text/css" href="css/%css_prop" />
+%include.css;
 %base_header;
 </head>
-<body %body_prop;>
+<body%body_prop;>
 %message_to_wizard;
 
-<h1 style="text-align:center" class="highlight">%nn;
+<h1>%nn;
   %apply;a_of_b_gr_eq_lev%with;
     [*descendants]%nn;
   %and;
@@ -37,12 +37,12 @@
   <table style="float:%right;"><tr><td>
     %if;(referer != "")
       <a href="%referer;"><img
-       src="%image_prefix;/left.jpg"%wid_hei;left.jpg; 
-       style="border: 0" title="&lt;&lt;"%/></a>
+       src="%image_prefix;/left.png"%wid_hei;left.png; 
+       alt="&lt;&lt;" title="&lt;&lt;"%/></a>
     %end;
     <a href="%prefix;"><img%sp;
-    src="%image_prefix;/up.jpg"%wid_hei;up.jpg; 
-    style="border: 0" title="^^"%/></a>
+    src="%image_prefix;/up.png"%wid_hei;up.png; 
+    alt="^^" title="^^"%/></a>
   </td></tr></table>
 %end;
 
@@ -75,27 +75,27 @@
   %end;
   %if;(xx.has_birth_date or xx.has_birth_place)
     , %if;xx.is_male;[born]0%elseif;xx.is_female;[born]1%else;[born]2%end;
-    %if;xx.has_birth_date; %xx.on_birth_long_date;%end;
+    %if;xx.has_birth_date; %xx.on_birth_date;%end;
     %if;xx.has_birth_place;, %xx.birth_place;%end;
   %end;
   %if;(xx.has_baptism_date or xx.has_baptism_place)
     , %if;xx.is_male;[baptized]0%elseif;xx.is_female;[baptized]1%nn;
     %else;[baptized]2%end;
-    %if;xx.has_baptism_date; %xx.on_baptism_long_date;%end;
+    %if;xx.has_baptism_date; %xx.on_baptism_date;%end;
     %if;xx.has_baptism_place;, %xx.baptism_place;%end;
   %end;
   %if;xx.is_dead;, %xx.died;
-    %if;(xx.has_death_date) %xx.on_death_long_date;%end;
+    %if;(xx.has_death_date) %xx.on_death_date;%end;
     %if;(xx.has_death_place), %xx.death_place;%end;
   %end;
   %if;xx.is_buried;,
     %if;xx.is_male;[buried]0%else;[buried]1%end;
-    %if;xx.has_burial_date; %xx.on_burial_long_date;%end;
+    %if;xx.has_burial_date; %xx.on_burial_date;%end;
     %if;xx.has_burial_place;, %xx.burial_place;%end;%nl;
   %end;
   %if;xx.is_cremated;,
     %if;xx.is_male;[cremated]0%else;[cremated]1%end;
-    %if;xx.has_cremation_date; %xx.on_cremation_long_date;%end;
+    %if;xx.has_cremation_date; %xx.on_cremation_date;%end;
     %if;xx.has_cremation_place;, %xx.cremation_place;%end;%nl;
   %end;
   %if;xx.computable_death_age;%sp;
@@ -132,11 +132,21 @@
   %end;
 %end;
 
-%define;descendants_by_list(xx, yy, curlev, maxlev, famlev)
+%define;descendants_by_list(xx, yy, curlev, maxlev, famlev, ctr)
   %if;(curlev = 0)<p>%nl;%end;
-  <b>%if;(evar.cgl = "on" or xx.is_restricted)%yy;%else;
+  <b id="person-%ctr;">%if;(evar.cgl = "on" or xx.is_restricted)%yy;%else;
   <a href="%prefix;%xx.access;">%yy;</a>%end;</b>%nn;
   %apply;somebody_long_info("xx").
+  %if;(((evar.notes="on" and xx.has_notes)
+        and (wizard or friend or
+             bvar.no_note_for_visitor="" or
+             bvar.no_note_for_visitor="no"))
+      or
+      (evar.src="on" and xx.has_sources))%sp;
+     %[[*note/notes]0%sp;
+     <a href="#note-%ctr;">%nn;
+        %ctr;</a>%]%nn;
+  %end
   %incr_count;
   %apply;lazy_print%with;<br%/>%nl;%end;
   %foreach;xx.family;
@@ -146,13 +156,23 @@
       %apply;married_to%with;
         %xx.is_male;
       %and;
-        %if;(on_marriage_date != "") %on_marriage_long_date;%end;
+        %if;(on_marriage_date != "") %on_marriage_date;%end;
         %if;(marriage_place != ""), %marriage_place;,%end;
       %end;
     %end;%nl;
-    <b>%if;(evar.cgl = "on" or spouse.is_restricted)%spouse;%else;
+    <b id="person-%ctr;-%family_cnt;">%if;(evar.cgl = "on" or spouse.is_restricted)%spouse;%else;
     <a href="%prefix;%spouse.access;">%spouse;</a>%end;</b>%nn;
     %apply;somebody_long_info("spouse")
+    %if;(((evar.notes="on" and spouse.has_notes)
+          and (wizard or friend or
+               bvar.no_note_for_visitor="" or
+               bvar.no_note_for_visitor="no"))
+        or
+        (evar.src="on" and spouse.has_sources))%sp;
+       %[[*note/notes]0%sp;
+       <a href="#note-%ctr;-%family_cnt;">%nn;
+          %ctr;-%family_cnt;</a>%]%nn;
+    %end;
     %if;(evar.witn = "on" and has_witnesses)%nl;([witness/witnesses]1:
       %foreach;witness;
         %if;(not is_first),%nl;%end;
@@ -180,19 +200,19 @@
             <li>
             %if;(evar.alwsurn = "yes")
               %apply;descendants_by_list("child", "child", curlev+1,
-                                         maxlev, famlev+1)
+                                         maxlev, famlev+1, count+1)
             %else;
               %apply;descendants_by_list("child", "child_name", curlev+1,
-                                         maxlev, famlev+1)
+                                         maxlev, famlev+1, count+1)
             %end;
             </li>
           %end;
           </ul>
           %apply;lazy_print%with;%end;
-        %else;
+        %else;.
           %if;(curlev = 0)%nl;</p>%nl;
           %else;%apply;lazy_print%with;<br%/>%nl;%end;
-          %end;.
+          %end;
         %end;
       %elseif;has_children;, ...
       %else;.
@@ -203,15 +223,103 @@
   %end;
 %end;
 
+%define;notes_by_list(xx, curlev, maxlev, famlev, ctr)
+  %incr_count;
+  %if;(((evar.notes="on" and xx.has_notes)
+        and (wizard or friend or
+             bvar.no_note_for_visitor="" or
+             bvar.no_note_for_visitor="no"))
+       or
+       (evar.src="on" and xx.has_sources))
+    <dt>
+      <a id="note-%ctr;"%sp;
+         href="#person-%ctr;">%ctr;</a>%sp;
+      <span style="font-size:80%%">(%xx; %xx.dates;)</span>
+    </dt>
+    <dd>
+      %if;((evar.notes="on" and xx.has_notes)
+           and (wizard or friend or
+                bvar.no_note_for_visitor="" or
+                bvar.no_note_for_visitor="no"))
+        <table><tr><td>%xx.notes;</td></tr></table>
+      %end;
+      %if;(evar.src="on" and xx.has_sources)
+        <em style="font-size:80%%">[*source/sources]1:<br%/>
+          %foreach;xx.source;
+            - %source_type;: %source;<br%/>
+          %end;
+          <br%/>
+        </em>
+      %end;
+    </dd>
+  %end;
+  %foreach;xx.family;
+    %if;(((evar.notes="on" and spouse.has_notes)
+          and (wizard or friend or
+               bvar.no_note_for_visitor="" or
+               bvar.no_note_for_visitor="no"))
+         or
+         (evar.src="on" and spouse.has_sources))
+      <dt>
+        <a id="note-%ctr;-%family_cnt;"%sp;
+           href="#person-%ctr;-%family_cnt;">%ctr;
+                 -%family_cnt;</a>%sp;
+         <span style="font-size:80%%">(%spouse; %spouse.dates;)</span>
+      </dt>
+      <dd>
+        %if;((evar.notes="on" and spouse.has_notes)
+             and (wizard or friend or
+                  bvar.no_note_for_visitor="" or
+                  bvar.no_note_for_visitor="no"))
+          <table><tr><td>%spouse.notes;</td></tr></table>
+        %end;
+        %if;(evar.src="on" and spouse.has_sources)
+          <em style="font-size:80%%">[*source/sources]1:<br%/>
+            %foreach;spouse.source;
+              - %source_type;: %source;<br%/>
+            %end;
+            <br%/>
+          </em>
+        %end;
+      </dd>
+    %end;
+    %if;(curlev < maxlev)
+      %if;((curlev=0) or
+           (evar.t="M" and xx.is_male) or
+           (evar.t="F" and xx.is_female) or
+           (evar.t="L"))
+        %if;(family.desc_level < famlev)%nn;
+        %elseif;(family.desc_level > famlev)%nn;
+        %elseif;has_children;
+          %family.set_infinite_desc_level;
+          %foreach;child;
+            %apply;notes_by_list("child", curlev+1,
+                                  maxlev, famlev+1, count+1)
+          %end;
+        %end;
+      %end;
+    %end;
+  %end;
+%end;
+
 %define;by_list(xx)
   <p>
   %apply;togen(xx).
   </p>
   %reset_count;
-  %apply;descendants_by_list("self", "self", 0, xx, 0)%nl;
+  %apply;descendants_by_list("self", "self", 0, xx, 0, 1)%nl;
   <p>
   [*total]: %expr(count-1) [[person/persons]1@(c)]%sp;
   ([spouses not included]).
+  %if;(evar.notes="on" or evar.src="on")
+    <hr%/>
+    <h3 class="highlight">%if;(evar.notes = "on")[*note/notes]1%else;[*source/sources]1%end;</h3>
+    <dl>
+      %reset_count;
+      %reset_desc_level;
+      %apply;notes_by_list("self", 0, xx, 0, 1)%nl;
+    </dl>
+  %end;
   </p>
 %end;
 
@@ -220,13 +328,7 @@
   %else;%apply;min(evar.v, max_desc_level, bvar.max_desc_level)%end;
 %end;
 
-
-<br />
-<div id="footer">
-<hr />
-%copyright;
 %base_trailer;
-</div>
-
+%copyright;
 </body>
 </html>

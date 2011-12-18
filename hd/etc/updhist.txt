@@ -8,10 +8,10 @@
   <meta http-equiv="Content-Type" content="text/html; charset=%charset;"%/>
   <meta http-equiv="Content-Style-Type" content="text/css"%/>
   <link rel="shortcut icon" href="%image_prefix;/favicon_gwd.png"%/>
-  <link rel="stylesheet" type="text/css" href="css/%css_prop" />
+%include.css;
 %base_header;
 </head>
-<body %body_prop;>
+<body%body_prop;>
 %message_to_wizard;
 
 %define;search_form(xxx)
@@ -40,16 +40,16 @@
   <table style="float:%right;"><tr><td align="%right;">
     %if;(referer != "")
       <a href="%referer;"><img
-       src="%image_prefix;/left.jpg"%wid_hei;left.jpg; 
-       style="border: 0" title="&lt;&lt;"%/></a>
+       src="%image_prefix;/left.png"%wid_hei;left.png; 
+       alt="&lt;&lt;" title="&lt;&lt;"%/></a>
     %end;
     <a href="%prefix;"><img%sp;
-    src="%image_prefix;/up.jpg"%wid_hei;up.jpg; 
-    style="border: 0" title="^^"%/></a>
+    src="%image_prefix;/up.png"%wid_hei;up.png; 
+    alt="^^" title="^^"%/></a>
   </td></tr></table>
 %end;
 
-<h1 style="text-align:center" class="highlight">[*history of updates]</h1>
+<h1>[*history of updates]</h1>
 
 %if;(not cancel_links and (evar.m != "HIST_SEARCH" or not found))
   %apply;search_form("")
@@ -70,7 +70,8 @@
   %elseif;(uu = "cn")[change children's names]%nn;
   %elseif;(uu = "aa")[add::parents]%nn;
   %elseif;(uu = "mn")[modify::note/notes]1%nn;
-  %else;uu%nn;
+  %elseif;(uu = "cp")[modify::place]%nn;
+  %else;%appy;interp(uu) %nn;
   %end;
 %end;
 
@@ -93,6 +94,9 @@
         <!--%first_name;/%occ;/%surname;-->
         <a href="%prefix;%person.access;">%person;</a>%person.title;
         %person.dates;
+        %if;(bvar.show_invisible = "on" and wizard and person.is_invisible)
+          <img src="%image_prefix;/restricted.png"%wid_hei;restricted.png; alt=" (x)"%/>%nn;
+        %end;
       %elseif;is_note;
         - <a href="%prefix;m=NOTES%if;(note.page != "");f=%note.page.v;%end;
         %if;(note.part != "");v=%note.part;%end;">
@@ -128,13 +132,7 @@
 
 %if;(evar.m = "HIST_SEARCH" and found)%apply;search_form("left")%end;
 
-
-<br />
-<div id="footer">
-<hr />
-%copyright;
 %base_trailer;
-</div>
-
+%copyright;
 </body>
 </html>

@@ -20,6 +20,8 @@ value escache_value : base -> string;
 value commit_patches : config -> base -> unit;
 value update_wf_trace : config -> string -> unit;
 
+value get_referer : config -> string;
+
 value no_html_tags : string -> string;
 
 value nl : unit -> unit;
@@ -71,6 +73,7 @@ value gen_person_title_text :
 ;
 
 value reference : config -> base -> person -> string -> string;
+value update_family_loop : config -> base -> person -> string -> string;
 value no_reference : config -> base -> person -> string -> string;
 value person_text : config -> base -> person -> string;
 value person_text_no_html : config -> base -> person -> string;
@@ -102,7 +105,6 @@ value string_with_macros :
 value filter_html_tags : string -> string;
 value allowed_tags_file : ref string;
 value body_prop : config -> string;
-value css_prop : config -> string;
 value url_no_index : config -> base -> string;
 value message_to_wizard : config -> unit;
 value check_xhtml : string -> string;
@@ -237,3 +239,5 @@ value wprint_in_columns :
 
 (* Variable that use also private flag of person *)
 value is_hide_names : config -> person -> bool;
+
+value reduce_list : int -> list 'a -> list 'a;

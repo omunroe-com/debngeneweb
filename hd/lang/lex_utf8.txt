@@ -920,7 +920,7 @@ eo: bofrato/bofratino
 es: un cuñado/una cuñada
 et: küdi või nääl:g:+u või õemees:g:--he/nadu või käli või vennanaine:g:--se
 fi: lanko:g:--gon/käly:g:+n
-fr: un beau-frère/une belle-soeur
+fr: un beau-frère/une belle-sœur
 he:  גיס/ גיסה
 is: mágur/mágkona
 it: un cognato/una cognata
@@ -947,7 +947,7 @@ eo: frato/fratino/frat(in)o
 es: un hermano/una hermana/un(a) hermano(a)
 et: vend:g:-na/õde:g:--e/õde:g:--e või vend:g:-na
 fi: veli:g:-jen/sisar:g:+en/sisarus:g:-ksen
-fr: un frère/une soeur/un frère ou une soeur
+fr: un frère/une sœur/un frère ou une sœur
 he:   אח/ אחות/ אח(ות)
 is: bróðir/systir/systkyn
 it: un fratello/una sorella/un fratello o una sorella
@@ -1190,7 +1190,7 @@ eo: duonfrato/duonfratino/duonfrat(in)o
 es: un medio hermano/una medio hermana/un(a) medio(a) hermano(a)
 et: poolvend:g:-na/poolõde:g:--e/poolõde:g:--e või poolvend:g:-na
 fi: velipuoli:g:-en/sisarpuoli:g:-en/isä- tai äitipuolen lapsi:g:-en
-fr: un demi-frère/une demi-soeur/un demi-frère ou une demi-soeur
+fr: un demi-frère/une demi-sœur/un demi-frère ou une demi-sœur
 he:   חצי אח/ חצי אחות/ חצי אח(ות)
 is: hálfbróðir/hálfsystir/hálfsystkin
 it: un fratello/una sorella/un fratello o una sorella
@@ -5971,7 +5971,7 @@ eo: sekvanta frato/sekvanta fratino/sekvanta frat(in)o
 es: hermano siguiente/hermana siguiente/hermano(a) siguiente
 et: järgmine vend/järgmine õde/järgmine õde või vend
 fi: seuraava veli/seuraava sisar/seuraava sisaruksista
-fr: frère suivant/soeur suivante/frère ou soeur suivant
+fr: frère suivant/sœur suivante/frère ou sœur suivant
 he:  אח(ות) צעיר(ה)
 is: næsta systkyni
 it: fratello seguente/sorella seguente/fratello o sorella seguente
@@ -6949,6 +6949,28 @@ ru: место
 sl: kraj
 sv: plats
 
+    places
+de: orts
+en: places
+es: lugares
+fi: paikoista
+fr: lieux
+it: luoghi
+nl: plaatsen
+no: steder
+sv: orternas
+
+    book of places
+de: ortsverzeichnis
+en: places
+es: diccionario de lugares
+fi: luettelo paikoista
+fr: dictionnaire des lieux
+it: dizionario dei luoghi
+nl: woordenboek der plaatsen
+no: liste over steder
+sv: orternas uppslagsbok
+
     population pyramid
 bg: възрастова пирамида
 cs: populacna pyramida
@@ -7061,7 +7083,7 @@ eo: antaùa frato/antaùa fratino/antaùa frat(in)o
 es: hermano anterior/hermana anterior/hermano (a) anterior
 et: eelmine vend/eelmine õde/eelmine õde või vend
 fi: edellinen veli/edellinen sisar/edellinen sisaruksista
-fr: frère précédent/soeur précédente/frère ou soeur précédent
+fr: frère précédent/sœur précédente/frère ou sœur précédent
 he:   אח(ות) הגדול(ה)
 is: fyrra systkyn
 it: fratello precedente/sorella precedente/fratello o sorella precedente
@@ -7737,7 +7759,7 @@ eo: gefratoj
 es: hermanos y hermanas
 et: õed ja vennad
 fi: sisarukset
-fr: frères et soeurs
+fr: frères et sœurs
 he:  אחים
 is: systkyni
 it: fratelli
@@ -9756,3 +9778,179 @@ pt: a sua mensagem aguarda validação
 ro: mesajul dvs. asteapta sa fie validat
 ru: ваше сообщение ожидает проверки 
 sv: ditt meddelande väntar på giltighet
+
+    %s forbidden char
+da: forkert karakter (%s) brugt i efternavn/fornavn
+de: ungültiges Zeichen (%s) im nachname/vorname
+en: invalid character (%s) used in surname/first name
+es: carácter inválido (%) en la apellido/nombre
+fi: olet kättänyt sopimatonta merkkiä (%s) sukunimi/etunimi
+fr: caractères interdits (%s) dans le patronyme/prénom
+it: carattere non valido (%s) nella cognome/nome
+nl: ongeldig karakter (%s) in familienaam/voornaam
+no: etternavn/fornavn du skrev inn, inneholder ugyldige tegn (%s)
+sv: Ogiltigt tecken (%s) i efternamn/förnamn
+
+    navigation
+af: stap met
+bg: навигация
+br: merdeadur
+ca: navegació
+cs: prohlížení
+da: navigering
+de: navigation
+en: navigation
+eo: navigado
+es: navegación
+et: navigeerimine
+fi: navigointi
+fr: navigation
+he:  ניוות
+is: leiðsögn
+it: percorso
+lv: meklēt
+nl: navigatie
+no: navigering
+pl: nawigacja
+pt: navegação
+ro: navigatie
+ru: навигация
+sl: pregled
+sv: navigering
+
+    age at %s birth date
+de: alter zum zeitpunkt der geburt von %s
+en: age at %s birth date
+es: edad en el nacimiento de %s
+fr: âge à la naissance de %s
+it: età alla nascita di %s
+nl: leeftijd bij de geboorte van %s
+
+    half-siblings
+de: halbbrüder und schwestern
+en: half-siblings
+es: hermanastros y hermanastras
+fr: demi frères et sœurs
+it: fratellastri e sorellastre
+nl: half broers en zusters
+
+    direct ancestor of %s
+de: direkter Vorfahre von %s
+en: direct ancestor of %s
+es: antepasado directo de %s
+fr: ancêtre direct de %s
+it: antenato diretto di %s
+nl: rechtstreeks voorouder van %s
+
+    msg error disconnected
+en: sorry, you can add only families connected to the rest.<br />This restriction has been added by this database owner.
+fr: désolé, vous ne pouvez ajouter que des familles connectées au reste.<br />Cette restriction a été ajoutée par le propriétaire de cette base de données.
+
+    link to use
+en: link to use
+
+    to come
+de: in Erwartung
+en: to come
+es: pronto
+fi: tulevat tapahtumat
+fr: à venir
+it: da venire
+nl: te komen
+no: kommende hendelser
+sv: kommande händelser
+
+    tools
+de: hilfsmittel
+en: tools
+es: herramientas
+fi: työkalut
+fr: outils
+it: utilitari
+nl: nuttige zaken
+no: verktøy
+sv: verktyg
+
+    family history
+de: rund um den Stammbaum
+en: family History
+es: autor del árbol
+fi: sukupuun lisäksi
+fr: autour de l'arbre
+it: attorno all'albero
+nl: rond de stamboom
+no: tillegg til slektstreet
+sv: utöver släktträdet
+
+    %d places starting with %s
+de: %d orts beginnend mit %s
+en: %d places starting with %s
+es: %d lugares comenzando con %s
+fi: %d paikoista ensimmäisenä %s
+fr: %d lieux commençant par %s
+it: %d luoghi partendo da %s
+nl: %d plaatsen beginnend met %s
+no: %d steder som starter med %s
+sv: %d orternas som börjar med %s
+
+    place modified
+de: ort geändert
+en: place modified
+es: lugar modificada
+fi: paikka muokattu
+fr: lieu modifié
+it: luogo modificata
+nl: plaats veranderd
+no: sted er endret
+sv: plats ändrad
+
+    no modification
+de: keine Ortsänderung vermerkt
+en: no changes
+se: ninguna modificación
+fr: aucune modification
+
+    the modification impacted %d persons
+de: die Änderungen sind abgeschlossen : % der Datei (en) kopiert
+en: successfully updated: %d places have been changed
+es: la modificación ha sido hecha: %d ficha(s) corregida(s)
+fr: la modification a bien été effectuée : %d fiche(s) corrigée(s)
+
+    help places
+de: Klicken auf “[ändern]” um den Standort zu korrigieren: die Gesamtheit Ihrer Dateien die diesen Standort betreffen werden sofort korrigiert werden
+en: Click "[Update]" to edit a place: the place names will be automatically updated in your entire family tree
+es: Pulse en "[modificar]" para corregir un lugar: las fichas de su árbol que contengan este lugar serán corregidas instantáneamente
+fr: Cliquez sur "[modifier]" pour corriger un lieu : l'ensemble des fiches de votre arbre comportant ce lieu seront instantanément corrigées
+
+    new modification
+de: möchten Sie eine weitere Änderung durchführen
+en: continue edit
+es: ¿Quiere hacer una nueva corrección?
+fr: souhaitez-vous effectuer une nouvelle correction
+
+    continue correcting
+af: gaan voort met die samevoeging
+bg: да продължи обединяването
+br: derc'hel da gendeuziñ
+ca: continuar la fusió
+cs: pokračovat ve spojování
+da: fortsæt sammenføjning
+de: Zusammenführung fortsetzen
+en: continue merging
+eo: daùrigu la kuniĝon
+es: continuar la fusión
+et: jätka ühendamist
+fi: jatka yhdistämistä
+fr: continuer à fusionner
+he:  להמשיך לאחד
+is: halda áfram að sameina
+it: continua la fusione
+lv: turpināt apvienošanu
+nl: doorgaan met samenvoegen
+no: fortsett sammenslåing
+pl: kontynuuj scalanie
+pt: continuar a fusão
+ro: continua unificarea
+ru: продолжить объединение
+sl: nadaljuj z združevanjem
+sv: fortsätt slå samman

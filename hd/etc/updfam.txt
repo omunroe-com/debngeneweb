@@ -7,7 +7,6 @@
   <meta http-equiv="Content-Type" content="text/html; charset=%charset;"%/>
   <meta http-equiv="Content-Style-Type" content="text/css"%/>
   <link rel="shortcut icon" href="%image_prefix;/favicon_gwd.png"%/>
-  <link rel="stylesheet" type="text/css" href="css/%css_prop" />
   <title>%nn;
     %if;(evar_m = "ADD_FAM" or evar_m = "ADD_FAM_OK")
       [*add::family/families]0%nn;
@@ -19,9 +18,10 @@
       [*merge::family/families]1 # %evar_i;
     %end;
   </title>
+%include.css;
 %base_header;
 </head>
-<body %body_prop;>
+<body%body_prop;>
 %message_to_wizard;
 
 <script type="text/javascript">
@@ -325,7 +325,7 @@ function changeCalendar(e,v,m,c) {
   </table>
 %end;
 
-<h1 style="text-align:center" class="highlight">%nn;
+<h1>%nn;
 %if;(evar_m = "ADD_FAM" or evar_m = "ADD_FAM_OK")
   [*add::family/families]0
 %elseif;(evar_m = "ADD_PAR")
@@ -538,7 +538,7 @@ function changeCalendar(e,v,m,c) {
     <tr>
       <td>
         <select name="chxcnt_p">
-          <option value="link"%if;(child.create = "link")
+          <option value="link"%if;(child.create = "link")%sp;
            selected="selected"%end;>[*link]0</option>
           <option value="create"%if;(child.create = "create")%sp;
            selected="selected"%end;>[*create]0</option>
@@ -569,7 +569,7 @@ function changeCalendar(e,v,m,c) {
 %apply;insert_child("0")
 %foreach;child;
   %if;(cnt != 1)
-    </td><td>&nbsp;</td><td>
+    <td>&nbsp;</td>
     %apply;invert_children(cnt)
   %end;
   </tr></table>
@@ -610,13 +610,7 @@ function changeCalendar(e,v,m,c) {
 </p>
 </form>
 
-
-<br />
-<div id="footer">
-<hr />
-%copyright;
 %base_trailer;
-</div>
-
+%copyright;
 </body>
 </html>

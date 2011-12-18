@@ -331,6 +331,18 @@ value translate_eval s = Translate.eval (nominative s);
 
 (* *)
 
+value escape_amp s =
+  loop 0 0 where rec loop i len =
+    if i = String.length s then Buff.get len
+    else if s.[i] = '&' then loop (i + 1) (Buff.mstore len "&amp;")
+    else loop (i + 1) (Buff.store len s.[i])
+;
+
+value get_referer conf =
+  let referer = Wserver.extract_param "referer: " '\n' conf.request in
+  escape_amp referer
+;
+
 value begin_centered conf =
   Wserver.wprint
     "<table border=\"%d\" width=\"100%%\"><tr><td align=\"center\">\n"
@@ -772,6 +784,58 @@ value reference conf base p s =
   else "<a href=\"" ^ commd conf ^ acces conf base p ^ "\">" ^ s ^ "</a>"
 ;
 
+
+(* ************************************************************************* *)
+(*  [Fonc] update_family_loop : config -> base -> person -> string -> string *)
+(** [Description] : Essaie de déterminer dans quelle famille il peut y avoir
+                    une boucle. Si il n'y a pas d'ambiguité, alors on renvoie
+                    un lien vers la famille à modifier, sinon, on renvoie un
+                    lien vers le menu général de mise à jour.
+    [Args] :
+      - conf : configuration
+      - base : base
+      - p    : person
+      - s    : la clé de la personne sous forme de string
+    [Retour] :
+      - string : retourne un lien de mise à jour soit vers la famille
+                 contenant la boucle, soit vers le menu de mise à jour.
+    [Rem] : Exporté en clair hors de ce module.                              *)
+(* ************************************************************************* *)
+value update_family_loop conf base p s =
+  if conf.cancel_links || is_hidden p then s
+  else 
+    let iper = get_key_index p in
+    let list = Array.to_list (get_family p) in
+    let list = List.map (fun ifam -> (ifam, foi base ifam)) list in
+    let list = 
+      List.map 
+        (fun (ifam, fam) -> (ifam, Array.to_list (get_children fam))) 
+        list 
+    in
+    (* [Fonc] : 'a list -> (ifam, iper list) list -> ifam list *)
+    let rec loop accu l =
+      match l with
+      [ [] -> accu
+      | [(ifam, children) :: l ] -> 
+          if List.exists (fun c -> iper = c) children then loop [ifam :: accu] l
+          else loop accu l ]
+    in
+    let res = loop [] list in
+    if conf.wizard then
+      (* Si il n'y a pas d'ambiguité, i.e. pas 2 boucles dans 2 familles *)
+      (* pour un même individu, alors on renvoit le lien vers la mise à  *)
+      (* jour de la famille, sinon, un lien vers le menu de mise à jour. *)
+      if List.length list = 1 then
+        let iper = string_of_int (Adef.int_of_iper iper) in
+        let ifam = string_of_int (Adef.int_of_ifam (List.hd res)) in
+        "<a href=\"" ^ commd conf ^ "m=MOD_FAM;i=" ^ ifam ^ ";ip=" ^ iper ^ "\">" ^ s ^ "</a>"
+      else
+        let iper = string_of_int (Adef.int_of_iper iper) in
+        "<a href=\"" ^ commd conf ^ "m=U;i=" ^ iper ^ "\">" ^ s ^ "</a>"
+    else s
+;  
+
+
 value no_reference conf base p s = s;
 
 value gen_person_title_text reference p_access conf base p =
@@ -1003,12 +1067,11 @@ value image_prefix conf =
   else "images"
 ;
 
-(* Code mort. Géré par le css *)
+(* Code mort. Géré par le css
 value default_background conf =
   sprintf "background:url('%s/gwback.jpg')" (image_prefix conf)
 ;
 
-(* Code mort. Géré par le css *)
 value default_body_prop conf =
   let style =
     match p_getenv conf.env "size" with
@@ -1018,6 +1081,7 @@ value default_body_prop conf =
   let style = sprintf "%s%s" style (default_background conf) in
   " style=\"" ^ style ^ "\""
 ;
+   Code mort. Géré par le css *)
 
 value body_prop conf =
   try
@@ -1026,15 +1090,6 @@ value body_prop conf =
     | s -> " " ^ s ]
   with
   [ Not_found -> "" ]
-;
-
-value css_prop conf =
-  try
-    match List.assoc "css_prop" conf.base_env with
-    [ "" -> "default.css"
-    | s -> s ^ ".css" ]
-  with
-  [ Not_found -> "default.css" ]
 ;
 
 value get_server_string_aux cgi request =
@@ -1719,7 +1774,7 @@ value parent conf base p a =
   match get_public_name a with
   [ n when sou base n <> "" -> sou base n ^ person_title conf base a
   | _ ->
-      if (is_hide_names conf p) && not (fast_auth_age conf a) then "x x"
+      if (is_hide_names conf a) && not (fast_auth_age conf a) then "x x"
       else
         p_first_name base a ^
           (if not (eq_istr (get_surname p) (get_surname a)) then
@@ -1779,7 +1834,7 @@ value specify_homonymous conf base p =
               if Array.length ct > 0 then
                 let enfant = pget conf base ct.(0) in
                 let (child_fn, child_sn) =
-                  if (is_hide_names conf p) && not (fast_auth_age conf enfant) then
+                  if (is_hide_names conf enfant) && not (fast_auth_age conf enfant) then
                     ("x", " x")
                   else
                     (p_first_name base enfant,
@@ -2720,8 +2775,7 @@ value print_in_columns conf len_list list wprint_elem = do {
                      else if kind.val <> Elem then Wserver.wprint "</ul>\n"
                      else ();
                      if kind.val <> Elem then do {
-                       Wserver.wprint "<h3 style=\"border-bottom: \
-                         dotted 1px\">%s%s</h3>\n"
+                       Wserver.wprint "<h3 class=\"subtitle\">%s%s</h3>\n"
                          (if ord = "" then "..." else String.make 1 ord.[0])
                          (if kind.val = HeadElem then ""
                           else " (" ^ transl conf "continued" ^ ")");
@@ -2750,4 +2804,26 @@ value wprint_in_columns conf order wprint_elem list =
     dispatch_in_columns ncols list order
   in
   print_in_columns conf len_list list wprint_elem
+;
+
+
+(* ********************************************************************** *)
+(*  [Fonc] reduce_list : int -> list 'a -> list 'a                        *)
+(** [Description] : Retourne la sous liste de taille size composée des
+                    éléments 0 à (size - 1)
+    [Args] :
+      - size : la taille de la nouvelle liste
+      - list : la liste originiale
+    [Retour] :
+      - list : la nouvelle liste de taille size
+    [Rem] : Exporté en clair hors de ce module.                       *)
+(* ********************************************************************** *)
+value reduce_list size list =
+  let rec loop size cnt reduced_list list = 
+    if cnt >= size then reduced_list 
+    else
+      match list with
+       [ [] -> reduced_list
+       | [x :: l] -> loop size (cnt + 1) [x :: reduced_list] l ]
+  in loop size 0 [] list
 ;

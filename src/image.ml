@@ -13,7 +13,7 @@ value content cgi t len fname =
     Util.nl ();
     Wserver.wprint "Content-length: %d" len;
     Util.nl ();
-    Wserver.wprint "Content-disposition: attachment; filename=%s"
+    Wserver.wprint "Content-disposition: inline; filename=%s"
       (Filename.basename fname);
     Util.nl ();
     Util.nl ();
@@ -65,11 +65,8 @@ value print_source_image conf f =
   let fname =
     if f.[0] = '/' then String.sub f 1 (String.length f - 1) else f
   in
-let _ = do { Printf.eprintf "%s\n" fname; flush stderr; } in
   if fname = Filename.basename fname then
-let _ = do { Printf.eprintf "%s\n" fname; flush stderr; } in
     let fname = source_image_file_name conf.bname fname in
-let _ = do { Printf.eprintf "%s\n" fname; flush stderr; } in
     if print_image_file conf.cgi fname then () else incorrect_request conf
   else incorrect_request conf
 ;
@@ -98,6 +95,6 @@ value print_html conf base =
          let v = if k = "m" then "IM" else v in
          Wserver.wprint "%s%s=%s" (if first then "" else ";") k v)
       conf.env;
-    Wserver.wprint "\">\n</body>\n</html>";
+    Wserver.wprint "\"%s>\n</body>\n</html>" conf.xhs;
   }
 ;
