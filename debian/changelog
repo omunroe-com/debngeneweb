@@ -1,9 +1,10 @@
-geneweb (6.00-3) UNRELEASED; urgency=low
+geneweb (6.03-1) unstable; urgency=low
 
+  * New upstream version. Closes: #651874
   * Change default for running gwsetup at boot
     Closes: #500165
 
- -- Christian Perrier <bubulle@sesostris.kheops.frmug.org>  Sun, 06 Nov 2011 15:08:10 +0100
+ -- Christian Perrier <bubulle@debian.org>  Sun, 18 Dec 2011 20:22:30 +0100
 
 geneweb (6.00-2) unstable; urgency=low
 
