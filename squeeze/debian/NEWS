@@ -1,0 +1,6 @@
+geneweb (4.10-17) unstable; urgency=low
+
+  * New binary package for gwsetup. Some users requested it. The package
+    can launch gwsetup as a daemon but this is disabled by default
+
+ -- Christian Perrier <bubulle@debian.org>  Tue, 29 Nov 2005 18:55:40 +0100

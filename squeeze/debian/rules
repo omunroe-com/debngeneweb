@@ -1,0 +1,67 @@
+#!/usr/bin/make -f
+%:
+	dh $@
+
+PACKAGE=geneweb
+
+WAY=$(shell if [ -f "/usr/bin/ocamlc.opt" ]; then echo "opt"; \
+else echo "out"; \
+fi)
+
+ifeq ($(WAY),out)
+override_dh_strip:
+	# Don't strip ocaml bytecode executables
+endif   
+
+
+override_dh_installdeb:
+	# Use of the dh-buildinfo package: see http://people.debian.org/~dirson/buildinfo/
+	dh_buildinfo
+	dh_installdeb
+	
+override_dh_auto_install:
+
+override_dh_auto_build:
+	# Move the proper makefile into place	
+	cp -f `pwd`/tools/Makefile.inc.$(WAY) `pwd`/tools/Makefile.inc
+	chmod a+x tools/*.sh
+	$(MAKE) $(WAY)
+	$(MAKE) distrib
+
+override_dh_clean:
+	rm -rf debian/iso-codes
+	rm -rf debian/pobuild
+	rm -f debian/geneweb.templates.tmp
+	rm -f debian/geneweb.templates
+	debconf-updatepo
+	# Add here commands to clean up after the build process.
+	[ ! -f tools/Makefile.inc ] || [ ! -f Makefile ] || $(MAKE) clean
+	# Clean out cruft left by former builds
+	rm -f tools/Makefile.inc
+	rm -f compilation.ml
+	dh_clean
+
+override_dh_install:
+	dh_install
+	# Doc files go to the appropriate directory
+	install -m 644 `pwd`/CHANGES \
+	        `pwd`/debian/geneweb/usr/share/doc/geneweb/changelog
+	# The CGI script
+	chmod 755 `pwd`/debian/gwtp/usr/lib/cgi-bin/gwtp/gwtp.cgi
+	# The wrappers
+	chmod 755 `pwd`/debian/gwsetup/usr/lib/geneweb/gwsetup.wrapper
+
+override_dh_installdocs:
+	dh_installdocs
+	# License files should not be duplicated
+	rm `pwd`/debian/geneweb/usr/share/doc/geneweb/LICENSE.htm || true
+
+override_dh_installdebconf:
+	# Grab ISO 639 language code translations
+	chmod u+x debian/get-iso-codes
+	debian/get-iso-codes
+	# Build templates
+	chmod u+x debian/mktemplates
+	debian/mktemplates
+	dh_installdebconf
+

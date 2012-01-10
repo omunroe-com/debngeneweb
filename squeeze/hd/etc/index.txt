@@ -1,0 +1,33 @@
+%doctype;
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>Base</title>
+  <meta http-equiv="Content-Style-Type" content="text/css"%/>
+  <meta http-equiv="Content-Type" content="text/html; charset=%charset;"%/>
+  <meta name="robots" content="none"%/>
+  <link rel="shortcut icon" href="%image_prefix;/favicon_gwd.png"%/>
+%include.css;
+</head>
+<body%body_prop;>
+<h1>Base</h1>
+
+<p>
+[
+en: Please, enter the name of the database you want to use:
+fr: Entrez le nom de la base de données que vous voulez utiliser:
+]
+</p>
+<ul>
+<li>
+<form method="get" action="%prefix;">
+<p>
+<input name="b" size="40"%/> =&gt;
+<input type="submit" value="Ok"%/>
+</p>
+</form>
+</li>
+</ul>
+
+%copyright;
+</body>
+</html>
