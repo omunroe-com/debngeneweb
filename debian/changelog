@@ -2,7 +2,7 @@ geneweb (6.03-1~bpo60+1) squeeze-backports; urgency=low
 
   * Backport to squeeze
 
- -- Christian Perrier <bubulle@debian.org>  Tue, 10 Jan 2012 22:07:08 +0100
+ -- Christian Perrier <bubulle@debian.org>  Sat, 14 Jan 2012 16:06:20 +0100
 
 geneweb (6.03-1) unstable; urgency=low
 
