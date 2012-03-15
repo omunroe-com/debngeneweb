@@ -1,3 +1,10 @@
+geneweb (6.04-1) UNRELEASED; urgency=low
+
+  * New upstream release
+  * Fix FTBFS with Camlp5 6.05. Closes: #663666
+
+ -- Christian Perrier <bubulle@debian.org>  Thu, 15 Mar 2012 22:33:52 +0100
+
 geneweb (6.03-1) unstable; urgency=low
 
   * New upstream version. Closes: #651874
