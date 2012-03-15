@@ -258,13 +258,16 @@ value specify conf base n pl =
     header conf title;
     conf.cancel_links := False;
     Wserver.wprint "<ul>\n";
+    (* Construction de la table des sosa de la base *)
+    let () = Perso.build_sosa_ht conf base in 
     List.iter
       (fun (p, tl) ->
          tag "li" begin
-           let sosa_num = Perso.p_sosa conf base p in
+           let sosa_num = Perso.get_sosa_person conf base p in
            if Num.gt sosa_num Num.zero then
-             Wserver.wprint "<img src=\"%s/%s\" alt=\"sosa\" title=\"sosa\"/> " 
-               (Util.image_prefix conf) "sosa.png"
+             Wserver.wprint "<img src=\"%s/%s\" alt=\"sosa\" title=\"sosa: %s\"/> "
+               (Util.image_prefix conf) "sosa.png" 
+               (Perso.string_of_num (Util.transl conf "(thousand separator)") sosa_num)
            else () ;
            match tl with
            [ [] ->
@@ -439,6 +442,10 @@ value family_m conf base =
       match p_getenv conf.base_env "disable_forum" with
       [ Some "yes" -> incorrect_request conf
       | _ -> Forum.print_del conf base ]
+  | Some "FORUM_P_P" -> 
+      match p_getenv conf.base_env "disable_forum" with
+      [ Some "yes" -> incorrect_request conf
+      | _ -> Forum.print_access_switch conf base ]
   | Some "FORUM_SEARCH" -> 
       match p_getenv conf.base_env "disable_forum" with
       [ Some "yes" -> incorrect_request conf

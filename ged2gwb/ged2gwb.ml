@@ -167,6 +167,7 @@ value first_names_brackets = ref None;
 value untreated_in_notes = ref False;
 value force = ref False;
 value default_source = ref "";
+value relation_status = ref Married;
 
 (* Reading input *)
 
@@ -857,10 +858,10 @@ value date_of_field pos d =
     let s = Stream.of_string (String.uppercase d) in
     date_str.val := d;
     try Some (Grammar.Entry.parse date_value s) with
-    [ Stdpp.Exc_located loc (Stream.Error _) ->
+    [ Ploc.Exc loc (Stream.Error _) ->
         let s = Stream.of_string (String.uppercase d) in
         try Some (Grammar.Entry.parse date_value_recover s) with
-        [ Stdpp.Exc_located loc (Stream.Error _) -> Some (Dtext d) ] ]
+        [ Ploc.Exc loc (Stream.Error _) -> Some (Dtext d) ] ]
   }
 ;
 
@@ -987,7 +988,7 @@ value unknown_fam gen i =
   let f =
     family_of_gen_family
       {marriage = Adef.codate_None; marriage_place = empty;
-       marriage_src = empty; witnesses = [| |]; relation = NoMention;
+       marriage_src = empty; witnesses = [| |]; relation = relation_status.val;
        divorce = NotDivorced; comment = empty; origin_file = empty;
        fsources = empty; fam_index = Adef.ifam_of_int i}
   and c = couple_of_gen_couple (couple False father mother)
@@ -1327,7 +1328,7 @@ value decode_date_interval pos s =
     | Begin d -> (Some d, None)
     | End d -> (None, Some d) ]
   with
-  [ Stdpp.Exc_located _ _ | Not_found ->
+  [ Ploc.Exc _ _ | Not_found ->
       do { print_bad_date pos s; (None, None) } ]
 ;
 
@@ -1941,7 +1942,7 @@ value add_fam_norm gen r adop_list =
         | None ->
             match find_field "ENGA" r.rsons with
             [ Some r -> (Engaged, Some r)
-            | None -> (NoMention, None) ] ]
+            | None -> (relation_status.val, None) ] ]
       in
       match sons with
       [ Some r ->
@@ -2906,6 +2907,8 @@ x-y   - Undefined death interval -
     "\n       Interpret months-numbered dates as day/month/year");
    ("-dates_md", Arg.Unit (fun () -> month_number_dates.val := MonthDayDates),
     "\n       Interpret months-numbered dates as month/day/year");
+   ("-rs_no_mention", Arg.Unit (fun () -> relation_status.val := NoMention),
+    "\n       Force relation status to NoMention (default is Married)");
    ("-charset",
     Arg.String
       (fun
@@ -2968,7 +2971,7 @@ The database \"%s\" already exists. Use option -f to overwrite it.
 try main () with e ->
   let e =
     match e with
-    [ Stdpp.Exc_located _ e -> e
+    [ Ploc.Exc _ e -> e
     |  _ -> e ]
   in
   do {

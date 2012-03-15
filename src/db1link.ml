@@ -763,9 +763,9 @@ value families_record_access fam_index_ic fam_ic len =
 
 value input_particles part_file =
   if part_file = "" then
-    ["af "; "d'"; "dal "; "de "; "di "; "du "; "of "; "van ";
+    ["af "; "d'"; "d’"; "dal "; "de "; "di "; "du "; "of "; "van ";
      "von und zu "; "von "; "zu "; "zur ";
-     "AF "; "D'"; "DAL "; "DE "; "DI "; "DU "; "OF "; "VAN ";
+     "AF "; "D'"; "D’"; "DAL "; "DE "; "DI "; "DU "; "OF "; "VAN ";
      "VON UND ZU "; "VON "; "ZU "; "ZUR "]
   else Mutil.input_particles part_file
 ;
@@ -972,7 +972,7 @@ value link next_family_fun bdir = do {
   else ();
   if not gen.g_errored then do {
     if do_consang.val then
-      let _ : option _ = ConsangAll.compute base True False in ()
+      let _ : option _ = ConsangAll.compute base (-1) True False in ()
     else ();
     Gc.compact ();
     Outbase.output bdir dsk_base;
