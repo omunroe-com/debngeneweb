@@ -3,6 +3,7 @@ geneweb (6.04-1) unstable; urgency=low
   * New upstream release
   * Fix FTBFS with Camlp5 6.05. Closes: #663666
   * Drop no longer needed 015_fix-amd64.patch
+  * Update Standards to 3.9.3 (checked)
 
  -- Christian Perrier <bubulle@debian.org>  Thu, 15 Mar 2012 22:34:41 +0100
 
