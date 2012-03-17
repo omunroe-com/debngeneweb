@@ -1,3 +1,10 @@
+geneweb (6.04-2) UNRELEASED; urgency=low
+
+  * Add README.docs-6.x to mention the lack of included documentation
+    as of 6.x versions. Closes: #661625
+
+ -- Christian Perrier <bubulle@debian.org>  Sat, 17 Mar 2012 09:31:18 +0100
+
 geneweb (6.04-1) unstable; urgency=low
 
   * New upstream release
