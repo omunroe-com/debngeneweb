@@ -11,6 +11,7 @@ type token =
   [ BANGEQUAL
   | COMMA
   | DOT
+  | DIV
   | EQUAL
   | GREATER
   | GREATEREQUAL
@@ -142,6 +143,7 @@ value rec get_token =
   | [: `'+' :] ep -> Tok (bp, ep) PLUS
   | [: `'-' :] ep -> Tok (bp, ep) MINUS
   | [: `'*' :] ep -> Tok (bp, ep) STAR
+  | [: `'/' :] ep -> Tok (bp, ep) DIV
   | [: `'%';
        a =
          parser
@@ -239,6 +241,8 @@ and parse_expr_5_kont e =
   parser
   [ [: `Tok loc STAR; e2 = parse_simple_expr;
        a = parse_expr_5_kont (Aop2 loc "*" e e2) :] -> a
+  | [: `Tok loc DIV; e2 = parse_simple_expr;
+       a = parse_expr_5_kont (Aop2 loc "/" e e2) :] -> a
   | [: `Tok loc PERCENT; e2 = parse_simple_expr;
        a = parse_expr_5_kont (Aop2 loc "%" e e2) :] -> a
   | [: :] -> e ]
@@ -345,6 +349,8 @@ value strip_newlines_after_variables =
         [Aapply loc f (List.map loop all) :: loop astl]
     | [Alet k v al :: astl] ->
         [Alet k (loop v) (loop al) :: loop astl]
+    | [Afor i min max al :: astl] ->
+        [Afor i min max (loop al) :: loop astl]
     | [(Atransl _ _ _ _ | Awid_hei _ as ast1); (Atext _ _ as ast2) :: astl] ->
         [ast1; ast2 :: loop astl]
     | [ast :: astl] -> [ast :: loop astl]
@@ -377,6 +383,7 @@ value parse_templ conf strm =
               | (_, "foreach", []) -> parse_foreach strm
               | (_, "apply", []) -> parse_apply bp strm
               | (_, "expr", []) -> parse_expr_stmt strm
+              | (_, "for", []) -> parse_for strm
               | (_, "wid_hei", []) -> Awid_hei (get_value 0 strm)
               | ((_, ep), v, vl) -> Avar (bp, ep) v vl ]
             in
@@ -488,6 +495,19 @@ value parse_templ conf strm =
         | _ -> (al1, []) ]
     in
     Aif e al1 al2
+  and parse_for strm =
+    try 
+      let iterator = get_ident 0 strm in
+        match strm with parser
+        [ [: `';' :] ->
+          let min = parse_char_stream_semi parse_simple_expr strm in
+          let max = parse_char_stream_semi parse_simple_expr strm in
+          let (al, _) = parse_astl [] False 0 ["end"] strm in
+          Afor iterator min max al ]
+    with
+    [ Stream.Failure | Stream.Error _ ->
+        let bp = Stream.count strm - 1 in
+        Atext (bp, bp + 1) "for syntax error" ]
   and parse_foreach strm =
     let (loc, v, vl) = get_compound_var strm in
     let params =
@@ -506,51 +526,8 @@ value parse_templ conf strm =
   strip_newlines_after_variables astl
 ;
 
-value open_templ conf name =
-  let config_templ =
-    try
-      let s = List.assoc "template" conf.base_env in
-      let rec loop list i len =
-        if i = String.length s then List.rev [Buff.get len :: list]
-        else if s.[i] = ',' then loop [Buff.get len :: list] (i + 1) 0
-        else loop list (i + 1) (Buff.store len s.[i])
-      in
-      loop [] 0 0
-    with
-    [ Not_found -> [conf.bname; "*"] ]
-  in
-  let dir =
-    match Util.p_getenv conf.env "templ" with
-    [ Some x when List.mem "*" config_templ -> x
-    | Some x when List.mem x config_templ -> x
-    | Some _ | None ->
-        match config_templ with
-        [ [] | ["*"] -> ""
-        | [x :: _] -> x ] ]
-  in
-  let dir =
-    if dir = "" then Filename.current_dir_name
-    else Filename.basename dir
-  in
-  let std_fname =
-    Util.search_in_lang_path (Filename.concat "etc" (name ^ ".txt"))
-  in
-  if dir = "" || dir = Filename.current_dir_name then
-    try Some (Secure.open_in std_fname) with [ Sys_error _ -> None ]
-  else
-    let dir = Filename.basename dir in
-    let fname =
-      Filename.concat (Util.base_path ["etc"] dir) (name ^ ".txt")
-    in
-    try Some (Secure.open_in fname) with
-    [ Sys_error _ ->
-        if (*dir = conf.bname*)True(**) then
-          try Some (Secure.open_in std_fname) with [ Sys_error _ -> None ]
-        else None ]
-;
-
 value input_templ conf fname =
-  match open_templ conf fname with
+  match Util.open_templ conf fname with
   [ Some ic ->
       let astl = parse_templ conf (Stream.of_channel ic) in
       do { close_in ic; Some astl }
@@ -598,6 +575,8 @@ value rec subst sf =
   | Aforeach (loc, s, sl) pl al ->
       Aforeach (loc, sf s, List.map sf sl) (List.map (substl sf) pl)
         (substl sf al)
+  | Afor i min max al -> 
+      Afor (sf i) (subst sf min) (subst sf max) (substl sf al)
   | Adefine f xl al alk ->
       Adefine (sf f) (List.map sf xl) (substl sf al) (substl sf alk)
   | Aapply loc f all -> Aapply loc (sf f) (List.map (substl sf) all)
@@ -972,7 +951,7 @@ value rec eval_expr ((conf, eval_var, eval_apply) as ceva) =
 ;
 
 value line_of_loc conf fname (bp, ep) =
-  match open_templ conf fname with
+  match Util.open_templ conf fname with
   [ Some ic ->
       let strm = Stream.of_channel ic in
       let rec loop lin =
@@ -1324,6 +1303,8 @@ value rec interp_ast conf base ifun =
     | Aapply loc f all ->
         let vl = List.map (eval_ast_expr_list env ep) all in
         VVstring (eval_apply env ep loc f vl)
+    | Afor i min max al ->
+        VVstring (eval_for env ep i min max al)
     | x -> VVstring (eval_expr env ep x) ]
   and eval_ast_expr_list env ep v =
     let rec loop =
@@ -1395,6 +1376,26 @@ value rec interp_ast conf base ifun =
       if eval_bool_expr conf (eval_var, eval_apply) e then alt else ale
     in
     String.concat "" (List.map eval_ast al)
+  and eval_for env ep iterator min max al = 
+    let rec loop env min max accu =
+      let new_env = env in
+      let v = eval_ast_expr_list new_env ep [min] in
+      let new_env = set_val ifun.set_vother iterator v new_env in 
+      let eval_var = eval_var conf ifun new_env ep in
+      let eval_apply = eval_apply new_env ep in
+      let eval_ast = eval_ast new_env ep in
+      let int_min = 
+        int_of_string (eval_string_expr conf (eval_var, eval_apply) min) 
+      in
+      let int_max = 
+        int_of_string (eval_string_expr conf (eval_var, eval_apply) max) 
+      in
+      if int_min < int_max then 
+        let instr = (String.concat "" (List.map eval_ast al)) in
+        let accu = accu ^ instr in
+        loop new_env (Aop2 (0, 0) "+" min (Aint (0, 0) "1")) max accu
+      else accu
+    in loop env min max ""
   in
   let rec print_ast env ep =
     fun
@@ -1411,6 +1412,7 @@ value rec interp_ast conf base ifun =
     | Adefine f xl al alk -> print_define env ep f xl al alk
     | Aapply loc f ell -> print_apply env ep loc f ell
     | Alet k v al -> print_let env ep k v al
+    | Afor i min max al -> print_for env ep i min max al
     | x -> Wserver.wprint "%s" (eval_ast env ep x) ]
   and print_ast_list env ep =
     fun
@@ -1443,6 +1445,24 @@ value rec interp_ast conf base ifun =
       if eval_bool_expr conf (eval_var, eval_apply) e then alt else ale
     in
     print_ast_list env ep al
+  and print_for env ep i min max al =
+    let rec loop env min max =
+      let new_env = env in
+      let v = eval_ast_expr_list new_env ep [min] in
+      let new_env = set_val ifun.set_vother i v new_env in 
+      let eval_var = eval_var conf ifun new_env ep in
+      let eval_apply = eval_apply new_env ep in
+      let int_min = 
+        int_of_string (eval_string_expr conf (eval_var, eval_apply) min) 
+      in
+      let int_max = 
+        int_of_string (eval_string_expr conf (eval_var, eval_apply) max) 
+      in
+      if int_min < int_max then 
+        let _ = print_ast_list new_env ep al in
+        loop new_env (Aop2 (0, 0) "+" min (Aint (0, 0) "1")) max
+      else ()
+    in loop env min max
   in
   print_ast_list
 and print_var print_ast_list conf base ifun env ep loc sl =
