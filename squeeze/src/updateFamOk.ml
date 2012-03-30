@@ -276,8 +276,65 @@ value strip_array_persons pl =
   Array.of_list pl
 ;
 
+value error_family conf base err =
+  let title _ = Wserver.wprint "%s" (capitale (transl conf "error")) in
+  do {
+    rheader conf title; 
+    Wserver.wprint "%s\n" (capitale err); 
+    Update.print_return conf; 
+    trailer conf;
+    raise Update.ModErr
+  }
+;
+
+value check_witnesses conf base fam =
+  let wl = Array.to_list fam.witnesses in
+  let rec loop wl =
+    match wl with 
+    [ [] -> None
+    | [(fn, sn, _, _, _) :: l] -> 
+        if fn = "" && sn = "" then 
+          (* Champs non renseigné, il faut passer au suivant *)
+          loop l
+        else if fn = "" || fn = "?" then
+          Some ((transl_nth conf "witness/witnesses" 0) ^ (" : ")
+                ^ (transl conf "first name missing"))
+        else if sn = "" || sn = "?" then 
+          Some ((transl_nth conf "witness/witnesses" 0) ^ (" : ")
+                ^ (transl conf "surname missing"))
+        else loop l ]
+  in
+  loop wl
+;
+
+value check_parents conf base cpl =
+  let (fa_fn, fa_sn, _, _, _) = father cpl in
+  let (mo_fn, mo_sn, _, _, _) = mother cpl in
+  match ((fa_fn = "", fa_sn = ""), (mo_fn = "", mo_sn = "")) with
+  [ ((True, True), (True, True)) | ((True, True), (False, False)) |
+    ((False, False), (True, True)) | ((False, False), (False, False)) -> None
+  | ((False, True), _) ->
+      Some ((transl_nth conf "father/mother" 0) ^ (" : ")
+            ^ (transl conf "surname missing"))
+  | ((True, False), _) ->
+      Some ((transl_nth conf "father/mother" 0) ^ (" : ")
+            ^ (transl conf "first name missing"))
+  | (_, (False, True)) ->
+      Some ((transl_nth conf "father/mother" 1) ^ (" : ")
+            ^ (transl conf "surname missing"))
+  | (_, (True, False)) ->
+      Some ((transl_nth conf "father/mother" 1) ^ (" : ")
+            ^ (transl conf "first name missing")) ]
+;
+
+value check_family conf base fam cpl =
+  let err_witness = check_witnesses conf base fam in
+  let err_parents = check_parents conf base cpl in
+  (err_witness, err_parents)
+;
+
 value strip_family fam des =
-  let fam = {(fam) with witnesses = strip_array_persons fam.witnesses} in
+  let fam = {(fam) with witnesses = strip_array_persons fam.witnesses} in 
   let des = {children = strip_array_persons des.children} in
   (fam, des)
 ;
@@ -876,35 +933,38 @@ value print_add o_conf base =
       UpdateFam.print_update_fam conf base (sfam, scpl, sdes) ""
     else if forbidden_disconnected conf sfam scpl sdes then
       print_error_disconnected conf
-    else do {
-      let (sfam, sdes) = strip_family sfam sdes in
-      let (ifam, fam, cpl, des) = effective_add conf base sfam scpl sdes in
-      let wl =
-        all_checks_family conf base ifam fam cpl des (scpl, sdes, None)
-      in
-      let ((fn, sn, occ, _, _), i, act) =
-        match p_getint conf.env "ip" with
-        [ Some i ->
-            if Adef.int_of_iper (Adef.mother cpl) = i then
-              (mother scpl, i, "af")
-            else
-              let a = poi base (Adef.iper_of_int i) in
-              match get_parents a with
-              [ Some x when x = ifam ->
-                  let p = poi base (Adef.iper_of_int i) in
-                  let key =
-                    (sou base (get_first_name p), sou base (get_surname p),
-                     get_occ p, Update.Link, "")
-                  in
-                  (key, i, "aa")
-              | _ -> (father scpl, i, "af") ]
-        | _ -> (father scpl, -1, "af") ]
-      in
-      Util.commit_patches conf base;
-      History.record conf base (fn, sn, occ, Adef.iper_of_int i) act;
-      Update.delete_topological_sort conf base;
-      print_add_ok conf base wl cpl des
-    }
+    else 
+      match check_family conf base sfam scpl with
+      [ (Some err, _) | (_, Some err) -> error_family conf base err
+      | (None, None) -> do { 
+          let (sfam, sdes) = strip_family sfam sdes in
+          let (ifam, fam, cpl, des) = effective_add conf base sfam scpl sdes in
+          let wl =
+            all_checks_family conf base ifam fam cpl des (scpl, sdes, None)
+          in
+          let ((fn, sn, occ, _, _), i, act) =
+            match p_getint conf.env "ip" with
+            [ Some i ->
+                if Adef.int_of_iper (Adef.mother cpl) = i then
+                  (mother scpl, i, "af")
+                else
+                  let a = poi base (Adef.iper_of_int i) in
+                  match get_parents a with
+                  [ Some x when x = ifam ->
+                      let p = poi base (Adef.iper_of_int i) in
+                      let key =
+                        (sou base (get_first_name p), sou base (get_surname p),
+                         get_occ p, Update.Link, "")
+                      in
+                      (key, i, "aa")
+                  | _ -> (father scpl, i, "af") ]
+            | _ -> (father scpl, -1, "af") ]
+          in
+          Util.commit_patches conf base;
+          History.record conf base (fn, sn, occ, Adef.iper_of_int i) act;
+          Update.delete_topological_sort conf base;
+          print_add_ok conf base wl cpl des
+        } ]
   with
   [ Update.ModErr -> () ]
 ;
@@ -954,8 +1014,11 @@ value print_mod_aux conf base callback =
       if ext || redisp then
         UpdateFam.print_update_fam conf base (sfam, scpl, sdes) digest
       else
-        let (sfam, sdes) = strip_family sfam sdes in
-        callback sfam scpl sdes
+        match check_family conf base sfam scpl with
+        [ (Some err, _) | (_, Some err) -> error_family conf base err
+        | (None, None) -> 
+            let (sfam, sdes) = strip_family sfam sdes in
+            callback sfam scpl sdes ]
     else Update.error_digest conf
   with
   [ Update.ModErr -> () ]
