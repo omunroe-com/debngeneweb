@@ -12,7 +12,7 @@ SITE=http://${SERVER_NAME}:2317/
 # /var/run/gwtp no longer provided in the package as /var/run might be 
 # a tmpfs, so create the directory if it is not there
 
-[ -d /var/run/gwtp ] && mkdir /var/run/gwtp
+[ -d $TMPDIR ] || mkdir $TMPDIR
 
 # set umask for token to be created 666
 umask 007

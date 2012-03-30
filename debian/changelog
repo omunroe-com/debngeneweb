@@ -1,3 +1,9 @@
+geneweb (6.04-3) UNRELEASED; urgency=low
+
+  * Correctly create /var/run/gwtp when running the CGI script
+
+ -- Christian Perrier <bubulle@debian.org>  Fri, 30 Mar 2012 22:26:29 +0200
+
 geneweb (6.04-2) unstable; urgency=low
 
   * Add README.docs-6.x to mention the lack of included documentation
