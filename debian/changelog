@@ -3,6 +3,7 @@ geneweb (6.05-1) unstable; urgency=low
   * New upstream version
   * Correctly create /var/run/gwtp when running the CGI script
   * Compress .deb files and upstream tarball with xz
+  * Use "set -e" in config scripts instead of "-e" argument to shebang
 
  -- Christian Perrier <bubulle@debian.org>  Mon, 04 Jun 2012 21:12:16 +0200
 
