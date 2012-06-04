@@ -95,8 +95,11 @@ value give_access conf base ia_asex p1 b1 p2 b2 =
     "<a href=\"" ^ commd conf ^ "m=RL;" ^ acces_n conf base "1" p1 ^ ";b1=" ^
       Num.to_string (Util.sosa_of_branch [ia_asex :: b1]) ^ ";" ^
       acces_n conf base "2" p2 ^ ";b2=" ^
-      Num.to_string (Util.sosa_of_branch [ia_asex :: b2]) ^ ";spouse=on\">" ^
-      s ^ "</a>"
+      Num.to_string (Util.sosa_of_branch [ia_asex :: b2]) ^ ";spouse=" ^
+      (if p_getenv conf.env "spouse" = Some "on" then "on" else "") ^ 
+      ";image=" ^ (if p_getenv conf.env "image" = Some "on" then "on" else "") ^
+      ";bd=" ^ (match p_getenv conf.env "bd" with [Some x -> x | None -> "0"]) ^
+      "\">" ^ s ^ "</a>"
   in
   let reference_sp p3 _ _ p s =
     if is_hidden p then s
@@ -105,25 +108,38 @@ value give_access conf base ia_asex p1 b1 p2 b2 =
       Num.to_string (Util.sosa_of_branch [ia_asex :: b1]) ^ ";" ^
       acces_n conf base "2" p2 ^ ";b2=" ^
       Num.to_string (Util.sosa_of_branch [ia_asex :: b2]) ^ ";" ^
-      acces_n conf base "4" p3 ^ ";spouse=on\">" ^ s ^ "</a>"
+      acces_n conf base "4" p3 ^ ";spouse=" ^
+      (if p_getenv conf.env "spouse" = Some "on" then "on" else "") ^ 
+      ";image=" ^ (if p_getenv conf.env "image" = Some "on" then "on" else "") ^
+      ";bd=" ^ (match p_getenv conf.env "bd" with [Some x -> x | None -> "0"]) ^
+      "\">" ^ s ^ "</a>"
   in
   let print_nospouse _ =
-    Wserver.wprint "%s%s"
-      (gen_person_title_text reference std_access conf base p2)
-      (Date.short_dates_text conf base p2)
+    do {
+      Perso.print_sosa conf base p2 True;
+      Wserver.wprint "%s%s"
+        (gen_person_title_text reference std_access conf base p2)
+        (Date.short_dates_text conf base p2)
+    }
   in
   let print_spouse sp first =
     do {
-      if first then
+      if first then do {
+        Perso.print_sosa conf base p2 True;
         Wserver.wprint "%s"
           (gen_person_title_text reference std_access conf base p2)
-      else Wserver.wprint "<br%s>%s" conf.xhs (person_title_text conf base p2);
-      Wserver.wprint "%s &amp; %s%s" (Date.short_dates_text conf base p2)
+      }
+      else do {
+        Wserver.wprint "<br%s>%s" conf.xhs (person_title_text conf base p2)
+      };
+      Wserver.wprint "%s &amp; " (Date.short_dates_text conf base p2);
+      Perso.print_sosa conf base sp True;
+      Wserver.wprint "%s%s"
         (gen_person_title_text (reference_sp sp) std_access conf base sp)
         (Date.short_dates_text conf base sp)
     }
   in
-  if match p_getenv conf.env "csp" with
+  if match p_getenv conf.env "spouse" with
      [ Some "on" -> False
      | _ -> True ]
   then
@@ -195,9 +211,11 @@ value sibling_has_desc_lev conf base lev (ip, _) =
   has_desc_lev conf base lev (pget conf base ip)
 ;
 
-value print_cousins_side_of conf base max_cnt a ini_p ini_br lev1 lev2 =
+value print_cousins_side_of conf base max_cnt a ini_p ini_br lev1 lev2 tips =
   let sib = siblings conf base (get_key_index a) in
   if List.exists (sibling_has_desc_lev conf base lev2) sib then do {
+    if tips then Util.print_tips_relationship conf
+    else ();
     if lev1 > 1 then do {
       Wserver.wprint "<li>\n";
       Wserver.wprint "%s:\n"
@@ -223,24 +241,22 @@ value print_cousins_lev conf base max_cnt p lev1 lev2 =
   do {
     if lev1 > 1 then Wserver.wprint "<ul>\n" else ();
     let some =
-      loop first_sosa False where rec loop sosa some =
+      loop first_sosa False True where rec loop sosa some print_tips =
         if cnt.val < max_cnt && Num.gt last_sosa sosa then
           let some =
             match Util.branch_of_sosa conf base (get_key_index p) sosa with
             [ Some ([(ia, _) :: _] as br) ->
                 print_cousins_side_of conf base max_cnt (pget conf base ia) p
-                  br lev1 lev2 ||
+                  br lev1 lev2 print_tips ||
                 some
             | _ -> some ]
           in
-          loop (Num.inc sosa 1) some
+          loop (Num.inc sosa 1) some False
         else some
     in
     if some then ()
     else
-      stagn "li" begin
-        Wserver.wprint "%s\n" (capitale (transl conf "no match"));
-      end;
+      Wserver.wprint "%s.\n" (capitale (transl conf "no match"));
     if lev1 > 1 then Wserver.wprint "</ul>\n" else ()
   }
 ;
@@ -278,7 +294,10 @@ value print_cousins conf base p lev1 lev2 =
   in
   do {
     header conf title;
+    print_link_to_welcome conf True;
     cnt.val := 0;
+    (* Construction de la table des sosa de la base *)
+    let () = Perso.build_sosa_ht conf base in 
     print_cousins_lev conf base max_cnt p lev1 lev2;
     tag "p" begin
       if cnt.val >= max_cnt then Wserver.wprint "etc...\n"

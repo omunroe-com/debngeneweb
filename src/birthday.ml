@@ -202,6 +202,10 @@ value print_birth_day conf base day_name fphrase wd dt list =
 value propose_months conf mode =
   do {
     begin_centered conf;
+    stag "span" begin
+      Wserver.wprint "%s" 
+        (capitale (transl conf "select a month to see all the anniversaries"));
+    end;
     tag "table" "border=\"%d\"" conf.border begin
       tag "tr" begin
         tag "td" begin
@@ -604,4 +608,25 @@ value print_menu_marriage conf base =
     Wserver.wprint "\n";
     trailer conf;
   }
+;
+
+(* template *)
+type env 'a =
+  [ Vother of 'a
+  | Vnone ]
+;
+
+value get_vother = fun [ Vother x -> Some x | _ -> None ];
+value set_vother x = Vother x;
+
+value print_anniversaries conf base =
+  if p_getenv conf.env "old" = Some "on" then ()
+  else
+  Hutil.interp conf base "annivmenu"
+    {Templ.eval_var _ = raise Not_found;
+     Templ.eval_transl _ = Templ.eval_transl conf;
+     Templ.eval_predefined_apply _ = raise Not_found;
+     Templ.get_vother = get_vother; Templ.set_vother = set_vother;
+     Templ.print_foreach _ = raise Not_found}
+    [] ()
 ;

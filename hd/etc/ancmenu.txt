@@ -142,6 +142,66 @@
             - [comment] ([marriage/marriages]1)
             <input type="checkbox" name="comm" value="on"%/>
           </label>
+          <br%/><br%/>
+          <label>
+            <input type="radio" name="t" value="Z"%/>
+            [*table] (*)
+          </label>
+          <br%/>
+          <label>
+            - [date of birth]
+            <input type="checkbox" name="birth" value="on"%/>
+          </label>
+          <br%/>
+          <label>
+            - [where born]
+            <input type="checkbox" name="birth_place" value="on"%/>
+          </label>
+          <br%/>
+          <label>
+            - [spouse/spouses]1
+            <input type="checkbox" name="marr" value="on"%/>
+          </label>
+          <br%/>
+          <label>
+            - [date of marriage]
+            <input type="checkbox" name="marr_date" value="on"%/>
+          </label>
+          <br%/>
+          <label>
+            - [where married]
+            <input type="checkbox" name="marr_place" value="on"%/>
+          </label>
+          <br%/>
+          <label>
+            - [date of death]
+            <input type="checkbox" name="death" value="on"%/>
+          </label>
+          <br%/>
+          <label>
+            - [where dead]
+            <input type="checkbox" name="death_place" value="on"%/>
+          </label>
+          <br%/>
+          <label>
+            - [age at death]
+            <input type="checkbox" name="death_age" value="on"%/>
+          </label>
+          <br%/>
+          <label>
+            - [occupation/occupations]1
+            <input type="checkbox" name="occu" value="on"%/>
+          </label>
+          <br%/><br%/>
+          <label>
+            - [display generation]
+            <input type="checkbox" name="gen" value="on"%/>
+          </label>
+          <br%/>
+          <label>
+            - [display smallest sosa number relative to ancestor]
+            <input type="checkbox" name="no_repeat" value="on"%/>
+          </label>
         </td>
         <td align="%left;" valign="top">
           <label>
@@ -236,7 +296,7 @@
           <br%/>
           <label>
             <input type="radio" name="t" value="F"%/>
-            [*surnames list]
+            [*surnames branch]
           </label>
           <br%/><br%/>
           <label>

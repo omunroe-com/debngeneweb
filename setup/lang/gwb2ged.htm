@@ -3,7 +3,7 @@
 <head>
   <!-- Copyright (c) 1998-2006 INRIA - GeneWeb -->
   <!-- $Id: gwb2ged.htm,v 5.1 2006-01-01 05:35:06 ddr Exp $ -->
-  <meta http-equiv="Content-Type" content="text/html; charset=%charset;"%/>
+  <meta http-equiv="Content-Type" content="text/html; charset=[ !charset]"%/>
   <meta http-equiv="Content-Style-Type" content="text/css"%/>
   <meta name="robots" content="none"%/>
   <link rel="shortcut icon" href="images/favicon_gwsetup.png"%/>
@@ -23,7 +23,9 @@ sv: Exportera en GEDCOM-fil
 
 <body background="images/gwback.jpg">
 
-<center><h1><font color="#2f6400">Gwb2ged:<br />[
+<div style="background:url('images/gwlogo.png') no-repeat left top; text-align:center; height:95px; line-height:95px; color:#2f6400;">
+<h1 style="margin:0;">
+[
 de: GEDCOM-Datei extrahieren
 en: Extract a GEDCOM file
 es: Extracci&oacute;n de un fichero GEDCOM
@@ -32,7 +34,9 @@ fr: Extraction d'un fichier GEDCOM
 it: Estrazione di un file GEDCOM
 lv: Izveidot GEDCOM datni
 sv: Exportera en GEDCOM-fil
-]</font></h1></center>
+]
+</h1>
+</div>
 
 <form method="get" action="gwb2ged">
 <input type="hidden" name="opt" value="check" />
@@ -51,7 +55,7 @@ sv: Välj din databas:
 
 <p />
 
-<dl><dt><dd><table border="1" cellspacing="0" cellpadding="1">
+<dl><dt><dd><table style="border:1px solid" cellspacing="0" cellpadding="1">
 
 %b{<tr align="left">
 <td><input type="radio" name="anon" value="%a" />&nbsp;&nbsp;&nbsp;</td>
@@ -113,7 +117,7 @@ sv: Välj de optioner du vill ha:
 
 <p />
 
-<dl><dt><dd><table border="1">
+<dl><dt><dd><table style="border:1px solid">
 
 <tr align="left"><td>
 <input type="radio" name="charset" value="ASCII" checked="checked" />&nbsp;&nbsp;&nbsp;</td>
@@ -144,7 +148,7 @@ sv: Koda tecknen i ANSEL.
 
 </table></dl>
 
-<dl><dt><dd><table border=1>
+<dl><dt><dd><table style="border:1px solid">
 <tr align=left>
 <td><input type=checkbox name=mem value=on>&nbsp;&nbsp;&nbsp;</td>
 <td>[
@@ -163,7 +167,7 @@ sv: Spara minne under operationen (men det kommer att gå saktare).
 </tr>
 </table></dl>
 
-<dl><dt><dd><table border=1>
+<dl><dt><dd><table style="border:1px solid">
 <tr align=left><td>&nbsp;</td>
 <td colspan=3>[
 de: Nur die Vorfahren ausw&auml;hlen von...
@@ -220,7 +224,7 @@ lv: <tr align=left><td>&nbsp;</td><td colspan=3>...vecâkus</td></tr>
 sv: 
 ]</table></dl>
 
-<dl><dt><dd><table border=1>
+<dl><dt><dd><table style="border:1px solid">
 <tr align=left><td>&nbsp;</td><td colspan=3>[
 de: Nur die Nachkommen ausw&auml;hlen von...
 en: Extract only the descendants of...

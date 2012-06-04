@@ -50,6 +50,16 @@ value print_same_name conf base p =
   match Gutil.find_same_name base p with
   [ [_] -> ()
   | pl ->
+      let print_person p =
+        do {
+          stag "a" "href=\"%s%s\"" (commd conf) (acces conf base p)
+          begin
+            Wserver.wprint "%s.%d %s" (p_first_name base p)
+              (get_occ p) (p_surname base p);
+          end;
+          Wserver.wprint "%s" (Date.short_dates_text conf base p)
+        }
+      in
       let pl = restrict_to_small_list pl in
       tag "p" begin
         Wserver.wprint "%s:\n"
@@ -60,12 +70,17 @@ value print_same_name conf base p =
              stag "li" begin
                match p with
                [ Some p -> do {
-                   stag "a" "href=\"%s%s\"" (commd conf) (acces conf base p)
-                   begin
-                     Wserver.wprint "%s.%d %s" (p_first_name base p)
-                       (get_occ p) (p_surname base p);
-                   end;
-                   Wserver.wprint "%s\n" (Date.short_dates_text conf base p)
+                   print_person p;
+                   let ifam = get_family p in
+                   List.iter 
+                     (fun ifam -> do {
+                       let fam = foi base ifam in
+                       let sp = spouse (get_key_index p) fam in
+                       let sp = poi base sp in
+                       Wserver.wprint ", &amp; ";
+                       print_person sp } ) 
+                     (Array.to_list ifam);
+                   Wserver.wprint "\n"
                  }
                | None -> Wserver.wprint "...\n" ];
              end)
@@ -79,8 +94,16 @@ value print_return conf =
     tag "form" "method=\"post\" action=\"%s\"" conf.command begin
       List.iter
         (fun (x, v) ->
-           xtag "input" "type=\"hidden\" name=\"%s\" value=\"%s\"" x
-             (quote_escaped (decode_varenv v)))
+           (* Seul un textarea peut contenir des sauts de ligne. *)
+           (* On remplace donc l'input par un textarea.          *)
+           if x = "notes" then
+             tag "textarea" "style=\"display:none;\" name=\"%s\"" x 
+               begin
+                 Wserver.wprint "%s" (quote_escaped (decode_varenv v));
+               end
+           else
+             xtag "input" "type=\"hidden\" name=\"%s\" value=\"%s\"" x
+               (quote_escaped (decode_varenv v)))
         (conf.henv @ conf.env);
       xtag "input" "type=\"hidden\" name=\"return\" value=\"on\"";
       xtag "input" "type=\"submit\" value=\"%s\""
@@ -288,13 +311,13 @@ value print_warning conf base =
         (print_someone_strong conf base anc)
   | MarriageDateAfterDeath p ->
       Wserver.wprint
-        (fcapitale (ftransl conf "marriage of %t after his/her death"))
+        (fcapitale (ftransl conf "marriage had occured after the death of %t"))
         (fun _ ->
            Printf.sprintf "%s%s" (print_someone_strong conf base p)
              (Date.short_dates_text conf base p))
   | MarriageDateBeforeBirth p ->
       Wserver.wprint
-        (fcapitale (ftransl conf "marriage of %t before his/her birth"))
+        (fcapitale (ftransl conf "marriage had occured before the birth of %t"))
         (fun _ ->
            Printf.sprintf "%s%s" (print_someone_strong conf base p)
              (Date.short_dates_text conf base p))
@@ -354,6 +377,89 @@ value print_warnings conf base wl =
              html_li conf; print_warning conf base w; Wserver.wprint "\n"
            })
         wl;
+    end
+  }
+;
+
+
+(* ************************************************************************* *)
+(*  [Fonc] print_misc : config -> base -> Def.misc -> unit                   *)
+(** [Description] : Fonction d'impression des 'informations diverses'.
+    [Args] :
+      - conf : configuration
+      - base : base
+      - fun  : Def.misc (miscellaneous)
+    [Retour] :
+      - unit
+    [Rem] : Non exporté en clair hors de ce module.                          *)
+(* ************************************************************************* *)
+value print_misc conf base =
+  fun
+  [ MissingSources -> 
+      stag "em" begin 
+        Wserver.wprint "%s\n" (capitale (transl conf "missing sources"));
+      end ]
+;
+
+
+(* ************************************************************************* *)
+(*  [Fonc] print_miscs : config -> base -> Def.misc list -> unit             *)
+(** [Description] : Affiche la liste des 'informations diverses'.
+    [Args] :
+      - conf : configuration
+      - base : base
+      - ml   : Def.misc list (miscellaneous)
+    [Retour] :
+      - unit
+    [Rem] : Exporté en clair hors de ce module.                          *)
+(* ************************************************************************* *)
+value print_miscs conf base ml =
+  if ml = [] then ()
+  else do {
+    Wserver.wprint "%s\n" (capitale (transl conf "miscellaneous informations"));
+    tag "ul" begin
+      List.iter
+        (fun m -> 
+          do {
+            html_li conf; print_misc conf base m; Wserver.wprint "\n"
+          })
+        ml;
+    end
+  }
+;
+
+
+(* ************************************************************************* *)
+(*  [Fonc] print_miscs : 
+      config -> base -> (Def.warning list * Def.misc list) -> unit           *)
+(** [Description] : Affiche sous la même rubrique, la liste des warnings
+                    et la liste des 'informations diverses'.
+    [Args] :
+      - conf : configuration
+      - base : base
+      - wl   : Def.warning list
+      - ml   : Def.misc list (miscellaneous)
+    [Retour] :
+      - unit
+    [Rem] : Exporté en clair hors de ce module.                              *)
+(* ************************************************************************* *)
+value print_warnings_and_miscs conf base (wl, ml) =
+  if wl = [] && ml = [] then ()
+  else do {
+    Wserver.wprint "%s\n" (capitale (transl conf "warnings"));
+    tag "ul" begin
+      List.iter
+        (fun w ->
+           do {
+             html_li conf; print_warning conf base w; Wserver.wprint "\n"
+           })
+        wl;
+      List.iter
+        (fun m -> 
+          do {
+            html_li conf; print_misc conf base m; Wserver.wprint "\n"
+          })
+        ml;
     end
   }
 ;

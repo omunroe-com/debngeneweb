@@ -169,6 +169,13 @@ value string_of_titles conf base cap and_txt p =
     "" titles
 ;
 
+value string_of_num sep num =
+  let len = ref 0 in
+  do {
+    Num.print (fun x -> len.val := Buff.mstore len.val x) sep num;
+    Buff.get len.val
+  }
+;
 
 value print_base_loop conf base p =
   do {
@@ -182,8 +189,9 @@ value print_base_loop conf base p =
   }
 ;
 
+(* This is the old version, the new one has few optimisations *)
 (* Version matching the Sosa number of the "ancestor" pages *)
-
+(*
 value find_sosa_aux conf base a p =
   let tstab = 
     try Util.create_topological_sort conf base with
@@ -254,6 +262,134 @@ value find_sosa conf base a sosa_ref_l =
       else
         let u = pget conf base (get_key_index a) in
         if has_children base u then find_sosa_aux conf base a p else None
+  | None -> None ]
+;
+*)
+
+(* Optimisation de find_sosa_aux :                                           *)
+(* - ajout d'un cache pour conserver les descendants du sosa que l'on calcul *)
+(* - on sauvegarde la dernière génération où l'on a arrêté le calcul pour    *)
+(*   ne pas reprendre le calcul depuis la racine                             *)
+
+(* Type pour ne pas créer à chaque fois un tableau tstab et mark *)
+type sosa_t = 
+  { tstab : array int;
+    mark : array bool;
+    last_zil : mutable list (Def.iper * Num.t);
+    sosa_ht : Hashtbl.t Def.iper (option (Num.t * Gwdb.person))
+  }
+;
+
+value init_sosa_t conf base sosa_ref =
+  let tstab = 
+    try Util.create_topological_sort conf base with
+    [ Consang.TopologicalSortError p -> 
+      (* Avec la nouvelle implementation du calcul de sosa, si à    *)
+      (* l'init il y a une boucle, alors on a pas encore interprété *)
+      (* le template, donc on n'a pas de header.                    *)
+      (* Il faut trouver aussi un algo de suppression de boucle parce  *)
+      (* que si la boucle n'est pas à une génération d'écart, alors on *)
+      (* boucle sur l'interprétation du template.                      *)
+      do {
+        let title _ = Wserver.wprint "%s" (capitale (transl conf "error")) in
+        Hutil.rheader conf title;
+        print_base_loop conf base p 
+      } ]
+  in
+  let mark = Array.make (nb_of_persons base) False in
+  let last_zil = [(get_key_index sosa_ref, Num.one)] in
+  let sosa_ht = Hashtbl.create 5003 in
+  let () = 
+    Hashtbl.add sosa_ht (get_key_index sosa_ref) (Some (Num.one, sosa_ref))
+  in
+  let t_sosa = 
+    { tstab = tstab;
+      mark = mark;
+      last_zil = last_zil;
+      sosa_ht = sosa_ht
+    }
+  in
+  t_sosa
+;
+
+value find_sosa_aux conf base a p t_sosa =
+  let cache = ref [] in
+  let has_ignore = ref False in
+  let ht_add ht k v new_sosa = 
+    match try Hashtbl.find ht k with [ Not_found -> v ] with 
+    [ Some (z, _) -> 
+        if not (Num.gt new_sosa z) then Hashtbl.replace ht k v
+        else () 
+    | _ -> () ]
+  in
+  let rec gene_find =
+    fun
+    [ [] -> Left []
+    | [(ip, z) :: zil] ->
+        let _ = cache.val := [(ip, z) :: cache.val] in 
+        if ip = get_key_index a then Right z
+        else if t_sosa.mark.(Adef.int_of_iper ip) then gene_find zil
+        else do {
+          t_sosa.mark.(Adef.int_of_iper ip) := True;
+          if t_sosa.tstab.(Adef.int_of_iper (get_key_index a)) <=
+               t_sosa.tstab.(Adef.int_of_iper ip) then
+            let _ = has_ignore.val := True in
+            gene_find zil
+          else
+            let asc = pget conf base ip in
+            match get_parents asc with
+            [ Some ifam ->
+                let cpl = foi base ifam in
+                let z = Num.twice z in
+                match gene_find zil with
+                [ Left zil ->
+                    Left
+                      [(get_father cpl, z); (get_mother cpl, Num.inc z 1) ::
+                       zil]
+                | Right z -> Right z ]
+            | None -> gene_find zil ]
+        } ]
+  in
+  let rec find zil =
+    match gene_find zil with
+    [ Left [] -> 
+        let _ = 
+          List.iter 
+            (fun (ip, _) -> Array.set t_sosa.mark (Adef.int_of_iper ip) False)
+            cache.val 
+        in
+        None
+    | Left zil -> 
+        let _ =
+          if has_ignore.val then ()
+          else do { 
+            List.iter 
+              (fun (ip, z) -> ht_add t_sosa.sosa_ht ip (Some (z, p)) z) 
+              zil;
+            t_sosa.last_zil := zil } 
+        in
+        find zil
+    | Right z -> 
+        let _ = 
+          List.iter 
+            (fun (ip, _) -> Array.set t_sosa.mark (Adef.int_of_iper ip) False)
+            cache.val 
+        in
+        Some (z, p) ]
+  in
+  find t_sosa.last_zil
+;
+
+value find_sosa conf base a sosa_ref_l t_sosa =
+  match Lazy.force sosa_ref_l with
+  [ Some p ->
+      if get_key_index a = get_key_index p then Some (Num.one, p)
+      else
+        let u = pget conf base (get_key_index a) in
+        if has_children base u then 
+          try Hashtbl.find t_sosa.sosa_ht (get_key_index a) with 
+          [ Not_found -> find_sosa_aux conf base a p t_sosa ] 
+        else None
   | None -> None ]
 ;
 
@@ -360,13 +496,69 @@ value get_sosa_person conf base p =
                 sosa, ou retourne son numéro de sosa sinon
     [Rem] : Exporté en clair hors de ce module.                         *)
 (* ******************************************************************** *)
-value get_single_sosa conf base p = 
-  match Util.find_sosa_ref conf base with
-  [ Some per -> 
-    match find_sosa_aux conf base p per with
-    [ Some (n,_) -> n
-    | None -> Num.zero ]
+value get_single_sosa conf base p =
+  let sosa_ref = Util.find_sosa_ref conf base in
+  match sosa_ref with
+  [ Some p -> 
+      let sosa_ref_l =
+        let sosa_ref () = sosa_ref in
+        Lazy.lazy_from_fun sosa_ref
+      in
+      let t_sosa = init_sosa_t conf base p in
+      match find_sosa conf base p sosa_ref_l t_sosa with
+      [ Some (z, p) -> z 
+      | None -> Num.zero ]
   | None -> Num.zero ]
+;
+
+
+(* ************************************************************************ *)
+(*  [Fonc] print_sosa : config -> base -> person -> bool -> unit            *)
+(** [Description] : Affiche le picto sosa ainsi que le lien de calcul de
+      relation entre la personne et le sosa 1 (si l'option cancel_link 
+      n'est pas activée).
+    [Args] :
+      - conf : configuration de la base
+      - base : base de donnée
+      - p    : la personne que l'on veut afficher
+      - link : ce booléen permet d'afficher ou non le lien sur le picto
+               sosa. Il n'est pas nécessaire de mettre le lien si on a
+               déjà affiché cette personne.
+    [Retour] :
+      - unit
+    [Rem] : Exporté en clair hors de ce module.                             *)
+(* ************************************************************************ *)
+value print_sosa conf base p link = 
+  let sosa_num = get_sosa_person conf base p in
+  if Num.gt sosa_num Num.zero then
+    match Util.find_sosa_ref conf base with
+    [ Some ref ->
+        do {
+          if conf.cancel_links || not link then ()
+          else  
+            let sosa_link =
+              let i1 = string_of_int (Adef.int_of_iper (get_key_index p)) in
+              let i2 = string_of_int (Adef.int_of_iper (get_key_index ref)) in
+              let b2 = Num.to_string sosa_num in
+              "m=RL;i1=" ^ i1 ^ ";i2=" ^ i2 ^ ";b1=1;b2=" ^ b2
+            in
+            Wserver.wprint "<a href=\"%s%s\" style=\"text-decoration:none\">" 
+              (commd conf) sosa_link;
+          Wserver.wprint "<img src=\"%s/%s\" alt=\"sosa\" title=\""
+            (image_prefix conf) "sosa.png";
+          let direct_ancestor = 
+            Name.strip_c (p_first_name base ref) '"' ^ " " 
+            ^ Name.strip_c (p_surname base ref) '"'
+          in
+          Wserver.wprint
+            (fcapitale (ftransl conf "direct ancestor of %s")) direct_ancestor;
+          Wserver.wprint ", Sosa: %s\"/> "
+            (string_of_num (transl conf "(thousand separator)") sosa_num);
+          if conf.cancel_links || not link then ()
+          else  Wserver.wprint "</a> ";
+        }
+    | None -> () ]
+  else ()
 ;
 
 
@@ -1104,6 +1296,7 @@ type env 'a =
   | Vstring of string
   | Vsosa_ref of Lazy.t (option person)
   | Vsosa of ref (list (iper * option (Num.t * person)))
+  | Vt_sosa of sosa_t
   | Vtitle of person and title_item
   | Vlazyp of ref (option string)
   | Vlazy of Lazy.t (env 'a)
@@ -1171,13 +1364,6 @@ value obsolete (bp, ep) version var new_var r =
   ELSE r END
 ;
 
-value string_of_num sep num =
-  let len = ref 0 in
-  do {
-    Num.print (fun x -> len.val := Buff.mstore len.val x) sep num;
-    Buff.get len.val
-  }
-;
 
 value bool_val x = VVbool x;
 value str_val x = VVstring x;
@@ -1200,7 +1386,10 @@ value get_sosa conf base env r p =
   [ Not_found -> do {
       let s =
         match get_env "sosa_ref" env with
-        [ Vsosa_ref v -> find_sosa conf base p v
+        [ Vsosa_ref v -> 
+          match get_env "t_sosa" env with
+          [ Vt_sosa t_sosa -> find_sosa conf base p v t_sosa
+          | _ -> None ]
         | _ -> None ]
       in
       r.val := [(get_key_index p, s) :: r.val];
@@ -1362,6 +1551,17 @@ and eval_simple_str_var conf base env (_, p_auth) =
               | _ -> "" ]
           | _ -> raise Not_found ]
       | _ -> raise Not_found ]
+  | "slash_divorce_date" ->
+      match get_env "fam" env with
+      [ Vfam _ fam (_, _, isp) m_auth ->
+          match get_divorce fam with
+          [ Divorced d ->
+              let d = Adef.od_of_codate d in
+              match d with
+              [ Some d when m_auth -> Date.string_slash_of_date conf d
+              | _ -> "" ]
+          | _ -> raise Not_found ]
+      | _ -> raise Not_found ]
   | "empty_sorted_list" ->
       match get_env "list" env with
       [ Vslist l -> do { l.val := SortedList.empty; "" }
@@ -1430,6 +1630,13 @@ and eval_simple_str_var conf base env (_, p_auth) =
             match p_getenv conf.base_env "long_date" with
             [ Some "yes" -> (Date.string_of_ondate conf s) ^ (Date.get_wday conf s)
             | _ -> Date.string_of_ondate conf s ]
+          | _ -> "" ] 
+      | _ -> raise Not_found ]
+  | "slash_marriage_date" ->
+      match get_env "fam" env with
+      [ Vfam _ fam _ m_auth ->
+          match (m_auth, Adef.od_of_codate (get_marriage fam)) with
+          [ (True, Some s) -> Date.string_slash_of_date conf s
           | _ -> "" ] 
       | _ -> raise Not_found ]
   | "origin_file" ->
@@ -2319,12 +2526,20 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
           [ Some "yes" -> (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
           | _ -> Date.string_of_ondate conf d ]
       | _ -> "" ]
+  | "slash_baptism_date" ->
+      match (p_auth, Adef.od_of_codate (get_baptism p)) with
+      [ (True, Some d) -> Date.string_slash_of_date conf d
+      | _ -> "" ]
   | "on_birth_date" ->
       match (p_auth, Adef.od_of_codate (get_birth p)) with
       [ (True, Some d) -> 
           match p_getenv conf.base_env "long_date" with
           [ Some "yes" -> (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
           | _ -> Date.string_of_ondate conf d ]
+      | _ -> "" ]
+  | "slash_birth_date" ->
+      match (p_auth, Adef.od_of_codate (get_birth p)) with
+      [ (True, Some d) -> Date.string_slash_of_date conf d
       | _ -> "" ]
   | "on_burial_date" ->
       match get_burial p with
@@ -2334,6 +2549,13 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
               match p_getenv conf.base_env "long_date" with
               [ Some "yes" -> (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
               | _ -> Date.string_of_ondate conf d ]
+          | _ -> "" ]
+      | _ -> raise Not_found ]
+  | "slash_burial_date" ->
+      match get_burial p with
+      [ Buried cod ->
+          match (p_auth, Adef.od_of_codate cod) with
+          [ (True, Some d) -> Date.string_slash_of_date conf d
           | _ -> "" ]
       | _ -> raise Not_found ]
   | "on_cremation_date" ->
@@ -2346,6 +2568,13 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
               | _ -> Date.string_of_ondate conf d ]
           | _ -> "" ]
       | _ -> raise Not_found ]
+  | "slash_cremation_date" ->
+      match get_burial p with
+      [ Cremated cod ->
+          match (p_auth, Adef.od_of_codate cod) with
+          [ (True, Some d) -> Date.string_slash_of_date conf d
+          | _ -> "" ]
+      | _ -> raise Not_found ]
   | "on_death_date" ->
       match (p_auth, get_death p) with
       [ (True, Death _ d) ->
@@ -2353,6 +2582,12 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
           match p_getenv conf.base_env "long_date" with
           [ Some "yes" -> (Date.string_of_ondate conf d) ^ (Date.get_wday conf d)
           | _ -> Date.string_of_ondate conf d ]
+      | _ -> "" ]
+  | "slash_death_date" ->
+      match (p_auth, get_death p) with
+      [ (True, Death _ d) ->
+          let d = Adef.date_of_cdate d in
+          Date.string_slash_of_date conf d
       | _ -> "" ]
   | "prev_fam_father" ->
       match get_env "prev_fam" env with
@@ -2371,7 +2606,9 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
       match get_qualifiers p with
       [ [nn :: _] when p_auth -> sou base nn
       | _ -> "" ]
-  | "sex" -> string_of_int (index_of_sex (get_sex p))
+  | "sex" -> 
+      if p_auth then string_of_int (index_of_sex (get_sex p))
+      else string_of_int (index_of_sex Def.Neuter)
   | "sosa_in_list" ->
       match get_env "all_gp" env with
       [ Vallgp all_gp ->
@@ -3184,9 +3421,19 @@ value interp_templ templ_fname conf base p = do {
     | None -> 120 ]
   in
   let env =
+    let sosa_ref = Util.find_sosa_ref conf base in
     let sosa_ref_l =
-      let sosa_ref () = Util.find_sosa_ref conf base in
+      let sosa_ref () = sosa_ref in
       Lazy.lazy_from_fun sosa_ref
+    in
+    let t_sosa = 
+      match sosa_ref with
+      [ Some p -> init_sosa_t conf base p 
+      | _ -> 
+          { tstab = [| |]; 
+            mark = [| |]; 
+            last_zil = []; 
+            sosa_ht = Hashtbl.create 1} ]
     in
     let desc_level_table_l =
       let dlt () = make_desc_level_table conf base emal p in
@@ -3217,6 +3464,7 @@ value interp_templ templ_fname conf base p = do {
      ("lazy_print", Vlazyp (ref None));
      ("sosa",  Vsosa (ref []));
      ("sosa_ref", Vsosa_ref sosa_ref_l);
+     ("t_sosa", Vt_sosa t_sosa);
      ("max_anc_level", Vlazy (Lazy.lazy_from_fun mal));
      ("max_cous_level", Vlazy (Lazy.lazy_from_fun mcl));
      ("max_desc_level", Vlazy (Lazy.lazy_from_fun mdl));
@@ -3295,7 +3543,7 @@ value print_ascend conf base p =
       let templ =
         match p_getenv conf.env "t" with
         [ Some ("F" | "H" | "L") -> "anclist"
-        | Some ("D" | "G" | "M" | "N") -> "ancsosa"
+        | Some ("D" | "G" | "M" | "N" | "Z") -> "ancsosa"
         | Some ("A" | "C" | "T") -> "anctree"
         | _ -> "ancmenu" ]
       in

@@ -825,7 +825,7 @@ value update_family_loop conf base p s =
       (* Si il n'y a pas d'ambiguité, i.e. pas 2 boucles dans 2 familles *)
       (* pour un même individu, alors on renvoit le lien vers la mise à  *)
       (* jour de la famille, sinon, un lien vers le menu de mise à jour. *)
-      if List.length list = 1 then
+      if List.length res = 1 then
         let iper = string_of_int (Adef.int_of_iper iper) in
         let ifam = string_of_int (Adef.int_of_ifam (List.hd res)) in
         "<a href=\"" ^ commd conf ^ "m=MOD_FAM;i=" ^ ifam ^ ";ip=" ^ iper ^ "\">" ^ s ^ "</a>"
@@ -834,7 +834,6 @@ value update_family_loop conf base p s =
         "<a href=\"" ^ commd conf ^ "m=U;i=" ^ iper ^ "\">" ^ s ^ "</a>"
     else s
 ;  
-
 
 value no_reference conf base p s = s;
 
@@ -2117,21 +2116,56 @@ value person_exists conf base (fn, sn, oc) =
       | None -> False ] ]
 ;
 
+value default_sosa_ref conf base =
+  match p_getenv conf.base_env "default_sosa_ref" with
+  [ Some n ->
+      if n = "" then None
+      else
+        match person_ht_find_all base n with
+        [ [ip] ->
+            let p = pget conf base ip in
+            if is_hidden p then None
+            else Some p
+        | _ -> None ]
+  | None -> None ]
+;
+
 value find_sosa_ref conf base =
   match find_person_in_env conf base "z" with
   [ Some p -> Some p
-  | None ->
-      match p_getenv conf.base_env "default_sosa_ref" with
-      [ Some n ->
-          if n = "" then None
-          else
-            match person_ht_find_all base n with
-            [ [ip] ->
-                let p = pget conf base ip in
-                if is_hidden p then None
-                else Some p
-            | _ -> None ]
-      | None -> None ] ]
+  | None -> default_sosa_ref conf base ]
+;
+
+value write_default_sosa conf base key = do {
+  let gwf = List.remove_assoc "default_sosa_ref" conf.base_env in
+  let gwf = List.rev [("default_sosa_ref", key) :: gwf] in
+  let fname = base_path [] (conf.bname ^ ".gwf") in
+  let tmp_fname = fname ^ "2" in
+  let oc = 
+    try Pervasives.open_out tmp_fname with 
+    [ Sys_error _ -> failwith "the gwf database is not writable" ] 
+  in
+  List.iter (fun (k, v) -> Pervasives.output_string oc (k ^ "=" ^ v ^ "\n")) gwf;
+  close_out oc ;
+  try Sys.remove (fname ^ "~") with [ Sys_error _ -> () ];
+  try Sys.rename fname (fname ^ "~") with [ Sys_error _ -> () ];
+  try Sys.rename tmp_fname fname with [ Sys_error _ -> () ]
+};
+
+value update_gwf_sosa conf base (ip, (fn, sn, occ)) =
+  let sosa_ref_key =
+    match snd conf.default_sosa_ref with
+    [ Some p -> 
+        p_first_name base p ^ "." ^ string_of_int (get_occ p) ^ " " 
+        ^ p_surname base p
+    | None -> "" ]
+  in
+  let new_key = fn ^ "." ^ string_of_int occ ^ " " ^ sn in
+  if ip = fst conf.default_sosa_ref && new_key != sosa_ref_key then
+    (* On met à jour le fichier gwf, la config *)
+    (* se mettera à jour par treat_request.    *)
+    write_default_sosa conf base new_key
+  else ()
 ;
 
 value create_topological_sort conf base =
@@ -2827,7 +2861,7 @@ value dispatch_in_columns ncol list order =
   (len_list, ini_list)
 ;
 
-value print_in_columns conf len_list list wprint_elem = do {
+value print_in_columns conf ncols len_list list wprint_elem = do {
   begin_centered conf;
   tag "table" "width=\"95%%\" border=\"%d\"" conf.border begin
     tag "tr" "align=\"%s\" valign=\"top\"" conf.left begin
@@ -2842,7 +2876,7 @@ value print_in_columns conf len_list list wprint_elem = do {
                else
                  match list with
                  [ [(kind, ord, elem) :: list] -> do {
-                     if n = len then Wserver.wprint "<td>\n"
+                     if n = len then Wserver.wprint "<td width=\"%d\">\n" (100/ncols)
                      else if kind.val <> Elem then Wserver.wprint "</ul>\n"
                      else ();
                      if kind.val <> Elem then do {
@@ -2866,15 +2900,20 @@ value print_in_columns conf len_list list wprint_elem = do {
 };
 
 value wprint_in_columns conf order wprint_elem list =
-  let (len_list, list) =
-    let ncols =
-      match p_getint conf.env "ncols" with
-      [ Some n -> max 1 n
-      | None -> if List.length list < 10 then 1 else 3 ]
-    in
+  let ncols =
+    match p_getint conf.env "ncols" with
+    [ Some n -> max 1 n
+    | None -> 
+        let len_list = List.length list in
+        if len_list < 10 then 1 
+        else if len_list < 100 then 2
+        else if len_list < 200 then 3
+        else 4 ]
+  in
+  let (len_list, list) = 
     dispatch_in_columns ncols list order
   in
-  print_in_columns conf len_list list wprint_elem
+  print_in_columns conf ncols len_list list wprint_elem
 ;
 
 
@@ -2897,4 +2936,79 @@ value reduce_list size list =
        [ [] -> reduced_list
        | [x :: l] -> loop size (cnt + 1) [x :: reduced_list] l ]
   in loop size 0 [] list
+;
+
+
+(* ********************************************************************** *)
+(*  [Fonc] print_reference : config -> string -> int -> string -> unit    *)
+(** [Description] : Affiche la référence d'une personne
+    [Args] :
+      - conf : configuration de la base
+      - fn   : first name
+      - occ  : occ
+      - sn   : surname
+    [Retour] :
+      - unit
+    [Rem] : Exporté en clair hors de ce module.                           *)
+(* ********************************************************************** *)
+value print_reference conf fn occ sn =
+  stag "span" "class=\"reference\"" begin
+    Wserver.wprint " (%s %s.%d %s)" 
+      (transl conf "reference key") (Name.lower fn) occ (Name.lower sn);
+  end
+;
+
+
+(* ********************************************************************** *)
+(*  [Fonc] print_tips_relationship : conf -> unit                         *)
+(** [Description] : Lors d'un calcul de parenté, il n'est pas évident de
+                    savoir qu'il faut cliquer sur la personne pour lancer
+                    le calcul. 
+                    On affiche donc une petite aide pour l'utilisateur.
+    [Args] :
+      - conf : configuration de la base
+    [Retour] :
+      - unit
+    [Rem] : Exporté en clair hors de ce module.                           *)
+(* ********************************************************************** *)
+value print_tips_relationship conf =
+  if p_getenv conf.env "em" = Some "R" || 
+     p_getenv conf.env "m" = Some "C" then do {
+    tag "div" "class=\"tips\"" begin 
+      tag "table" begin
+        tag "tr" begin
+          tag "td" begin
+            Wserver.wprint "%s"
+              (capitale (transl conf "select person to compute relationship"));
+          end;
+        end;
+      end;
+    end;
+    xtag "br" 
+  }
+  else ()
+;
+
+
+(* ********************************************************************** *)
+(*  [Fonc] print_image_sex : conf -> person -> int -> unit                *)
+(** [Description] : Affiche l'image du sexe correspondant à la personne.
+    [Args] :
+      - conf : configuration de la base
+      - p    : person
+      - size : taille de l'image
+    [Retour] :
+      - unit
+    [Rem] : Exporté en clair hors de ce module.                           *)
+(* ********************************************************************** *)
+value print_image_sex conf p size =
+  let (image, alt) = 
+    match get_sex p with
+    [ Male -> ("male.png", "M")
+    | Female -> ("female.png", "F")
+    | Neuter -> ("sexunknown.png", "?") ]
+  in
+  xtag 
+    "img" "src=\"%s/%s\" alt=\"%s\" title=\"sex\" width=\"%d\" heigth=\"%d\""
+    (image_prefix conf) image alt size size
 ;
