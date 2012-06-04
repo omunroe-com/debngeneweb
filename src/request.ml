@@ -257,18 +257,17 @@ value specify conf base n pl =
   do {
     header conf title;
     conf.cancel_links := False;
+    print_link_to_welcome conf True;
+    (* Si on est dans un calcul de parenté, on affiche *)
+    (* l'aide sur la sélection d'un individu.          *)
+    Util.print_tips_relationship conf;
     Wserver.wprint "<ul>\n";
     (* Construction de la table des sosa de la base *)
     let () = Perso.build_sosa_ht conf base in 
     List.iter
       (fun (p, tl) ->
          tag "li" begin
-           let sosa_num = Perso.get_sosa_person conf base p in
-           if Num.gt sosa_num Num.zero then
-             Wserver.wprint "<img src=\"%s/%s\" alt=\"sosa\" title=\"sosa: %s\"/> "
-               (Util.image_prefix conf) "sosa.png" 
-               (Perso.string_of_num (Util.transl conf "(thousand separator)") sosa_num)
-           else () ;
+           Perso.print_sosa conf base p True;
            match tl with
            [ [] ->
                Wserver.wprint "\n%s" (referenced_person_title_text conf base p)
@@ -388,6 +387,7 @@ value family_m conf base =
   | Some "ADD_IND" when conf.wizard -> UpdateInd.print_add conf base
   | Some "ADD_IND_OK" when conf.wizard -> UpdateIndOk.print_add conf base
   | Some "ADD_PAR" when conf.wizard -> UpdateFam.print_add_parents conf base
+  | Some "ANM" -> Birthday.print_anniversaries conf base
   | Some "AN" ->
       match p_getenv conf.env "v" with
       [ Some x -> Birthday.print_birth conf base (int_of_string x)
@@ -765,6 +765,12 @@ value treat_request conf base log = do {
         set_owner conf;
         extract_henv conf base;
         make_senv conf base;
+        let conf =
+          match Util.default_sosa_ref conf base with
+          [ Some p ->
+              {(conf) with default_sosa_ref = (get_key_index p, Some p)}
+          | None -> conf ]
+        in
         if only_special_env conf.env then do {
           match p_getenv conf.base_env "counter" with
           [ Some "no" -> ()

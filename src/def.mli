@@ -161,4 +161,6 @@ type warning 'person 'descend 'title =
   | YoungForMarriage of 'person and dmy ]
 ;
 
+type misc 'person 'descend 'title = [ MissingSources ];
+
 type rn_mode = [ RnAll | Rn1Ln | RnDeg ];
