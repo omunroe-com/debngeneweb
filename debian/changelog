@@ -1,9 +1,10 @@
-geneweb (6.05-1) UNRELEASED; urgency=low
+geneweb (6.05-1) unstable; urgency=low
 
   * New upstream version
   * Correctly create /var/run/gwtp when running the CGI script
+  * Compress .deb files and upstream tarball with xz
 
- -- Christian Perrier <bubulle@debian.org>  Mon, 04 Jun 2012 19:25:43 +0200
+ -- Christian Perrier <bubulle@debian.org>  Mon, 04 Jun 2012 21:12:16 +0200
 
 geneweb (6.04-2) unstable; urgency=low
 
