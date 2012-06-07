@@ -1,0 +1,4 @@
+Drop upstream tag
+--Cette ligne, et les suivantes ci-dessous, seront ignorées--
+
+D    svn+ssh://svn.debian.org/svn/collab-maint/geneweb/tags/upstream_6.05.1
