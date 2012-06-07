@@ -6,5 +6,5 @@ value txt = "6.05";
 value available_languages =
   ["af"; "bg"; "br"; "ca"; "cs"; "da"; "de"; "en"; "es"; "eo"; "et"; "fi";
    "fr"; "he"; "is"; "it"; "lv"; "nl"; "no"; "pl"; "pt"; "pt-br"; "ro";
-   "ru"; "sl"; "sv"; "zh"]
+   "ru"; "sk"; "sl"; "sv"; "zh"]
 ;
