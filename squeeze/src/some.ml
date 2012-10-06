@@ -25,6 +25,118 @@ value surname_not_found conf =
   not_found conf (transl conf "surname not found")
 ;
 
+
+(* **********************************************************************)
+(*  [Fonc] print_branch_to_alphabetic : conf -> string -> int -> unit   *)
+(** [Description] : A partir de l'affichage par branches, permet 
+                    d'afficher les liens pour un affichage par ordre 
+                    alphabétique.
+    [Args] :
+      - conf      : configuration de la base
+      - base      : base
+      - x         : 'nom/prénom/sosa...' recherché
+      - nb_branch : nombre de branches dans le résultat de la recherche
+    [Retour] : Néant
+    [Rem] : Non exporté en clair hors de ce module.                     *)
+(* ******************************************************************** *)
+value print_branch_to_alphabetic conf x nb_branch = do {
+  tag "table" "class=\"display_search\"" begin
+    stag "tr" begin
+      stag "td" begin
+        stag "b" begin
+          Wserver.wprint "%s" 
+            (capitale (transl_nth conf "display by/branch/alphabetic order" 0));
+        end;
+      end;
+      stag "td" begin
+        xtag "img" "src=\"%s/%s\" align=\"middle\" alt=\"\" title=\"\"" 
+          (Util.image_prefix conf) "picto_branch.png";
+      end;
+      stag "td" begin
+        Wserver.wprint "%s (%d)" 
+          (transl_nth conf "display by/branch/alphabetic order" 1) nb_branch;
+      end;
+      stag "td" begin
+        xtag "img" "src=\"%s/%s\" align=\"middle\" alt=\"\" title=\"\"" 
+          (Util.image_prefix conf) "picto_alphabetic_order.png";
+      end;
+      (* Ne pas oublier l'attribut nofollow pour les robots *)
+      stag "td" begin
+        if p_getenv conf.env "t" = Some "A" then
+          stag "a" "href=\"%sm=N;o=i;v=%s\" rel=\"nofollow\"" 
+            (commd conf) (code_varenv x ^ ";t=A")
+            begin
+              Wserver.wprint "%s" 
+                (transl_nth conf "display by/branch/alphabetic order" 2);
+            end
+        else
+          stag "a" "href=\"%sm=N;o=i;v=%s\" rel=\"nofollow\"" 
+            (commd conf) (code_varenv x ^ ";t=N")
+            begin
+              Wserver.wprint "%s" 
+                (transl_nth conf "display by/branch/alphabetic order" 2);
+            end;
+      end;
+    end;
+  end;
+  xtag "br"
+};
+
+
+(* **********************************************************************)
+(*  [Fonc] print_branch_to_alphabetic : conf -> string -> int -> unit   *)
+(** [Description] : A partir de l'affichage alphabétique, permet 
+                    d'afficher les liens pour un affichage par branches.
+    [Args] :
+      - conf      : configuration de la base
+      - base      : base
+      - x         : 'nom/prénom/sosa...' recherché
+    [Retour] : Néant
+    [Rem] : Non exporté en clair hors de ce module.                     *)
+(* ******************************************************************** *)
+value print_alphabetic_to_branch conf x = do {
+  stag "table" "class=\"display_search\"" begin
+    stag "tr" begin
+      stag "td" begin
+        stag "b" begin
+          Wserver.wprint "%s" 
+            (capitale (transl_nth conf "display by/branch/alphabetic order" 0));
+        end;
+      end;
+      stag "td" begin
+        xtag "img" "src=\"%s/%s\" align=\"middle\" alt=\"\" title=\"\"" 
+          (Util.image_prefix conf) "picto_branch.png";
+      end;
+      (* Ne pas oublier l'attribut nofollow pour les robots *)
+      stag "td" begin
+        if p_getenv conf.env "t" = Some "A" then
+          stag "a" "href=\"%sm=N;v=%s\" rel=\"nofollow\"" 
+            (commd conf) (code_varenv x ^ ";t=A")
+            begin
+              Wserver.wprint "%s" 
+                (transl_nth conf "display by/branch/alphabetic order" 1);
+            end
+        else
+          stag "a" "href=\"%sm=NG;n=%s\" rel=\"nofollow\"" 
+            (commd conf) (code_varenv x ^ ";t=N")
+            begin
+              Wserver.wprint "%s" 
+                (transl_nth conf "display by/branch/alphabetic order" 1);
+            end;
+      end;
+      stag "td" begin
+        xtag "img" "src=\"%s/%s\" align=\"middle\" alt=\"\" title=\"\"" 
+          (Util.image_prefix conf) "picto_alphabetic_order.png";
+      end;
+      stag "td" begin
+        Wserver.wprint "%s"
+          (transl_nth conf "display by/branch/alphabetic order" 2);
+      end;
+    end;
+  end;
+  xtag "br"
+};
+
 value persons_of_fsname conf base base_strings_of_fsname find proj x =
   (* list of strings index corresponding to the crushed lower first name
      or surname "x" *)
@@ -83,12 +195,7 @@ value print_elem conf base is_surname (p, xl) =
     (fun first x ->
        do {
          if not first then Wserver.wprint "</li>\n<li>\n  " else ();
-         let sosa_num = Perso.get_sosa_person conf base x in
-         if Num.gt sosa_num Num.zero then
-           Wserver.wprint "<img src=\"%s/%s\" alt=\"sosa\" title=\"sosa: %s\"/> "
-             (Util.image_prefix conf) "sosa.png" 
-             (Perso.string_of_num (Util.transl conf "(thousand separator)") sosa_num)
-         else ();
+         Perso.print_sosa conf base x True;
          Wserver.wprint "<a href=\"%s%s\">" (commd conf) (acces conf base x);
          if is_surname then
            Wserver.wprint "%s%s" (surname_end base p) (surname_begin base p)
@@ -155,6 +262,9 @@ value first_name_print_list conf base x1 xl liste = do {
   in
   header conf title;
   print_link_to_welcome conf True;
+  (* Si on est dans un calcul de parenté, on affiche *)
+  (* l'aide sur la sélection d'un individu.          *)
+  Util.print_tips_relationship conf;
   let list =
     List.map
       (fun (sn, ipl) ->
@@ -339,12 +449,7 @@ value print_branch conf base psn name =
       | _ -> None ]
     in
     print_selection_bullet conf first_select;
-    let sosa_num = Perso.get_sosa_person conf base p in 
-    if Num.gt sosa_num Num.zero then 
-      Wserver.wprint "<img src=\"%s/%s\" alt=\"sosa\" title=\"sosa: %s\"/> "
-        (Util.image_prefix conf) "sosa.png" 
-        (Perso.string_of_num (Util.transl conf "(thousand separator)") sosa_num)
-    else ();
+    Perso.print_sosa conf base p True;
     stag "strong" begin
       Wserver.wprint "%s"
         (Util.reference conf base p
@@ -365,12 +470,7 @@ value print_branch conf base psn name =
                  if is_first_level then Wserver.wprint "<br%s>\n" conf.xhs
                  else Wserver.wprint "</dd>\n<dd>\n";
                  print_selection_bullet conf select;
-                 let sosa_num = Perso.get_sosa_person conf base p in 
-                 if Num.gt sosa_num Num.zero then 
-                   Wserver.wprint "<img src=\"%s/%s\" alt=\"sosa\" title=\"sosa: %s\"/> "
-                     (Util.image_prefix conf) "sosa.png" 
-                     (Perso.string_of_num (Util.transl conf "(thousand separator)") sosa_num)
-                 else ();
+                 Perso.print_sosa conf base p False;
                  stag "em" begin
                    Wserver.wprint "%s"
                      (if (is_hide_names conf p) && not (fast_auth_age conf p) 
@@ -386,12 +486,7 @@ value print_branch conf base psn name =
                Wserver.wprint "  &amp;";
                Wserver.wprint "%s\n"
                  (Date.short_marriage_date_text conf base fam p c);
-               let sosa_num = Perso.get_sosa_person conf base c in 
-               if Num.gt sosa_num Num.zero then 
-                 Wserver.wprint "<img src=\"%s/%s\" alt=\"sosa\" title=\"sosa: %s\"/> "
-                   (Util.image_prefix conf) "sosa.png"
-                   (Perso.string_of_num (Util.transl conf "(thousand separator)") sosa_num)
-               else ();
+               Perso.print_sosa conf base c True;
                stag "strong" begin
                  Wserver.wprint "%s"
                    (reference conf base c
@@ -491,26 +586,14 @@ value print_one_surname_by_branch conf base x xl (bhl, str) = do {
   Wserver.wrap_string.val := Util.xml_pretty_print;
   header conf title;
   print_link_to_welcome conf True;
-  if br = None then do {
-    tag "p" begin
-      Wserver.wprint "<em style=\"font-size:80%%\">\n";
-      Wserver.wprint "%s " (capitale (transl conf "click"));
-      if p_getenv conf.env "t" = Some "A" then 
-        Wserver.wprint "<a href=\"%sm=N;o=i;v=%s\">%s</a>\n" (commd conf)
-          (code_varenv x ^ ";t=A") (transl conf "here")
-      else
-        Wserver.wprint "<a href=\"%sm=N;o=i;v=%s\">%s</a>\n" (commd conf)
-          (code_varenv x ^ ";t=N") (transl conf "here");
-      Wserver.wprint "%s"
-        (transl conf "for the first names by alphabetic order");
-      Wserver.wprint ".</em>\n";
-    end;
-  }
+  (* Si on est dans un calcul de parenté, on affiche *)
+  (* l'aide sur la sélection d'un individu.          *)
+  Util.print_tips_relationship conf;
+  (* Menu afficher par branche/ordre alphabetique *)
+  if br = None then print_branch_to_alphabetic conf x len
   else ();
   tag "div" "style=\"white-space:nowrap\"" begin
-    if len > 1 && br = None then do {
-      Wserver.wprint "%s: %d\n" (capitale (transl conf "number of branches"))
-        len;
+    if len > 1 && br = None then
       tag "dl" begin
         let _ =
           List.fold_left
@@ -531,8 +614,7 @@ value print_one_surname_by_branch conf base x xl (bhl, str) = do {
             1 ancestors
         in
         ();
-      end;
-    }
+      end
     else
       let _ =
         List.fold_left
@@ -642,6 +724,11 @@ value print_family_alphabetic x conf base liste =
       do {
         header conf title;
         print_link_to_welcome conf True;
+        (* Si on est dans un calcul de parenté, on affiche *)
+        (* l'aide sur la sélection d'un individu.          *)
+        Util.print_tips_relationship conf;
+        (* Menu afficher par branche/ordre alphabetique *)
+        print_alphabetic_to_branch conf x;
         print_alphab_list conf (fun (p, _) -> first_char p)
           (print_elem conf base False) liste;
         trailer conf;

@@ -13,25 +13,35 @@ open Mutil;
 open Printf;
 open TemplAst;
 
+
+(* ********************************************************************** *)
+(*  [Fonc] get_wday : config -> Def.date -> string                        *)
+(** [Description] : Renvoie le jour de la semaine correspondant à la date
+                    donnée en paramètre.
+    [Args] :
+      - conf : configuration de la base
+      - d    : date
+    [Retour] : string
+    [Rem] : Exporté en clair hors de ce module.                           *)
+(* ********************************************************************** *)
 value get_wday conf d =
-  let jd = match d with
-  [ Dgreg d _  ->
-    match d.prec with 
-    [ Sure -> 
-        if (d.day <> 0 && d.month <> 0) then Calendar.sdn_of_gregorian d
-        else -1
-    | _ -> -1 ]
-  | _ -> -1 ]
+  let jd = 
+    match d with
+      [ Dgreg d _  ->
+        match d.prec with 
+        [ Sure -> 
+            if (d.day <> 0 && d.month <> 0) then Calendar.sdn_of_gregorian d
+            else -1
+        | _ -> -1 ]
+      | _ -> -1 ]
   in 
   let wday =
     let jd_today = Calendar.sdn_of_gregorian conf.today in
     let x = conf.today_wd - jd_today + jd in
     if x < 0 then 6 + (x + 1) mod 7 else x mod 7
   in
-  if jd <> -1 then
-    " (" ^ (transl_nth conf "(week day)" wday) ^ ")"
-  else
-    ""
+  if jd <> -1 then " (" ^ (transl_nth conf "(week day)" wday) ^ ")"
+  else ""
 ;
 
 value nbsp = "&nbsp;";
@@ -241,6 +251,92 @@ value string_of_dmy conf d =
   let sy = code_dmy conf d in string_of_prec_dmy conf sy d
 ;
 
+
+(* ************************************************************************ *)
+(*  [Fonc] translate_dmy : config -> Def.date -> (string * string * string) *)
+(** [Description] : En fonction du format de la date (donnée par le fichier
+                    lex_utf8), on renvoit le triplet correspondant.
+                    Si le format est inconnu, alors on renvoit ddmmyyyy.
+                    Le triplet est renvoyé dans l'ordre adéquat d'affichage,
+                    i.e. (fst, snd, trd).
+    [Args] :
+      - conf : configuration de la base
+      - d    : date
+    [Retour] : string
+    [Rem] : Exporté en clair hors de ce module.                             *)
+(* ************************************************************************ *)
+value translate_dmy conf d =
+  match transl conf " !dates order" with
+  [ "dmyyyy" -> 
+      (string_of_int d.day, string_of_int d.month, string_of_int d.year)
+  | "yyyymmdd" ->
+      (* Si le jour et/ou le mois n'est pas sur 2 caractères, *)
+      (* on rajoute les 0 nécessaires.                        *)
+      match (d.day, d.month, d.year) with
+      [ (0, 0, year) -> (string_of_int year, "", "")
+      | (0, month, year) -> 
+          let m = if month < 10 then "0" else "" in
+          (string_of_int year, m ^ string_of_int month, "")
+      | (day, month, year) ->
+          let d = if day < 10 then "0" else "" in
+          let m = if month < 10 then "0" else "" in
+          (string_of_int year, m ^ string_of_int month, d ^ string_of_int day) ]
+(* Pour la compatibilité des versions avant 6.05. Je suis un peu en avance. *)
+  | "ddmmyy" ->
+      match (d.day, d.month, d.year) with
+      [ (0, 0, year) -> (string_of_int year, "", "")
+      | (0, month, year) -> 
+          let m = if month < 10 then "0" else "" in
+          ("", m ^ string_of_int month, string_of_int year)
+      | (day, month, year) ->
+          let m = if month < 10 then "0" else "" in
+          (string_of_int day, m ^ string_of_int month, string_of_int year) ]
+  | "yymmdd" -> 
+      match (d.day, d.month, d.year) with
+      [ (0, 0, year) -> (string_of_int year, "", "")
+      | (0, month, year) -> 
+          let m = if month < 10 then "0" else "" in
+          (string_of_int year, m ^ string_of_int month, "")
+      | (day, month, year) ->
+          let m = if month < 10 then "0" else "" in
+          (string_of_int year, m ^ string_of_int month, string_of_int day) ]
+(* fin de compatibilité *)
+  | "ddmmyyyy" | _ -> 
+      (* Si le jour et/ou le mois n'est pas sur 2 caractères, *)
+      (* on rajoute les 0 nécessaires.                        *)
+      match (d.day, d.month, d.year) with
+      [ (0, 0, year) -> ("", "", string_of_int year)
+      | (0, month, year) -> 
+          let m = if month < 10 then "0" else "" in
+          ("", m ^ string_of_int month, string_of_int year)
+      | (day, month, year) ->
+          let d = if day < 10 then "0" else "" in
+          let m = if month < 10 then "0" else "" in
+          (d ^ string_of_int day, m ^ string_of_int month, string_of_int year) ]
+  ]
+;
+
+
+(* ********************************************************************** *)
+(*  [Fonc] string_slash_of_dmy : config -> Def.dmy -> string              *)
+(** [Description] : Renvoie une date sous la forme jj/mm/aaaa en 
+                    fonction du format de la date.
+    [Args] :
+      - conf : configuration de la base
+      - d    : Def.dmy
+    [Retour] : string
+    [Rem] : Non exporté en clair hors de ce module.                       *)
+(* ********************************************************************** *)
+value string_slash_of_dmy conf d =
+  let (fst, snd, trd) = translate_dmy conf d in
+  let sy = 
+    List.fold_left 
+      (fun accu s -> if s <> "" then accu ^ "/" ^ s else accu)
+      fst [snd; trd]
+  in
+  string_of_prec_dmy conf sy d 
+;
+
 value gregorian_precision conf d =
   if d.delta = 0 then string_of_dmy conf d
   else
@@ -312,6 +408,36 @@ value string_of_date conf =
   | Dtext t -> "(" ^ t ^ ")" ]
 ;
 
+
+(* ********************************************************************** *)
+(*  [Fonc] string_slash_of_date : config -> date -> string                *)
+(** [Description] : Renvoie une date sous la forme jj/mm/aaaa (en 
+                    fonction du 'date order').
+    [Args] :
+      - conf : configuration de la base
+      - fun  : Def.date
+    [Retour] : string
+    [Rem] : Exporté en clair hors de ce module.                           *)
+(* ********************************************************************** *)
+value string_slash_of_date conf =
+  fun
+  [ Dgreg d Dgregorian -> 
+      string_slash_of_dmy conf d
+  | Dgreg d Djulian -> 
+      let d1 = Calendar.julian_of_gregorian d in
+      string_slash_of_dmy conf d1 ^ " (" ^
+        (transl_nth conf "gregorian/julian/french/hebrew" 1) ^ ")"
+  | Dgreg d Dfrench -> 
+      let d1 = Calendar.french_of_gregorian d in
+      string_slash_of_dmy conf d1 ^ " (" ^
+        (transl_nth conf "gregorian/julian/french/hebrew" 2) ^ ")"
+  | Dgreg d Dhebrew -> 
+      let d1 = Calendar.french_of_gregorian d in
+      string_slash_of_dmy conf d1 ^ " (" ^
+        (transl_nth conf "gregorian/julian/french/hebrew" 3) ^ ")"
+  | Dtext t -> t ]
+;
+
 value string_of_age conf a =
   match a with
   [ {day = 0; month = 0; year = y} ->
@@ -334,19 +460,68 @@ value string_of_age conf a =
       else "0" ]
 ;
 
-value year_text d =
-  let s =
-    match d.prec with
-    [ Before -> "/"
-    | About | Maybe -> "ca "
-    | _ -> "" ]
-  in
-  let s = s ^ string_of_int d.year in
+
+(* ************************************************************************ *)
+(*  [Fonc] prec_text : Def.dmy -> string                                    *)
+(** [Description] : Renvoie la précision d'une date.
+    [Args] :
+      - d : Def.dmy
+    [Retour] : string
+    [Rem] : Exporté en clair hors de ce module.                             *)
+(* ************************************************************************ *)
+value prec_text d =
   match d.prec with
-  [ After -> s ^ "/"
-  | OrYear x -> s ^ "/" ^ string_of_int x
-  | YearInt x -> s ^ "/" ^ string_of_int x
-  | _ -> s ]
+  [ About -> "ca"
+  | Maybe -> "?"
+  | Before -> "<"
+  | After -> ">"
+  | OrYear _ -> "|"
+  | YearInt _ -> ".."
+  | _ -> "" ]
+;
+
+
+(* ************************************************************************ *)
+(*  [Fonc] day_text : Def.dmy -> string                                     *)
+(** [Description] : Renvoie le jour d'une date.
+    [Args] :
+      - d : Def.dmy
+    [Retour] : string
+    [Rem] : Exporté en clair hors de ce module.                             *)
+(* ************************************************************************ *)
+value day_text d =
+  if d.day = 0 then ""
+  else string_of_int d.day
+;
+
+
+(* ************************************************************************ *)
+(*  [Fonc] month_text : Def.dmy -> string                                   *)
+(** [Description] : Renvoie le mois d'une date.
+    [Args] :
+      - d : Def.dmy
+    [Retour] : string
+    [Rem] : Exporté en clair hors de ce module.                             *)
+(* ************************************************************************ *)
+value month_text d =
+  if d.month = 0 then ""
+  else string_of_int d.month
+;
+
+
+(* ************************************************************************ *)
+(*  [Fonc] year_text : Def.dmy -> string                                    *)
+(** [Description] : Renvoie l'année d'une date.
+    [Args] :
+      - d : Def.dmy
+    [Retour] : string
+    [Rem] : Exporté en clair hors de ce module.                             *)
+(* ************************************************************************ *)
+value year_text d =
+  match d.prec with
+  [ OrYear x -> string_of_int d.year ^ "/" ^ string_of_int x
+  | YearInt x -> string_of_int d.year ^ "/" ^ string_of_int x
+  | _ -> string_of_int d.year ]
 ;
 
 value get_birth_death_date p =

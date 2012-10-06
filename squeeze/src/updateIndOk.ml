@@ -115,9 +115,18 @@ value reconstitute_add_relation conf ext cnt rl =
   | _ -> (rl, ext) ]
 ;
 
+value deleted_relation = ref [];
+
 value reconstitute_relation_parent conf var key sex =
   match (getn conf var (key ^ "_fn"), getn conf var (key ^ "_sn")) with
-  [ ("", _) | ("?", _) | (_, "?") -> None
+  [ ("", _) | (_, "") | ("?", _) | (_, "?") as n ->
+      (* On enregistre les personnes dont on supprime le lien, pour  *)
+      (* prévenir l'utilisateur lors de la validation du formulaire. *)
+      do {
+        let p = only_printable (fst n) ^ only_printable (snd n) in
+        if p = "" || p = "??" then ()
+        else deleted_relation.val := [p :: deleted_relation.val];
+        None }
   | (fn, sn) ->
       let fn = only_printable fn in
       let sn = only_printable sn in
@@ -632,6 +641,24 @@ value print_mod_ok conf base wl p =
          List.iter (Wserver.wprint "<p>%s</p>") removed_string.val
       }
     else ();
+    (* Si on a supprimé des relations, on les mentionne *)
+    match deleted_relation.val with
+    [ [] -> ()
+    | _ ->
+        do {
+          tag "p" 
+            begin
+              Wserver.wprint "%s, %s %s %s :"
+                (capitale (transl_nth conf "relation/relations" 0))
+                (transl conf "first name missing")
+                (transl conf "or") 
+                (transl conf "surname missing") ;
+              tag "ul" begin
+                List.iter 
+                  (fun s -> do {stag "li" begin Wserver.wprint "%s" s; end;})
+                  deleted_relation.val;
+              end;
+            end; } ] ;
     Wserver.wprint "\n<p>%s</p>"
       (referenced_person_text conf base (poi base p.key_index));
     Wserver.wprint "\n";
@@ -675,10 +702,10 @@ value all_checks_person conf base p a u = do {
   in
   relation_sex_is_coherent base warning p;
   match a.parents with
-  [ Some ifam -> CheckItem.family base error warning ifam (foi base ifam)
+  [ Some ifam -> CheckItem.reduce_family base error warning ifam (foi base ifam)
   | _ -> () ];
   Array.iter
-    (fun ifam -> CheckItem.family base error warning ifam (foi base ifam))
+    (fun ifam -> CheckItem.reduce_family base error warning ifam (foi base ifam))
     u.family;
   List.iter
     (fun
@@ -701,6 +728,10 @@ value print_add_ok conf base wl p =
          List.iter (Wserver.wprint "<p>%s</p>") removed_string.val
       }
     else ();
+    (* Si on a supprimé des relations, on les mentionne *)
+    List.iter
+      (fun s -> Wserver.wprint "%s -> %s\n" s (transl conf "forbidden char"))
+      deleted_relation.val;
     Wserver.wprint "\n%s"
       (referenced_person_text conf base (poi base p.key_index));
     Wserver.wprint "\n";
@@ -813,13 +844,15 @@ value get_key conf base =
     | _ -> -1 ]
   in
   let p = poi base (Adef.iper_of_int ip) in
-  let first_name = sou base (Gwdb.get_first_name p) in
-  let surname = sou base (Gwdb.get_surname p) in
+  let fn = sou base (Gwdb.get_first_name p) in
+  let sn = sou base (Gwdb.get_surname p) in
   let occ = Gwdb.get_occ p in
-  default_image_name_of_key first_name surname occ
+  (get_key_index p, (fn, sn, occ))
 ;
 
-value notify_change_key conf base old_key new_key =
+value notify_change_key conf base (_, (ofn, osn, oocc)) (_, (fn, sn, occ)) =
+  let old_key = default_image_name_of_key ofn osn oocc in
+  let new_key = default_image_name_of_key fn sn occ in
   if old_key <> new_key then
     History.record_key conf base old_key new_key
   else ()
@@ -858,7 +891,8 @@ value print_mod o_conf base =
     let k = (sp.first_name, sp.surname, sp.occ, sp.key_index) in
     Util.commit_patches conf base;
     History.record conf base k "mp";
-    let new_key = default_image_name_of_key sp.first_name sp.surname sp.occ in
+    let new_key = (sp.key_index, (sp.first_name, sp.surname, sp.occ)) in
+    update_gwf_sosa conf base new_key;
     notify_change_key conf base old_key new_key;
     if not (is_quest_string p.surname) &&
        not (is_quest_string p.first_name) &&

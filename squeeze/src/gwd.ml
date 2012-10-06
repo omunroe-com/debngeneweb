@@ -37,6 +37,7 @@ value conn_timeout = ref 120;
 value trace_failed_passwd = ref False;
 value use_auth_digest_scheme = ref False;
 value no_host_address = ref False;
+value lexicon_list = ref [];
 
 value log_oc () =
   if log_file.val <> "" then
@@ -254,6 +255,12 @@ value input_lexicon lang =
       (fun () -> Secure.open_in (Util.search_in_lang_path fname));
     ht
   }
+;
+
+value add_lexicon fname lang ht =
+  let fname = Filename.concat "lang" fname in
+  Mutil.input_lexicon lang ht
+    (fun () -> Secure.open_in (Util.search_in_lang_path fname))
 ;
 
 value alias_lang lang =
@@ -1198,6 +1205,12 @@ value make_conf cgi from_addr (addr, request) script_name contents env = do {
     [ Not_found -> default_lang.val ]
   in
   let lexicon = input_lexicon (if lang = "" then default_lang else lang) in
+  List.iter 
+    (fun fname -> 
+      add_lexicon fname (if lang = "" then default_lang else lang) lexicon)
+    lexicon_list.val;
+  (* COMMENTAIRE FLH *)
+  let default_sosa_ref = (Adef.iper_of_int (-1), None) in
   let ar =
     authorization cgi from_addr request base_env passwd access_type utm
       base_file command
@@ -1245,6 +1258,7 @@ value make_conf cgi from_addr (addr, request) script_name contents env = do {
        [ Not_found -> green_color ];
      lang = if lang = "" then default_lang else lang;
      default_lang = default_lang;
+     default_sosa_ref = default_sosa_ref;
      multi_parents =
        try List.assoc "multi_parents" base_env = "yes" with
        [ Not_found -> False ];
@@ -1903,6 +1917,9 @@ value main () =
         Force no reverse host by address");
        ("-digest", Arg.Set use_auth_digest_scheme, "\n       \
         Use Digest authorization scheme (more secure on passwords)");
+       ("-add_lexicon",
+        Arg.String (fun x -> lexicon_list.val := [x :: lexicon_list.val]),
+        "<lexicon>\n       Add file as lexicon.");
        ("-log", Arg.String (fun x -> log_file.val := x),
         "<file>\n       Redirect log trace to this file.");
        ("-robot_xcl", Arg.String robot_exclude_arg, "\
