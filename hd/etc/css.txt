@@ -38,6 +38,110 @@ img
   padding: 4px 4px 4px 20px;
 }
 
+.reference
+{
+  font-size:80%%;
+  font-style:italic;
+}
+
+/* Properties of the submit/OK/validate... button */
+input[type=submit]
+{
+  background-color : #6F8301;
+  border: medium none;
+  color:white;
+  font-weight:bold;
+  padding:2px 4px;
+}
+
+/* Simulate a select button */
+div.select
+{
+  display:inline-block;
+  position:relative;
+  border:1px solid #E7ED83;
+  background-color:#6F8301;
+  cursor:pointer;
+  z-index:1;
+  padding-right:5px;
+  padding-left:4px;
+}
+
+div.select > span
+{
+  background-image:url(%image_prefix;/picto_fleche_blanche.png);
+  background-position:center right;
+  background-repeat:no-repeat;
+  padding-right:18px;
+  display:inline-block;
+  background-color:#6F8301;
+  color:white;
+  font-weight:bold;
+  text-align:left;
+  width:200px;
+  padding-top:6px;
+  padding-bottom:4px;
+}
+
+div.select ul
+{
+  position:absolute;
+  display:none;
+  margin:0px;
+  padding:0px;
+  top:24px;
+  white-space:nowrap;
+  text-align:left;
+  background-color:white;
+  left:-1px;
+  border:1px solid #6F8301;
+}
+
+div.select ul li
+{
+  margin:0;
+  line-height:20px;
+  list-style-type:none;
+}
+
+div.select ul li.title
+{
+  background-color:#E7ED83;
+  padding-left:5px;
+  font-weight:bold;
+}
+
+div.select ul a
+{
+  color:black;
+  display:block;
+  padding-left:5px;
+  padding-right:5px;
+  width:217px;
+  text-decoration:none;
+}
+
+div.select ul a 
+{
+  color: #2F6400;
+}
+
+div.select ul a:hover 
+{
+  text-decoration:underline;
+}
+
+div.select:hover 
+{
+  border:1px solid #6F8301;
+}
+
+div.select:hover ul
+{
+  display:block;
+  z-index:100;
+}
+
 /* Properties for the unvisited, visited and mouse over links. All pages. */
 a:link.highlight 
 {
@@ -88,6 +192,11 @@ h1
 }
 
 /* Properties of the footer block. All pages. */
+#footer
+{
+ clear: both;
+}
+
 #footer hr
 { 
  color: #e7edb3;
@@ -242,6 +351,7 @@ h1
  overflow: auto;
  margin-left: auto;
  margin-right: auto;
+ margin-top : 40px;
 }
 
 /* Properties of the title in the navigation block. Page perso.txt */
@@ -271,6 +381,13 @@ h1
  float: right;
 }
 
+/* perso.txt page: "navigation" block. */
+.li_left
+{
+ width: 25%%; 
+ float: left;
+}
+
 /* Affichage des arbres */
 table hr 
 {
@@ -285,12 +402,14 @@ hr.left
 {
   margin-left:0;
   margin-right: 50%%;
+  width: 50%%;
 }
 
 hr.right 
 {
   margin-left: 50%%;
   margin-right: 0;
+  width: 50%%;
 }
 
 hr.full
@@ -434,4 +553,159 @@ div.summary ul ul
   background-color: #afa;
   font-weight:bold
 }
+
+/* perso.txt */
+.marriage_perso > li 
+{
+ margin-bottom: 15px;
+}
+
+/* lists and tree */
+.ascends_table, .descends_table
+{
+ border-width:1px;
+ border-style:solid;
+ border-collapse:collapse;
+}
+ 
+.ascends_table th, .ascends_table td,
+.descends_table th, .descends_table td
+{
+ border:1px solid black;
+}
+
+/* Properties of the relation page */
+#rel_form_search, #rel_form_cousin, #rel_form_shortcut, #rel_mode, #rel_options
+{
+ margin: 10px;
+}
+
+#rel_search_content, #rel_cousin_content
+{
+ margin-left: 25px;
+}
+
+#rel_search 
+{
+ float: left;
+ width:45%%;
+ padding-right:10px;
+ border-right:1px solid #F0ECED;
+}
+
+#rel_form_search span
+{
+ font-weight:bold;
+}
+
+#rel_search_title
+{
+ font-weight:bold;
+}
+
+#rel_form_search ul
+{
+ list-style-type: none;
+ margin:0;
+ padding:0;
+}
+
+#rel_cousin_title
+{
+ font-weight:bold;
+}
+
+#rel_form_cousin span
+{
+ font-weight:bold;
+}
+
+#rel_form_cousin select
+{
+}
+
+#rel_form_shortcut span
+{
+ font-weight:bold;
+}
+
+#rel_form_shortcut ul
+{
+ list-style-type: none;
+ margin:0;
+ padding:0;
+}
+
+#rel_options
+{
+ padding-top: 10px;
+}
+
+#rel_options span
+{
+ font-weight:bold;
+}
+
+#rel_options ul
+{
+ list-style-type: none;
+ margin:0;
+ padding:0;
+}
+
+#rel_mode span
+{
+ font-weight:bold;
+}
+
+#rel_mode ul
+{
+ list-style-type: none;
+ margin:0;
+ padding:0;
+}
+
+#rel_others
+{
+ float:left;
+ width:45%%;
+ padding-left:10px;
+}
+
+#rel_see_also ul
+{
+ list-style-type: none;
+ margin:0;
+ padding:0;
+}
+
+/* tips */
+div.tips {
+ padding:0px 0px 0px 50px;
+ min-height:50px;
+ background-color:#E7EDB3;
+ background-image:url('%image_prefix/picto_ampoule.png');
+ background-position:5px center;
+ background-repeat: no-repeat;
+ margin-right:60px;
+}
+
+div.tips table {
+ height:50px;
+ margin:0;
+ color: #514549;
+}
+
+div.tips table td{
+ vertical-align:middle;
+}
+
+/* resultat de recherche */
+
+table.display_search
+{
+ border:2px solid #F0ECED;
+}
+
+
 </style>

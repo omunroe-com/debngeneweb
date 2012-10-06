@@ -154,7 +154,11 @@ value string_of_decimal_num : config -> float -> string;
 value person_exists : config -> base -> (string * string * int) -> bool;
 
 value find_person_in_env : config -> base -> string -> option person;
+(* Recherche le sosa uniquement dans le fichier gwf *)
+value default_sosa_ref : config -> base -> option person;
 value find_sosa_ref : config -> base -> option person;
+value update_gwf_sosa : 
+  config -> base -> (iper * (string * string * int)) -> unit;
 
 value quote_escaped : string -> string;
 
@@ -242,3 +246,9 @@ value wprint_in_columns :
 value is_hide_names : config -> person -> bool;
 
 value reduce_list : int -> list 'a -> list 'a;
+
+value print_reference : config -> string -> int -> string -> unit;
+
+value print_tips_relationship : config -> unit;
+
+value print_image_sex : config -> person -> int -> unit;

@@ -66,7 +66,7 @@
       <img width="wi_he" height="wi_he" src="%image_prefix;/female.png"%sp;
            style="border: none" alt="[M/F]1"%/>%nn;
     %else;
-      <img width="wi_he" height="wi_he" src="%image_prefix;/sexunknown.gif" 
+      <img width="wi_he" height="wi_he" src="%image_prefix;/sexunknown.png" 
            style="border: none" alt="?" title="?"%/>%nn;
     %end;
     %sp;
@@ -74,15 +74,14 @@
 %end;
 
 %define;image_sosa(xxx,yyy)
-  <img src="%image_prefix;/sosa.png" %sp; alt="sosa" 
-    style="border: none" title="[direct ancestor of %s:::xxx], [*Sosa] yyy"%/>%nn;
+  <img src="%image_prefix;/sosa.png" style="border: none" alt="sosa" title="[direct ancestor of %s:::xxx], [*Sosa] yyy"%/>%nn;
 %end;
 
 %define;display_sosa(xx)
-  %if;xx.has_sosa;
+  %if;(xx.has_sosa and bvar.display_sosa="yes")
     %if;not cancel_links;<a href="%prefix;%xx.sosa_link;">%end;
-    %apply;image_sosa%with;%sosa_ref.first_name_key_val;%sp;
-    %sosa_ref.surname_key_val;
+    %apply;image_sosa%with;%sosa_ref.first_name_key_strip;%sp;
+    %sosa_ref.surname_key_strip;
     %and;%xx.sosa;%end;
     %if;not cancel_links;</a>%end;%sp;
   %end;
@@ -97,6 +96,7 @@
 %end;
 
 %define;short_display_person(xx)
+  %apply;display_sosa("xx")
   %if;(xx.index=central_index)<b>%xx;</b>%else;
     %if;(cancel_links or xx.is_restricted)%xx;
     %else;<a href="%prefix;%xx.access;">%xx;</a>%end;
@@ -105,6 +105,7 @@
 %end;
 
 %define;long_display_person(xx)
+  %apply;display_sosa("xx")
   %if;(xx.index=central_index)<b>%xx;</b>%else;
     %if;(cancel_links or xx.is_restricted)%xx;
     %else;<a href="%prefix;%xx.access;">%xx;</a>
@@ -145,8 +146,8 @@
   </span>
 %end;
 
-%define;married_to(masc, date_place)
-  %if;masc;
+%define;married_to(sex, date_place)
+  %if;(sex = 0 or sex = 2)
     %if;are_married;[*married%t to:::date_place]0%nn;
     %elseif;are_not_married;[*relationship%t to:::date_place]0%nn;
     %elseif;are_engaged;[*engaged%t to:::date_place]0%nn;
@@ -164,7 +165,7 @@
 %end;
 
 %define;long_married(xx)
-  %apply;married_to%with;%xx.is_male%and;
+  %apply;married_to%with;%xx.sex%and;
     %if;(marriage_place = "")
       %if;(on_marriage_date = "")
       %else; <em>%on_marriage_date;
@@ -239,6 +240,12 @@
       %end;
     %end;
   %end;
+  %if;(wizard)
+    &nbsp;
+    <a href="%prefix;m=MOD_IND;i=%index;;">
+      <img class="modify_family" src="%image_prefix;/picto_molette.png" width="13" height="13" title="[modify::person/persons]0"%/>
+    </a>
+  %end;
 </h1>
 
 %if;(has_sosa or has_qualifiers or has_aliases or has_nobility_titles or
@@ -292,12 +299,31 @@
   <p></p>
 %end;
 
+
 %if;wizard;
-  <div id="acces" style="border: solid 2px #6f8301;">
-    <h3 class="with_picto" style=" background-image:url(%image_prefix;/picto_molette.png)">[*modify] :</h3>
+  <div class="select" style="float:right">
+    <span><span style="background-image:url(%image_prefix;/picto_molette.png);background-repeat:no-repeat;padding:3px 0px 3px 25px;">[*modify]</span></span>
     <ul>
-      <li><a href="%prefix;m=MOD_IND;i=%index;" class="highlight" accesskey="U">[*modify::person/persons]0</a></li>
-      <li><a href="%prefix;m=U;%access;" class="highlight" accesskey="U">[*update]</a></li>
+      <li class="title"><span>[*person/persons]0</span></li>
+      <li><a href="%prefix;m=MOD_IND;i=%index;">[*update]</a></li>
+      %if;(not has_parents and first_name != "?" and surname != "?")
+        <li><a href="%prefix;m=ADD_PAR;ip=%index;">[*add::parents]</a></li>
+      %end;
+  
+      %if;(bvar.can_send_image != "no" and image = "" and first_name != "?" and surname != "?")
+        <li><a href="%prefix;m=SND_IMAGE;i=%index;" class="add_portrait">%if;(auto_image_file_name != "")[*modify picture]%else;[*add picture]%end;</a></li>
+      %end;
+  
+      <li class="title"><span>[*family/families]0</span></li>
+      <li><a href="%prefix;m=U;%access;">[*update]</a></li>
+  
+      %if;((first_name = "?" or surname = "?") and (nb_families != 0 or has_parents))
+      %elseif;(not is_male and not is_female)
+        <li><a href="%prefix;m=ADD_FAM;ip=%index;;sex=M">%nn;[*add::marriage/marriages]0 ([M/F]0)</a></li>
+        <li><a href="%prefix;m=ADD_FAM;ip=%index;;sex=F">%nn;[*add::marriage/marriages]0 ([M/F]1)</a></li>
+      %else;
+        <li><a href="%prefix;m=ADD_FAM;ip=%index;">%nn;[*add::marriage/marriages]0</a></li>
+      %end;
     </ul>
   </div>
 %end;
@@ -323,8 +349,7 @@
 <div id="navigation">
   <h3>[*navigation]</h3>
   %if;not cancel_links;
-    <div id="list_left">
-    <ul>
+    <ul class = "li_left">
       %if;has_parents;
         <li>
         <a href="%prefix;m=A;%access;"
@@ -335,6 +360,8 @@
         <a href="%prefix;m=D;%access;"
          class="highlight">[*descendants]</a></li>
       %end;
+    </ul>
+    <ul class = "li_left">
       %if;has_parents;
         %foreach;father.child;
           %if;is_sibling_before;
@@ -350,26 +377,12 @@
         %end;
       %end;
     </ul>
-    </div>
-    <div id="list_right">
-    <ul>
+    <ul class = "li_left">
       <li>
         <a href="%prefix;m=R;%access;"
          class="highlight" accesskey="R">[*relationship computing]</a>
       </li>
-      %if;(has_parents and (father.has_parents or mother.has_parents))
-        <li>
-        <a href="%prefix;m=C;%access;"
-         class="highlight">[*cousins (general term)]</a></li>
-      %else;
-        %if;has_nephews_or_nieces;
-          <li>
-          <a href="%prefix;m=C;v1=1;v2=2;%access;"
-           class="highlight">[*nephews and nieces]</a></li>
-        %end;
-      %end;
     </ul>
-    </div>
   %end;
 </div>
 

@@ -12,7 +12,7 @@ Package: geneweb
 Section: misc
 Architecture: any
 Depends: ${shlibs:Depends},perl5-base, lsb-base (>= 3.0-6)
-Pre-Depends: ${misc:Depends}, iso-codes, isoquery, adduser
+Pre-Depends: ${misc:Depends}, iso-codes, isoquery, adduser, dpkg (>= 1.15.6~)
 Suggests: gwtp, gwsetup, lynx | www-browser
 Priority: optional
 Description: genealogy software with web interface
@@ -32,6 +32,7 @@ Package: gwtp
 Section: misc
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, geneweb
+Pre-Depends: dpkg (>= 1.15.6~)
 Suggests: httpd
 Priority: optional
 Description: web interface interacting with Geneweb databases
@@ -42,7 +43,7 @@ Description: web interface interacting with Geneweb databases
 Package: gwsetup
 Section: misc
 Architecture: any
-Pre-Depends: adduser
+Pre-Depends: adduser, dpkg (>= 1.15.6~)
 Depends: ${misc:Depends}, ${shlibs:Depends}, geneweb
 Priority: optional
 Description: utilities to configure and manipulate Geneweb databases

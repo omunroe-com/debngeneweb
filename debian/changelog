@@ -1,3 +1,33 @@
+geneweb (6.05.1-1~bpo60+1) squeeze-backports; urgency=low
+
+  * Backport to squeeze
+  * Drop xz compression from dh_builddeb call
+
+ -- Christian Perrier <bubulle@debian.org>  Sat, 06 Oct 2012 08:53:11 +0200
+
+geneweb (6.05.1-1) unstable; urgency=low
+
+  * New upstream "release" (indeed upstream fixed the 6.05 tarball
+    and kept it named 6.05)
+
+ -- Christian Perrier <bubulle@debian.org>  Thu, 07 Jun 2012 08:59:37 +0200
+
+geneweb (6.05-1) unstable; urgency=low
+
+  * New upstream version
+  * Correctly create /var/run/gwtp when running the CGI script
+  * Compress .deb files and upstream tarball with xz
+  * Use "set -e" in config scripts instead of "-e" argument to shebang
+
+ -- Christian Perrier <bubulle@debian.org>  Mon, 04 Jun 2012 21:12:16 +0200
+
+geneweb (6.04-2) unstable; urgency=low
+
+  * Add README.docs-6.x to mention the lack of included documentation
+    as of 6.x versions. Closes: #661625
+
+ -- Christian Perrier <bubulle@debian.org>  Sat, 17 Mar 2012 09:35:14 +0100
+
 geneweb (6.04-1~bpo60+1) squeeze-backports; urgency=low
 
   * Backport to squeeze

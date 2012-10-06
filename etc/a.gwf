@@ -357,16 +357,16 @@ expand_env=no
 #
 # Basic explanation :
 # Add the element you want like this :
-#perso_module_0=etat_civil;
-#perso_module_1=parent_simple;
-#perso_module_2=union_simple;
-#perso_module_3=freresoeur_simple;
-#perso_module_4=relations;
-#perso_module_5=notes;
-#perso_module_6=sources;
-#perso_module_7=arbre_3gen_v_photo;
+#perso_module_0=etat_civil
+#perso_module_1=parent_simple
+#perso_module_2=union_simple
+#perso_module_3=freresoeur_simple
+#perso_module_4=relations
+#perso_module_5=notes
+#perso_module_6=sources
+#perso_module_7=arbre_3gen_v_photo
 # And the number of module 
-#perso_module_tplnb=8;
+#perso_module_tplnb=8
 # List of available elements :
 # etat_civil
 # parent_simple
@@ -387,3 +387,10 @@ expand_env=no
 # arbre_3gen_v_photo
 # arbre_4gen_v
 # arbre_5gen_h
+
+# display the picto sosa on the template perso.txt (individual page).
+#display_sosa=yes/no
+
+# display the individual in his 'own' siblings on the template perso.txt 
+# (individual page).
+#full_siblings=yes/no
