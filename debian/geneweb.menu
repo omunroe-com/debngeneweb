@@ -1,6 +1,6 @@
 ?package(geneweb):\
 needs="X11"\
-section="Apps/Tools"\
+section="Applications/Data Management"\
 title="Geneweb"\
 longtitle="Geneweb genealogy software"\
 hints="genealogy"\
@@ -9,7 +9,7 @@ icon="/usr/share/pixmaps/geneweb.xpm"
 
 ?package(geneweb):\
 needs="text"\
-section="Apps/Tools"\
+section="Applications/Data Management"\
 title="Geneweb"\
 longtitle="Geneweb genealogy software"\
 hints="genealogy"\

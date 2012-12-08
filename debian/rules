@@ -1,144 +1,69 @@
 #!/usr/bin/make -f
-# MAde with the aid of dh_make, by Craig Small
-# Sample debian/rules that uses debhelper. GNU copyright 1997 by Joey Hess.
-# Some lines taken from debmake, by Cristoph Lameter.
-
-# Uncomment this to turn on verbose mode.
-#export DH_VERBOSE=1
+%:
+	dh $@
 
 PACKAGE=geneweb
 
-DEB_HOST_ARCH := $(shell dpkg-architecture -qDEB_HOST_ARCH)
+WAY=$(shell if [ -f "/usr/bin/ocamlc.opt" ]; then echo "opt"; \
+else echo "out"; \
+fi)
 
-# Hack to workaround #335578 and geneweb not buildable on alpha
-# as long as ocaml is not fixed
-# We temporarily build using bytecode on alpha
-ifeq ($(DEB_HOST_ARCH),alpha)
-        WAY=out
-else
-        WAY=$(shell if [ -f "/usr/bin/ocamlc.opt" ]; then echo "opt";           \
-        else echo "out";                                                \
-        fi)
-endif
-
-### # Use dpatch for patches
-### PATCHLIST	 = $(notdir $(basename $(wildcard debian/patches/*.dpatch)))
-### include /usr/share/dpatch/dpatch.make
-
-# Use quilt for patches
-include /usr/share/quilt/quilt.make
-
-configure:
-
-configure-stamp:	patch
-	dh_testdir
-	touch configure-stamp
+ifeq ($(WAY),out)
+override_dh_strip:
+	# Don't strip ocaml bytecode executables
+endif   
 
 
-build: configure-stamp build-stamp
-build-stamp:
-	dh_testdir
-	bash -n debian/geneweb.postinst
-	bash -n debian/geneweb.postrm
-	bash -n debian/geneweb.preinst
-	bash -n debian/geneweb.prerm
-	bash -n debian/geneweb.init
-	dh_installdirs -A
+override_dh_installdeb:
+	# Use of the dh-buildinfo package: see http://people.debian.org/~dirson/buildinfo/
+	dh_buildinfo
+	dh_installdeb
+	
+override_dh_auto_install:
 
+override_dh_auto_build:
 	# Move the proper makefile into place	
 	cp -f `pwd`/tools/Makefile.inc.$(WAY) `pwd`/tools/Makefile.inc
-
+	chmod a+x tools/*.sh
 	$(MAKE) $(WAY)
-
 	$(MAKE) distrib
-	touch build-stamp
 
-clean:	clean-patched unpatch
-
-clean-patched:	
-	dh_testdir
-	dh_testroot
-	rm -f build-stamp install-stamp configure-stamp
+override_dh_clean:
 	rm -rf debian/iso-codes
 	rm -rf debian/pobuild
 	rm -f debian/geneweb.templates.tmp
 	rm -f debian/geneweb.templates
 	debconf-updatepo
-
 	# Add here commands to clean up after the build process.
-	-$(MAKE) clean
+	[ ! -f tools/Makefile.inc ] || [ ! -f Makefile ] || $(MAKE) clean
+	# Clean out cruft left by former builds
+	rm -f tools/Makefile.inc
+	rm -f compilation.ml
 	dh_clean
 
-install: install-stamp
-install-stamp: build-stamp
-	dh_testdir
-	dh_testroot
-	dh_clean -k
-	dh_installdirs
-
-	# Add here commands to install the package into debian/$(PACKAGE).
+override_dh_install:
 	dh_install
-
-
 	# Doc files go to the appropriate directory
 	install -m 644 `pwd`/CHANGES \
 	        `pwd`/debian/geneweb/usr/share/doc/geneweb/changelog
 	# The CGI script
 	chmod 755 `pwd`/debian/gwtp/usr/lib/cgi-bin/gwtp/gwtp.cgi
 	# The wrappers
-	chmod 755 `pwd`/debian/geneweb/usr/lib/geneweb/gwd.wrapper
 	chmod 755 `pwd`/debian/gwsetup/usr/lib/geneweb/gwsetup.wrapper
 
-# Build architecture-independent files here.
-# Pass -i to all debhelper commands in this target to reduce clutter.
-binary-indep: DH_OPTIONS=-i
-binary-indep: build install
-
-# Build architecture-dependent files here.
-# Pass -a to all debhelper commands in this target to reduce clutter.
-binary-arch: DH_OPTIONS=-a
-binary-arch: build install
-	dh_testdir
-	dh_testroot
-	dh_link
+override_dh_installdocs:
 	dh_installdocs
 	# License files should not be duplicated
 	rm `pwd`/debian/geneweb/usr/share/doc/geneweb/LICENSE.htm || true
 
-	dh_installmenu
-	dh_installinit
-	dh_installman
-	dh_installcron
-	dh_installexamples
-	dh_installlogrotate
-	# gwtp does not have any manpage
-	dh_installman -pgeneweb
-
+override_dh_installdebconf:
 	# Grab ISO 639 language code translations
 	chmod u+x debian/get-iso-codes
 	debian/get-iso-codes
 	# Build templates
 	chmod u+x debian/mktemplates
-	#chmod u+x debian/po2debconf
-	#chmod u+x debian/intltool-merge
 	debian/mktemplates
-
 	dh_installdebconf
-	dh_installchangelogs
-	dh_strip
-	dh_compress
-	dh_fixperms
-	# Use of the dh-buildinfo package: see http://people.debian.org/~dirson/buildinfo/
-	dh_buildinfo
-	dh_installdeb
-	dh_shlibdeps
-	dh_gencontrol
 
-	dh_md5sums
-	dh_builddeb
-
-source diff:                                                                  
-	@echo >&2 'source and diff are obsolete - use dpkg-source -b'; false
-
-binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install patch unpatch
+override_dh_builddeb:
+	dh_builddeb -- -Zxz -Sextreme -z9

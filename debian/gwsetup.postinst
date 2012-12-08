@@ -2,7 +2,7 @@
 # postinst script for Gwsetup
 #
 
-set +e 
+set -e 
 
 # These will be used here and there below
 RCFILE=/etc/default/gwsetup
@@ -112,7 +112,5 @@ case "$1" in
     *)
 	;;
 esac
-
-
 
 #DEBHELPER#

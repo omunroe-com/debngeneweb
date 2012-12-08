@@ -7,6 +7,5 @@ distribution/gw/gwu usr/bin
 distribution/gw/lang/* usr/share/geneweb/lang
 distribution/gw/etc/* usr/share/geneweb/etc
 distribution/gw/images/* usr/share/geneweb/images
-debian/lintian-overrides/geneweb usr/share/lintian/overrides
 debian/geneweb.xpm usr/share/pixmaps
-debian/add-on/gwd.wrapper usr/lib/geneweb
+

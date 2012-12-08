@@ -14,11 +14,12 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: bubule_el\n"
-"Report-Msgid-Bugs-To: bubulle@debian.org\n"
-"POT-Creation-Date: 2006-12-01 19:37+0100\n"
+"Report-Msgid-Bugs-To: geneweb@packages.debian.org\n"
+"POT-Creation-Date: 2008-01-05 10:13+0100\n"
 "PO-Revision-Date: 2006-09-04 16:38+0300\n"
 "Last-Translator: quad-nrg.net <yodesy@quad-nrg.net>\n"
 "Language-Team: el <debian-l10n-greek@lists.debian.org>\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -29,10 +30,10 @@ msgstr ""
 #. Default
 #. This is the default choice. Translators may put their own language here
 #. instead of the default.
-#. WARNING : you MUST use the iso_639 two-letter code of your language
+#. WARNING : you MUST use the ENGLISH NAME of your language
 #: ../geneweb.templates.master:1001
-msgid "en[ translators, please see comment in PO files]"
-msgstr "el [μεταφραστές, παρακαλώ δείτε τα σχόλια σχετικά με τα αρχεία PO]"
+msgid "English[ translators, please see comment in PO files]"
+msgstr "English"
 
 #. Type: select
 #. Description

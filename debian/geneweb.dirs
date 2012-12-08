@@ -1,14 +1,11 @@
 usr/bin
 usr/lib/geneweb
-usr/lib/menu
 usr/share/man/man1
-usr/share/doc-base
 usr/share/doc/geneweb
 usr/share/doc/geneweb/examples
 usr/share/geneweb/images
 usr/share/geneweb/lang
 usr/share/geneweb/etc
-usr/share/lintian/overrides
 usr/share/pixmaps
 var/lib/geneweb
 var/lib/geneweb/images

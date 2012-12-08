@@ -1,4 +1,3 @@
 README
-distribution/gw/README.txt
 distribution/gw/doc/*
-CHANGES
+debian/README.docs-6.x

@@ -10,16 +10,17 @@
 # Shlomi Loubaton <shlomil@hotmail.com>, 2004.
 # Shlomi Loubaton <shlomil@hotmail.com>, 2006.
 # Lior Kaplan <webmaster@guides.co.il>, 2006.
-# 
-# 
+#
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: templates\n"
-"Report-Msgid-Bugs-To: bubulle@debian.org\n"
-"POT-Creation-Date: 2006-12-01 19:37+0100\n"
+"Report-Msgid-Bugs-To: geneweb@packages.debian.org\n"
+"POT-Creation-Date: 2008-01-05 10:13+0100\n"
 "PO-Revision-Date: 2006-03-02 09:32+0200\n"
 "Last-Translator: Lior Kaplan <webmaster@guides.co.il>\n"
 "Language-Team: Hebrew\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -28,10 +29,10 @@ msgstr ""
 #. Default
 #. This is the default choice. Translators may put their own language here
 #. instead of the default.
-#. WARNING : you MUST use the iso_639 two-letter code of your language
+#. WARNING : you MUST use the ENGLISH NAME of your language
 #: ../geneweb.templates.master:1001
-msgid "en[ translators, please see comment in PO files]"
-msgstr "he"
+msgid "English[ translators, please see comment in PO files]"
+msgstr "Hebrew"
 
 #. Type: select
 #. Description
