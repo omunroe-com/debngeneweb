@@ -155,7 +155,7 @@ function changeCalendar(e,v,m,c) {
     <tr>
       <td>xlab</td>
       <td>
-        %if;([ !dates order]0 = "ddmmyy" or [ !dates order]0 = "ddmmyyyy" or [ !dates order]0 = "dmyyyy")
+        %if;([ !dates order]0 = "ddmmyy")
           <label>
           [year/month/day]2
           <input name="xvar_dd" size="2" maxlength="2" value="%xdate.day;"%/>
@@ -163,19 +163,6 @@ function changeCalendar(e,v,m,c) {
           [year/month/day]1
           <span id="xvar_mm_sel"><input name="xvar_mm" size="2"%sp;
            maxlength="2" value="%xdate.month;"%/></span></label><label>
-          [year/month/day]0
-          <input name="xvar_yyyy" size="6" maxlength="6"%sp;
-           value="%xdate.year;"%/>
-          </label>
-        %elseif;([ !dates order]0 = "mmddyyyy")
-          <label>
-          [year/month/day]1
-          <span id="xvar_mm_sel"><input name="xvar_mm" size="2"%sp;
-           maxlength="2" value="%xdate.month;"%/></span></label>
-          <label>
-          [year/month/day]2
-          <input name="xvar_dd" size="2" maxlength="2" value="%xdate.day;"%/>
-          </label><label>
           [year/month/day]0
           <input name="xvar_yyyy" size="6" maxlength="6"%sp;
            value="%xdate.year;"%/>
@@ -254,54 +241,20 @@ function changeCalendar(e,v,m,c) {
 
 %define;small_date(kind,xvar,xx,verbose)
   <td>
-    %if;([ !dates order]0 = "ddmmyy" or [ !dates order]0 = "ddmmyyyy" or [ !dates order]0 = "dmyyyy")
-      <label>
-      [year/month/day]2
+    %if;([ !dates order]0 = "ddmmyy")
       <input name="xvar_dd" size="2" maxlength="2"%sp;
-       value="%xx.create.kind_day;"%/>
-      </label>
-      <label>
-      [year/month/day]1
+       value="%xx.create.kind_day;"%/>/
       <input name="xvar_mm" size="2" maxlength="2"%sp;
-       value="%xx.create.kind_month;"%/>
-      </label>
-      <label>
-      [year/month/day]0
+       value="%xx.create.kind_month;"%/>/
       <input name="xvar_yyyy" size="6" maxlength="6"%sp;
        value="%xx.create.kind_year;"%/>
-      </label>
-    %elseif;([ !dates order]0 = "mmddyyyy")
-      <label>
-      [year/month/day]1
-      <input name="xvar_mm" size="2" maxlength="2"%sp;
-       value="%xx.create.kind_month;"%/>
-      </label>
-      <label>
-      [year/month/day]2
-      <input name="xvar_dd" size="2" maxlength="2"%sp;
-       value="%xx.create.kind_day;"%/>
-      </label>
-      <label>
-      [year/month/day]0
-      <input name="xvar_yyyy" size="6" maxlength="6"%sp;
-       value="%xx.create.kind_year;"%/>
-      </label>
     %else;
-      <label>
-      [year/month/day]0
       <input name="xvar_yyyy" size="6" maxlength="6"%sp;
-       value="%xx.create.kind_year;"%/>
-      </label>
-      <label>
-      [year/month/day]1
+       value="%xx.create.kind_year;"%/>-
       <input name="xvar_mm" size="2" maxlength="2"%sp;
-       value="%xx.create.kind_month;"%/>
-      </label>
-      <label>
-      [year/month/day]2
+       value="%xx.create.kind_month;"%/>-
       <input name="xvar_dd" size="2" maxlength="2"%sp;
        value="%xx.create.kind_day;"%/>
-      </label>
     %end;
   </td>
   %if;("verbose" = "true")<td><label for="xvar_pl">[*place]</label>%nn;
@@ -356,12 +309,6 @@ function changeCalendar(e,v,m,c) {
     </tr>
     <tr>
       %apply;death("paxcnt","xx","true")
-    </tr>
-    <tr>
-      <td><label for="paxcnt_occupation">[*occupation/occupations]0</label></td>
-      <td colspan="4">
-        <input name="paxcnt_occupation" size="40" maxlength="200" value="%xx.create.occupation" id="paxcnt_occupation"%/>
-      </td>
     </tr>
   </table>
 %end;
@@ -458,7 +405,7 @@ function changeCalendar(e,v,m,c) {
   </tr>
 </table>
 
-%apply;date([*date/dates]0, "marr", "marriage")
+%apply;date([*date]0, "marr", "marriage")
 %apply;source("marr", "marriage")
 
 <h4>[*witness/witnesses]1</h4>
@@ -533,7 +480,7 @@ function changeCalendar(e,v,m,c) {
  %if;(divorce = "separated") checked="checked"%end;%/>[*separated]
 </label>
 </p>
-%apply;date([*date/dates]0, "div", "divorce")
+%apply;date([*date]0, "div", "divorce")
 
 <h4><label for="comment">[*comment]</label></h4>
 
@@ -613,12 +560,6 @@ function changeCalendar(e,v,m,c) {
         </label>
       </td>
       %apply;death("chxcnt", "child", "false")
-    </tr>
-    <tr>
-      <td><label for="chxcnt_occupation">[*occupation/occupations]0</label></td>
-      <td colspan="4">
-        <input name="chxcnt_occupation" size="40" maxlength="200" value="%child.create.occupation;" id="chxcnt_occupation"%/>
-      </td>
     </tr>
   </table>
 %end;

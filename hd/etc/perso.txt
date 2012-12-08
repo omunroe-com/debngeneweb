@@ -21,10 +21,6 @@
 </head>
 <body%body_prop;>
 
-%( Because Safari mobile is just a great browser that can't handle events... %)
-%( Added a div with an 'empty event' to handle the modify menu.              %)
-<div onclick="void(0);">
-
 %let;central_index;%index;%in;
 %message_to_wizard;
 
@@ -395,7 +391,5 @@
 
 %base_trailer;
 %copyright;
-
-</div> %( the magic Safari div %)
 </body>
 </html>

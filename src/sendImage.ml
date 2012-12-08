@@ -328,10 +328,11 @@ value effective_send_ok conf base p file =
       move_file_to_old conf ".png" fname bfname
     else ();
     write_file (fname ^ typ) content;
-    let changed = 
-      U_Send_image (Util.string_gen_person base (gen_person_of_person p))
+    let key =
+      (sou base (get_first_name p), sou base (get_surname p), get_occ p,
+       get_key_index p)
     in
-    History.record conf base changed "si";
+    History.record conf base key "si";
     print_sent conf base p
   }
 ;
@@ -346,6 +347,7 @@ value print_send_ok conf base =
     let digest = Update.digest_person (UpdateInd.string_person_of base p) in
     if digest = raw_get conf "digest" then
       let file = raw_get conf "file" in
+let _ = do { Printf.eprintf "file size %d\n" (String.length file); flush stderr; } in
       effective_send_ok conf base p file
     else Update.error_digest conf
   with
@@ -380,10 +382,11 @@ value effective_delete_ok conf base p =
     else if Sys.file_exists (fname ^ ".png") then
       move_file_to_old conf ".png" fname bfname
     else incorrect conf;
-    let changed = 
-      U_Delete_image (Util.string_gen_person base (gen_person_of_person p))
+    let key =
+      (sou base (get_first_name p), sou base (get_surname p), get_occ p,
+       get_key_index p)
     in
-    History.record conf base changed "di";
+    History.record conf base key "di";
     print_deleted conf base p
   }
 ;
@@ -398,4 +401,3 @@ value print_del_ok conf base =
   with
   [ Update.ModErr -> () ]
 ;
-

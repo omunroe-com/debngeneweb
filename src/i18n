@@ -6,7 +6,7 @@
  to see the first relationship link
  to try again with this number
 %1 of %2
-%d %s starting with %s
+%d places starting with %s
 %d years ago
 %s access cancelled for that page
 %s cousins
@@ -32,7 +32,6 @@
 a 2nd cousin
 a 3rd cousin
 about (date)
-about (short date)
 a brother/a sister/a sibling
 a brother-in-law/a sister-in-law
 access
@@ -75,8 +74,6 @@ anniversaries of marriage
 an uncle/an aunt
 any individual in the base
 are
-ascendants tree
-at
 a %s cousin
 a son/a daughter/a child
 a son-in-law/a daughter-in-law
@@ -95,8 +92,7 @@ between (date)
 bibliography
 birth
 birthdays
-birth date and birth place
-book of %s
+book of places
 border
 born
 branch/branches
@@ -111,7 +107,6 @@ cannot change sex of a married person
 celebrities
 change children's names
 changed order of children
-changed order of marriages
 change it (the number) yourself
 child/children
 children's names changed
@@ -130,31 +125,23 @@ cousins (general term)
 create
 cremated
 database forum
-date/dates
-date begin
-date end
+date
 date of birth
 date of death
 date of marriage
 days old
 death
-death date and death place
 delete
 descendants
-descendants at the generation
 died
 died young
 direct ancestor of %s
 disappeared
 disconnect
-display Aboville number
 display by/branch/alphabetic order
 display by slices/slice width/overlap/total width
 display border tree
-display empty picture
 display generation
-display marriage date
-display notes/sources inline
 display picture
 display smallest sosa number relative to ancestor
 display spouse
@@ -194,16 +181,12 @@ godson/goddaughter/godchild
 grand-parents
 great-grand-parents
 gregorian/julian/french/hebrew
-groom/bride
 half siblings
 half-siblings
 happy birthday to them!
 happy birthday to you!
-having a family
-having no family
 having as children
-help modify data
-help surname branch
+help places
 here
 him/her
 history of updates
@@ -230,7 +213,6 @@ invert
 invert the order of the following families
 in (year)
 is
-is a very old parent
 is a very young parent
 is born after his/her child
 it is the same person!
@@ -242,11 +224,6 @@ link between
 linked pages
 link to use
 list/list (ancestors)
-list eclair
-living after %s
-living before %s
-living between %s and %s
-living from/to
 long display
 loop in database: %s is his/her own ancestor
 M/F
@@ -273,22 +250,15 @@ M/F
 miscellaneous notes
 miscellaneous informations
 missing ancestors
-missing parents
-missing sosa
-missing spouse
 missing sources
-modification/modifications
-modification successful
 modify
 modify picture
-modify %s
 months old
 moon age/new moon/first quarter/full moon/last quarter
 more than %d answers
 msg error disconnected
 murdered
 n° d'Aboville
-n° Sosa
 name
 name %s already used by %tthis person%t
 navigation
@@ -296,7 +266,6 @@ navigation with %t as Sosa reference
 NB: you should try another relationship computing mode
 nephews and nieces
 new modification
-next relationship path
 next sibling
 no anniversary
 no birthday
@@ -316,14 +285,7 @@ nth
 nth (cousin)
 nth (generation)
 number
-nb branches
-nb children
-nb individuals
-nb events
 number of branches
-number of children
-number of individuals
-number of events
 number of living persons:
 occupation/occupations
 of course dead
@@ -333,7 +295,6 @@ one day old
 one month old
 one year old
 only the generation selected
-only with display by generation
 on %s's side
 on (weekday day month year)
 optional
@@ -347,7 +308,7 @@ person modified
 person/persons
 persons having the same name
 place
-%s modified
+place modified
 places
 population pyramid
 possible duplications
@@ -373,18 +334,12 @@ relationship link/relationship links
 relationship link between
 relationship shortcut
 relationship%t to
-searching all
 search/case sensitive
 see
 see above
 see also
-see ascendants notes/sources
-see ascendants pictures
-see descendants notes/sources
-see descendants pictures
 see further
 select
-select a letter
 select a month to see all the anniversaries
 select person to compute relationship
 send
@@ -399,9 +354,6 @@ should be male
 siblings
 since the last click
 son/daughter/child
-sort by/branch/alphabetic order
-sort by/date begin/alphabetic order/nb individuals/nb events
-sort by/generation/alphabetic order
 Sosa
 source/sources
 specify
@@ -432,7 +384,6 @@ the %d who lived the longest
 the father-in-law/the mother-in-law
 the father/the mother/a parent
 the file is temporarily locked: please try again
-the following children of %t and %t are born very close
 the following children of %t and %t are not in order
 the grandchildren
 the grandparents

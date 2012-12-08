@@ -284,7 +284,7 @@ request.cmo: adef.cmi advSearchOk.cmo alln.cmo birthDeath.cmo birthday.cmo \
     num.cmi perso.cmi place.cmo relation.cmo relationLink.cmi secure.cmi \
     sendImage.cmo some.cmo srcfile.cmi title.cmo update.cmi updateFam.cmi \
     updateFamOk.cmo updateInd.cmi updateIndOk.cmi util.cmi wiznotes.cmi \
-    updateData.cmo ../wserver/wserver.cmi request.cmi 
+    ../wserver/wserver.cmi request.cmi 
 request.cmx: adef.cmx advSearchOk.cmx alln.cmx birthDeath.cmx birthday.cmx \
     buff.cmx changeChildren.cmx config.cmi cousins.cmx dag.cmx date.cmx \
     def.cmi descend.cmx doc.cmx forum.cmx gutil.cmx gwdb.cmx history.cmx \
@@ -293,7 +293,7 @@ request.cmx: adef.cmx advSearchOk.cmx alln.cmx birthDeath.cmx birthday.cmx \
     num.cmx perso.cmx place.cmx relation.cmx relationLink.cmx secure.cmx \
     sendImage.cmx some.cmx srcfile.cmx title.cmx update.cmx updateFam.cmx \
     updateFamOk.cmx updateInd.cmx updateIndOk.cmx util.cmx wiznotes.cmx \
-    updateData.cmx ../wserver/wserver.cmx request.cmi 
+    ../wserver/wserver.cmx request.cmi 
 request.cmi: config.cmi 
 robot.cmo: config.cmi secure.cmi srcfile.cmi util.cmi templ.cmi \
     ../wserver/wserver.cmi 
@@ -315,10 +315,6 @@ some.cmo: adef.cmi buff.cmo checkItem.cmi config.cmi date.cmi def.cmi \
 some.cmx: adef.cmx buff.cmx checkItem.cmx config.cmi date.cmx def.cmi \
     gutil.cmx gwdb.cmx hutil.cmx mutil.cmx name.cmx util.cmx \
     num.cmx perso.cmx ../wserver/wserver.cmx 
-updateData.cmo: adef.cmi config.cmi def.cmi gwdb.cmi hutil.cmi mutil.cmi util.cmi \
-    history.cmi ../wserver/wserver.cmi 
-updateData.cmx: adef.cmx config.cmi def.cmi gwdb.cmx hutil.cmx mutil.cmx util.cmx \
-    history.cmx ../wserver/wserver.cmx 
 srcfile.cmo: buff.cmo config.cmi date.cmi def.cmi gwdb.cmi history.cmi \
     hutil.cmi lock.cmi mutil.cmi notesLinks.cmi num.cmi secure.cmi templ.cmi \
     templAst.cmi translate.cmi util.cmi version.cmo wiznotes.cmi \
@@ -440,7 +436,6 @@ relationLink.cmo relationLink.cmx: pa_html.cmo
 request.cmo request.cmx: def_syn.cmo pa_lock.cmo pa_html.cmo
 sendImage.cmo sendImage.cmx: pa_html.cmo
 some.cmo some.cmx: pa_html.cmo
-updateData.cmo updateData.cmx: pa_html.cmo
 srcfile.cmo srcfile.cmx: pa_lock.cmo pa_html.cmo
 templ.cmo templ.cmx: pa_html.cmo
 title.cmo title.cmx: pa_html.cmo

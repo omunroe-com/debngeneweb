@@ -113,38 +113,6 @@ value strictly_after d1 d2 =
   | _ -> False ]
 ;
 
-(* ********************************************************************** *)
-(*  [Fonc] compare_date : date -> date -> int                             *)
-(** [Description] : Fonction de comparaison de deux dates. On ne tiens 
-                    pas compte de la précision de la date. (Fonction 
-                    identique à Date.ml)
-    [Args] :
-      - d1 : la première date
-      - d2 : la deuxième date
-    [Retour] : int
-    [Rem] : Non exporté en clair hors de ce module.                       *)
-(* ********************************************************************** *)
-value compare_date d1 d2 =
-  match (d1, d2) with
-  [ (Dgreg dmy1 _, Dgreg dmy2 _) -> 
-      match Pervasives.compare dmy1.year dmy2.year with
-      [ 0 ->
-          match Pervasives.compare dmy1.month dmy2.month with
-          [ 0 -> 
-              (* Si l'une des deux dates n'est pas complète (mois ou jour *)
-              (* égal à zéro), alors on ne distingue pas les deux dates.  *)
-              if dmy1.day = 0 || dmy2.day = 0 then 0
-              else Pervasives.compare dmy1.day dmy2.day
-          | x -> 
-              (* Idem ci-dessus. *)
-              if dmy1.month = 0 || dmy2.month = 0 then 0
-              else x ]
-      | x -> x]
-  | (Dgreg dmy1 _, Dtext _) -> 1
-  | (Dtext _, Dgreg dmy2 _) -> -1
-  | (Dtext _, Dtext _) -> 0 ]
-;
-
 value birth_before_death base warning p =
   match (Adef.od_of_codate (get_birth p), get_death p) with
   [ (Some d1, Death _ d2) ->
@@ -285,19 +253,15 @@ value related_sex_is_coherent base warning p_ref =
   | None -> try_to_fix_relation_sex base warning p_ref ]
 ;
 
-value year_of d = d.year;
-
 value check_normal_marriage_date_for_someone base error warning fam ip =
   let p = poi base ip in
   match Adef.od_of_codate (get_marriage fam) with
-  [ Some (Dgreg g2 _ as d2) ->
+  [ Some d2 ->
       do {
         match Adef.od_of_codate (get_birth p) with
-        [ Some (Dgreg g1 _ as d1) ->
+        [ Some d1 ->
             if strictly_before d2 d1 then
               warning (MarriageDateBeforeBirth p)
-            else if year_of g2 > 1850 && year_of (time_elapsed g1 g2) < 13 then
-               warning (YoungForMarriage p (time_elapsed g1 g2))
             else ()
         | _ -> () ];
         match get_death p with
@@ -307,7 +271,7 @@ value check_normal_marriage_date_for_someone base error warning fam ip =
             else ()
         | _ -> () ];
       }
-  | _ -> () ]
+  | None -> () ]
 ;
 
 
@@ -468,77 +432,6 @@ value sort_children2 base warning ifam des =
     } ]
 ;
 
-
-(* ********************************************************************** *)
-(*  [Fonc] check_marriages_order : 
-             base -> (Def.warning -> unit) -> person -> unit              *)
-(** [Description] : Trie les famillies en fonction des dates de mariages.
-    [Args] :
-      - base    : base de donnée
-      - warning : fonction qui ajoute un warning à la liste des warnings
-      - p       : person
-    [Retour] : Néant
-    [Rem] : Non exporté en clair hors de ce module.                       *)
-(* ********************************************************************** *)
-value check_marriages_order base warning p = do {
-  let b = Array.copy (get_family p) in
-  (* Astuce : on construire un tableau identique à la famille dans *)
-  (* lequel on remplace toutes les dates inconnues par la dernière *)
-  (* date maximale que l'on ait vu.                                *)
-  (* Exemple : Ma (mariage sans date), et M3 après M1              *)
-  (* ordre initial Ma M5 Mb M3 M1 ... devient Ma M1 M3 M5 Mb       *)
-  let (_, a) = 
-    Array.fold_left 
-      (fun (max_date, tab) ifam -> 
-        let fam = foi base ifam in
-        let date = 
-          match Adef.od_of_codate (get_marriage fam) with
-          [ Some d -> Some d
-          | None -> max_date ]
-        in
-        let max_date =
-          match (date, max_date) with
-          [ (Some d1, Some d2) -> 
-              if compare_date d1 d2 = 1 then Some d1 
-              else Some d2
-          | (Some d1, None) -> Some d1
-          | _ -> max_date ]
-        in
-        (max_date, Array.append tab [| (ifam, date) |]))
-      (None, [| |]) (get_family p)
-  in
-  Array.stable_sort 
-    (fun (f1, d1) (f2, d2) ->
-      match (d1, d2) with
-      [ (Some d1, Some d2) -> compare_date d1 d2
-      | _ -> 0 ] ) 
-    a;
-  let a = Array.map (fun (f, _) -> f) a in
-  if a <> b then do { 
-    warning (ChangedOrderOfMarriages p b a);
-    let rec loop i fam =
-      if i = Array.length fam then ()
-      else do { fam.(i) := a.(i); loop (i + 1) fam }
-    in loop 0 (get_family p) }
-  else ()
-};
-
-value close_siblings base error warning x np ifam des =
-  match (np, Adef.od_of_codate (get_birth x)) with
-  [ (None, _) -> () 
-  | (Some (elder, d1), Some d2) ->
-      match (d1, d2) with
-      [ (Dgreg d1 _, Dgreg d2 _) ->
-          let d = time_elapsed d1 d2 in
-          (* On vérifie les jumeaux ou naissances proches. *)
-          if d.year = 0 && d.month = 0 && d.day < 10 then ()
-          else if d.year = 0 && d.month < 7 then
-            warning (CloseChildren ifam des elder x)
-          else ()
-      | _ -> () ]
-  | _ -> () ]
-;
-
 value born_after_his_elder_sibling base error warning x np ifam des =
   match (np, Adef.od_of_codate (get_birth x), get_death x) with
   [ (None, _, _) -> ()
@@ -560,6 +453,8 @@ value date_of_death =
   | _ -> None ]
 ;
 
+value year_of d = d.year;
+
 value child_born_after_his_parent base error warning x iparent =
   let parent = poi base iparent in
   match
@@ -570,18 +465,12 @@ value child_born_after_his_parent base error warning x iparent =
       if strictly_after d1 d2 then warning (ParentBornAfterChild parent x)
       else
         let a = time_elapsed g1 g2 in
-        if year_of a < 11 then warning (ParentTooYoung parent a) 
-        else if (get_sex parent = Female && year_of a > 55) || 
-                (get_sex parent = Male && year_of a > 70) 
-        then 
-          warning (ParentTooOld parent a) 
-        else ()
+        if year_of a < 11 then warning (ParentTooYoung parent a) else ()
   | (Some (Dgreg g1 _ as d1), _, Some (Dgreg g2 _ as d2)) ->
       if strictly_after d1 d2 then warning (ParentBornAfterChild parent x)
       else
         let a = time_elapsed g1 g2 in
-        if year_of a < 11 then warning (ParentTooYoung parent a) 
-        else ()
+        if year_of a < 11 then warning (ParentTooYoung parent a) else ()
   | _ -> () ]
 ;
 
@@ -681,7 +570,6 @@ value check_children base error warning (ifam, fam) =
            birth_before_death base warning child;
            born_after_his_elder_sibling base error warning child np ifam
              des;
-           close_siblings base error warning child np ifam des;
            child_born_after_his_parent base error warning child
              (get_father cpl);
            child_born_after_his_parent base error warning child
@@ -782,11 +670,7 @@ value family base error warning ifam fam =
     check_marriage_sex base error warning fam;
     check_normal_marriage_date_for_parent base error warning (ifam, fam);
     check_normal_marriage_date_for_witness base error warning (ifam, fam);
-    check_children base error warning (ifam, fam);
-    let father = poi base (get_father fam) in
-    let mother = poi base (get_mother fam) in
-    check_marriages_order base warning father;
-    check_marriages_order base warning mother;
+    check_children base error warning (ifam, fam)
   }
 ;
 

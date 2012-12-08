@@ -1,0 +1,77 @@
+<!-- trl.txt Modified mickroue(a)yahoo.fr 2012/04/12 geneweb-6.04 templ=templm -->
+<!-- How to : copy this file to bases/etc/my_base/ -->
+
+%if;(not cancel_links)
+  <div id="trl">
+    <form method="get" action="%action;">
+      <p>
+      %hidden;
+      <input type="hidden" name="m" value="NG"%/>
+      <input name="n" size="20" maxlength="200" title="[*search/case sensitive]0 (²)" accesskey="²"%/>
+      <input type="submit" value="[*search/case sensitive]0 (²)"%/>
+      </p>
+    </form>
+    <div id="templ"></div>
+  </div>
+  %if;(wizard)
+    <script type="text/javascript">
+    <!--
+    function reloadClose() {
+        window.opener.location = window.opener.location;
+        parent.close();
+    }
+      
+    var htmlTitle = document.title;
+    
+    if (
+         htmlTitle == "[*person modified]" ||
+         htmlTitle == "[*family modified]" ||
+         htmlTitle == "[*person added]" || 
+         htmlTitle == "[*family added]"
+        )
+    {
+      if (window.opener && !window.opener.closed) {
+        document.getElementById("trl").innerHTML = '\
+        <p><a id="reloadclose" href="javascript:reloadClose()">[X]</a></p>\
+        ';
+        document.getElementById("reloadclose").focus();}
+    }
+    
+    -->
+    </script>
+  %end;
+  <script type="text/javascript">
+  <!--
+   var oldUrl = document.URL;
+   var searchUrl = oldUrl.search(/templ=/);
+   if(searchUrl != -1) {
+     document.getElementById("templ").innerHTML = '\
+        templ= \
+        <a href="' + oldUrl.replace(/templ=\w*[;&]/,'templ=;') + '">-</a> \
+        <a href="' + oldUrl.replace(/templ=\w*[;&]/,'templ=templa;') + '">a</a> \
+        <a href="' + oldUrl.replace(/templ=\w*[;&]/,'templ=templb;') + '">b</a> \
+        <a href="' + oldUrl.replace(/templ=\w*[;&]/,'templ=templc;') + '">c</a> \
+        <a href="' + oldUrl.replace(/templ=\w*[;&]/,'templ=templd;') + '">d</a> \
+        <a href="' + oldUrl.replace(/templ=\w*[;&]/,'templ=templf;') + '">f</a> \
+        <a href="' + oldUrl.replace(/templ=\w*[;&]/,'templ=templh;') + '">h</a> \
+        <a href="' + oldUrl.replace(/templ=\w*[;&]/,'templ=templm;') + '">m</a> \
+     ';
+   }
+   else {
+     document.getElementById("templ").innerHTML = '\
+        templ= \
+        <a href="' + oldUrl + ';templ=;">-</a> \
+        <a href="' + oldUrl + ';templ=templa;">a</a> \
+        <a href="' + oldUrl + ';templ=templb;">b</a> \
+        <a href="' + oldUrl + ';templ=templc;">c</a> \
+        <a href="' + oldUrl + ';templ=templd;">d</a> \
+        <a href="' + oldUrl + ';templ=templf;">f</a> \
+        <a href="' + oldUrl + ';templ=templh;">h</a> \
+        <a href="' + oldUrl + ';templ=templm;">m</a> \
+     ';
+   }
+  -->
+  </script>
+%end;
+
+<!-- end trl.txt -->

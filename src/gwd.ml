@@ -1209,8 +1209,7 @@ value make_conf cgi from_addr (addr, request) script_name contents env = do {
     (fun fname -> 
       add_lexicon fname (if lang = "" then default_lang else lang) lexicon)
     lexicon_list.val;
-  (* A l'initialisation de la config, il n'y a pas de sosa_ref. *)
-  (* Il sera mis à jour par effet de bord dans request.ml       *)
+  (* COMMENTAIRE FLH *)
   let default_sosa_ref = (Adef.iper_of_int (-1), None) in
   let ar =
     authorization cgi from_addr request base_env passwd access_type utm
@@ -1541,10 +1540,7 @@ value image_request cgi script_name env =
       if Util.start_with s 0 "images/" then
         let i = String.length "images/" in
         let fname = String.sub s i (String.length s - i) in
-        (* Je ne sais pas pourquoi on fait un basename, mais ça empeche *)
-        (* empeche d'avoir des images qui se trouvent dans le dossier   *)
-        (* image. Si on ne fait pas de basename, alors ça marche.       *)
-        (* let fname = Filename.basename fname in *)
+        let fname = Filename.basename fname in
         let fname = Util.image_file_name fname in
         let _ = Image.print_image_file cgi fname in
         True

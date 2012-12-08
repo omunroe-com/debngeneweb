@@ -57,9 +57,6 @@ zh: 家譜
 ]
 %end;
 
-%define;book_of(xx)
-  [*book of %s:::xx]
-%end;
 
 <div id="title">
   <div id="logo">
@@ -405,13 +402,7 @@ sv: <span class="highlight" style="margin-left:10px">genom
     %end;
     %if;(wizard)
       <li>
-        <a href="%prefix;m=MOD_DATA;data=place">%apply;book_of([places])</a>
-      </li>
-      <li>
-        <a href="%prefix;m=MOD_DATA;data=src">%apply;book_of([source/sources]1)</a>
-      </li>
-      <li>
-        <a href="%prefix;m=MOD_DATA;data=occu">%apply;book_of([occupation/occupations]1)</a>
+        <a href="%prefix;m=MOD_P">[*book of places]</a>
       </li>
     %end;
     %if;(wizard and not base.has_notes)
@@ -608,8 +599,6 @@ sv: Om din webbläsare inte automatiskt uppdaterar de modifierade sidorna
 <br/>
 </div> 
 
-%base_trailer;
-
 %copyright;
 
 %define;language_link(xx,yy)%sq;
@@ -653,6 +642,8 @@ sv: Du kan välja ett annat språk bland de följande:
   %apply;language_link("Suomi", "fi")
   %apply;language_link("Svenska", "sv")
 </div>
+
+%base_trailer;
 
 </body>
 </html>

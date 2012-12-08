@@ -95,7 +95,6 @@ value no_newlines s =
 ;
 
 value raw_output = ref False;
-value no_picture = ref False;
 
 value gen_correct_string no_num no_colon s =
   let s = strip_spaces s in
@@ -229,9 +228,7 @@ value print_infos oc base is_child csrc cbp p =
     [ s when sou base s <> "" ->
         fprintf oc " (%s)" (correct_string base s)
     | _ -> () ];
-    if not no_picture.val then
-      print_if_no_empty oc base "#image" (get_image p)
-    else ();
+    print_if_no_empty oc base "#image" (get_image p);
     List.iter (print_qualifier oc base) (get_qualifiers p);
     List.iter (print_alias oc base) (get_aliases p);
     List.iter (print_title oc base) (get_titles p);
@@ -1389,7 +1386,6 @@ value speclist =
    ("-nsp", Arg.Set no_spouses_parents,
     ": no spouses' parents (for options -s and -d)");
    ("-nn", Arg.Set no_notes, ": no (database) notes");
-   ("-nopicture", Arg.Set no_picture, ": Don't extract individual picture.");
    ("-c", Arg.Int (fun i -> censor.val := i), "\
 <num> :
      When a person is born less than <num> years ago, it is not exported unless

@@ -228,9 +228,7 @@ value moladOfMetonicCycle metonicCycle =
 
 value findStartOfYear year =
   let pMetonicCycle = (year - 1) / 19 in
-  (* On prend la valeur absolue parce que (0 - 1) mod 19 = -1    *)
-  (* et après, on fait un 'index out of bounds' dans yearOffset. *)
-  let pMetonicYear = abs ((year - 1) mod 19) in
+  let pMetonicYear = (year - 1) mod 19 in
   let (pMoladDay, pMoladHalakim) = moladOfMetonicCycle pMetonicCycle in
   let pMoladHalakim =
     pMoladHalakim + halakim_per_lunar_cycle * yearOffset.(pMetonicYear)
@@ -242,8 +240,6 @@ value findStartOfYear year =
 ;
 
 value sdn_of_hebrew d =
-  (* correction possible ? *)
-  (* let d = { (d) with year = if d.year <= 0 then 1 else d.year } in *)
   let sdn =
     match d.month with
     [ 1 | 2 ->

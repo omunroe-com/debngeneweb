@@ -3,7 +3,7 @@
 <head>
   <!-- $Id: anctree.txt,v 5.8 2007/01/19 01:53:16 ddr Exp $ -->
   <!-- Copyright (c) 1998-2007 INRIA -->
-  <!-- Modified mickroue(a)yahoo.fr 20121129 templ=templm -->
+  <!-- Modified mickroue(a)yahoo.fr 2012/04/27 geneweb-6.04 templ=templm -->
   <title>%nn;
     %if;(evar.t = "A")[*male line/female line]0%nn;
     %elseif;(evar.t = "C")[*male line/female line]1%nn;
@@ -14,13 +14,14 @@
     %end;
   </title>
   <meta name="robots" content="none"%/>
-  <meta name="format-detection" content="telephone=no"%/>
   <meta http-equiv="Content-Type" content="text/html; charset=%charset;"%/>
   <meta http-equiv="Content-Style-Type" content="text/css"%/>
   <link rel="shortcut icon" href="%image_prefix;/favicon_gwd.png"%/>
   %include.css;
   %base_header;
 </head>
+
+%let;evar_v;%if;(evar.v > 0)%expr(evar.v-1)%end;%in;
 
 %define;symbol(xx)
   %if;(evar.cgl != "on")
@@ -155,33 +156,11 @@
   </table>
 %end;
 
-%define;url(z1,z2)
-  %apply;lazy_print("z1=z2;")
-  %foreach;env_binding;
-    %if;(env.key="z1")%lazy_force;%else;%env.key;=%env.val;;%end;
-  %end;
-  %if;(not lazy_printed)
-    z1=z2;
-  %end;
-%end;
-
 <body%body_prop; id="anctree">
 %message_to_wizard;
 
 %if;not cancel_links;
   <div class="menu2">
-    %if;(bvar.no_image_for_visitor != "yes" or friend or wizard)
-      %if;(evar.image="on")
-        <a style="text-decoration:line-through;"
-           href="%prefix_base;%apply;url("image","")"
-           title="- [image/images]1">img</a>
-      %else;
-        <a href="%prefix_base;%apply;url("image","on")"
-           title="+ [image/images]1">img</a>
-      %end;
-    %end;
-    <a style="text-decoration:line-through;" href="%prefix_base;%apply;url("cgl","on")"
-       title="[cancel GeneWeb links]">@</a>
     %if;has_referer;
       <a href="%referer;" title="[back]">&lt;&lt;</a>
     %end;
@@ -192,7 +171,7 @@
 %if;(evar.t = "T" and not cancel_links)%nn;
   <div style="text-align:%right;">
     <br%/>
-    <a href="%prefix;m=A;t=T;v=%evar.v;;%access;;dag=on;notab=on;slices=on">
+    <a href="%prefix;m=A;t=T;v=%evar_v;;%access;;dag=on;notab=on;slices=on">
       <tt>//</tt>
     </a>
   </div>
@@ -200,14 +179,14 @@
 
 %if;(evar.t = "T")
   %apply;tree%with;
-    %if;(bvar.max_anc_tree = "")%apply;min(evar.v, max_anc_level, 7)
-    %else;%apply;min(evar.v, max_anc_level, bvar.max_anc_tree)
+    %if;(bvar.max_anc_tree = "")%apply;min(evar_v, max_anc_level, 7)
+    %else;%apply;min(evar_v, max_anc_level, bvar.max_anc_tree)
     %end;
   %end;
 %elseif;(evar.t = "A")
-    <div style="text-align: center">%apply;male_line("self", evar.v)</div>
+    <div style="text-align: center">%apply;male_line("self", evar_v)</div>
 %elseif;(evar.t = "C")
-    <div style="text-align: center">%apply;female_line("self", evar.v) </div>
+    <div style="text-align: center">%apply;female_line("self", evar_v) </div>
 %end;
   %base_trailer;
   %copyright;

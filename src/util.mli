@@ -23,7 +23,6 @@ value update_wf_trace : config -> string -> unit;
 value get_referer : config -> string;
 
 value no_html_tags : string -> string;
-value clean_html_tags : string -> list string -> string;
 
 value nl : unit -> unit;
 value html : config -> unit;
@@ -32,8 +31,6 @@ value html_p : config -> unit;
 value html_li : config -> unit;
 value unauthorized : config -> string -> unit;
 value string_of_ctime : config -> string;
-
-value redirect_HTML : config -> string -> string -> unit;
 
 value commd : config -> string;
 value code_varenv : string -> string;
@@ -60,21 +57,11 @@ value is_restricted : config -> base -> iper -> bool;
 value is_hidden : person -> bool;
 
 value pget : config -> base -> iper -> person;
-value string_gen_person : 
-  base -> gen_person iper istr -> gen_person iper string
-;
-value string_gen_family : 
-  base -> gen_family iper istr -> gen_family iper string
-;
 
 type p_access = (base -> person -> string * base -> person -> string);
 value std_access : p_access;
 value raw_access : p_access;
 
-(* Fonctions d'écriture du nom et prénom d'un individu en fonction de : *)
-(*   - son/ses titre de noblesse                                        *)
-(*   - son/ses nom public                                               *)
-(*   - son/ses sobriquets ...                                           *)
 value gen_person_text : p_access -> config -> base -> person -> string;
 value gen_person_text_no_html : p_access -> config -> base -> person -> string;
 value gen_person_text_without_title :
@@ -84,26 +71,26 @@ value gen_person_title_text :
   (config -> base -> person -> string -> string) ->
     p_access -> config -> base -> person -> string
 ;
+
+value reference : config -> base -> person -> string -> string;
+value update_family_loop : config -> base -> person -> string -> string;
+value no_reference : config -> base -> person -> string -> string;
 value person_text : config -> base -> person -> string;
 value person_text_no_html : config -> base -> person -> string;
 value person_text_without_surname : config -> base -> person -> string;
 value person_text_no_surn_no_acc_chk : config -> base -> person -> string;
 value person_text_without_title : config -> base -> person -> string;
-value main_title : config -> base -> person -> option title;
 value titled_person_text : config -> base -> person -> title -> string;
 value one_title_text : config -> base -> person -> title -> string;
 value person_title_text : config -> base -> person -> string;
 value person_title : config -> base -> person -> string;
 
-value reference : config -> base -> person -> string -> string;
-value no_reference : config -> base -> person -> string -> string;
 value referenced_person_title_text : config -> base -> person -> string;
 value referenced_person_text : config -> base -> person -> string;
 value referenced_person_text_without_surname :
   config -> base -> person -> string;
 
-value update_family_loop : config -> base -> person -> string -> string;
-
+value main_title : config -> base -> person -> option title;
 value p_getenv : list (string * string) -> string -> option string;
 value p_getint : list (string * string) -> string -> option int;
 value create_env : string -> list (string * string);
@@ -111,13 +98,11 @@ value capitale : string -> string;
 value index_of_next_char : string -> int -> int;
 
 value open_etc_file : string -> option in_channel;
-value open_hed_trl : config -> string -> option in_channel;
 value open_templ : config -> string -> option in_channel;
 value copy_from_etc :
   list (char * unit -> string) -> string -> string -> in_channel -> unit;
 value string_with_macros :
   config -> list (char * unit -> string) -> string -> string;
-value string_of_place : config -> string -> string;
 value filter_html_tags : string -> string;
 value allowed_tags_file : ref string;
 value body_prop : config -> string;
@@ -136,7 +121,7 @@ value get_particle : base -> string -> string;
 value old_surname_begin : string -> string;
 value old_surname_end : string -> string;
 
-value specify_homonymous : config -> base -> person -> bool -> unit;
+value specify_homonymous : config -> base -> person -> unit;
 
 type format2 'a 'b = format4 'a unit string 'b;
 
@@ -267,5 +252,3 @@ value print_reference : config -> string -> int -> string -> unit;
 value print_tips_relationship : config -> unit;
 
 value print_image_sex : config -> person -> int -> unit;
-
-value display_options : config -> string;

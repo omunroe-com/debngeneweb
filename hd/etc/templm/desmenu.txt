@@ -3,7 +3,7 @@
 <head>
   <!-- $Id: desmenu.txt,v 5.10 2007-07-25 15:01:02 ddr Exp $ -->
   <!-- Copyright (c) 1998-2007 INRIA -->
-  <!-- Modified mickroue(a)yahoo.fr 20121003 templ=templm -->
+  <!-- Modified mickroue(a)yahoo.fr 2012/04/26 geneweb-6.04 templ=templm -->
   <title>%nn;
     %apply;a_of_b_gr_eq_lev%with;
       [*descendants]%nn;
@@ -14,7 +14,6 @@
     %end;
   </title>
   <meta name="robots" content="none"%/>
-  <meta name="format-detection" content="telephone=no"%/>
   <meta http-equiv="Content-Type" content="text/html; charset=%charset;"%/>
   <meta http-equiv="Content-Style-Type" content="text/css"%/>
   <link rel="shortcut icon" href="%image_prefix;/favicon_gwd.png"%/>
@@ -60,7 +59,7 @@
   </div>
 %end;
 
-  <form name="desmenu" method="get" action="%action;">
+  <form method="get" action="%action;">
     <p>
       %hidden;
       <input type="hidden" name="m" value="D"%/>
@@ -96,33 +95,32 @@
           </select>
           <br%/>
           <label>
-            <input type="checkbox" name="cgl" value="on" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+            <input type="checkbox" name="cgl" value="on"%/>
             [*cancel GeneWeb links]
           </label>
           <br%/>
           <label>
-            <input type="radio" name="t" value="S" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+            <input type="radio" name="t" value="S"%/>
             [*only the generation selected]
           </label>
           <br%/>
           <label>
-            <input type="radio" name="t" value="N" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+            <input type="radio" name="t" value="N"%/>
             [*families with encoding]
           </label>
           <br%/>
           <label>
-            <input type="radio" name="t" value="G" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+            <input type="radio" name="t" value="G"%/>
             [*index of the descendants]
           </label>
           <br%/>
           <label>
-            <input type="radio" name="t" value="C" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+            <input type="radio" name="t" value="C"%/>
             [*index of the spouses (non descendants)]
           </label>
           <br%/>
-          <input type="hidden" name="num" value="on"%/>
           <label>
-            <input type="radio" name="t" value="A" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+            <input type="radio" name="t" value="A"%/>
             d’Aboville
           </label>
           <br%/>
@@ -130,8 +128,8 @@
     <fieldset>
     <legend>
       <label>
-        <input type="radio" name="t" value="L" checked="checked" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
-        [*long display]0
+        <input type="radio" name="t" value="L" checked="checked"%/>
+        [*list/list (ancestors)]0
       </label>
     </legend>
       %if;(bvar.max_desc_level = "" and max_desc_level > 12)
@@ -142,68 +140,64 @@
         ([maximum] %bvar.max_desc_level; [generation/generations]1)
       %end;
       <label>
-        <input type="radio" name="t" value="M" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+        <input type="radio" name="t" value="M"%/>
         [*male line/female line]0
       </label>
       <br%/>
       <label>
-        <input type="radio" name="t" value="F" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+        <input type="radio" name="t" value="F"%/>
         [*male line/female line]1
       </label>
       <br%/>
       <label>
-        <input type="checkbox" name="always_surname" value="no" checked="checked" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
-        [*first name/first names]0 <span style="text-decoration:line-through;">[*surname/surnames]0</span>
+        <input type="checkbox" name="alwsurn" value="yes"%/>
+        [*with::surname/surnames]1
       </label>
       <br%/>
       <label>
-        <input type="checkbox" name="sd" value="on" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
-        [*date/dates]0 : 
-        %if;([ !dates order]0 = "ddmmyyyy")[year/month/day]2/[year/month/day]1/[year/month/day]0
-        %elseif;([ !dates order]0 = "mmddyyyy")[year/month/day]1/[year/month/day]2/[year/month/day]0
-        %else;[year/month/day]0/[year/month/day]1/[year/month/day]2
-        %end;
-      </label>
-      <br%/>
-      <label>
-        <input type="checkbox" name="alias" value="on" checked="checked" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+        <input type="checkbox" name="alias" value="on" checked="checked" onchange="valid('tG')"%/>
           [*surname alias], [*first name alias]
         </label>
       <br%/>
+      <label>
+        <input type="checkbox" name="rel" value="on"%/>
+        [*relation/relations]1
+      </label>
+      <br%/>
         <label>
-        <input type="checkbox" name="spouse" value="on" checked="checked" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+        <input type="checkbox" name="spouse" value="on" checked="checked"%/>
         [*include spouses]
         </label>
       <br%/>
       <label>
-        <input type="checkbox" name="parents" value="on" checked="checked" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+        <input type="checkbox" name="parents" value="on" checked="checked"%/>
         [*parents]
       </label>
       <br%/>
       <label>
-        <input type="checkbox" name="rel" value="on" checked="checked" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
-        [*relation/relations]1
+        <input type="checkbox" name="witn" value="on"%/>
+        [*witness/witnesses]1 ([marriage/marriages]1)
       </label>
       <br%/>
       <label>
-        <input type="checkbox" name="notes" value="on" checked="checked" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+        <input type="checkbox" name="comm" value="on"%/>
+        [*comment] ([marriage/marriages]1)
+      </label>
+      <br%/>
+      <label>
+        <input type="checkbox" name="notes" value="on" checked="checked"%/>
         [*note/notes]1
       </label>
       <br%/>
       <label>
-        <input type="checkbox" name="src" value="on" checked="checked" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+        <input type="checkbox" name="src" value="on" checked="checked"%/>
         [*source/sources]1
-      </label>
-      <br%/>
-      <label>
-        <input type="checkbox" name="inline" value="on"%/>
-        [*display notes/sources inline]
       </label>
     </fieldset>
     <fieldset>
     <legend>
       <label>
-        <input type="radio" id="tT" name="t" value="T" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+        <input type="radio" id="tT" name="t" value="T"%/>
         [*tree]
         %if;(bvar.max_desc_tree = "" and max_desc_level >= 4)
           ([maximum] 4 [generation/generations]1)
@@ -215,7 +209,7 @@
       </label>
     </legend>
       <label>
-       <input type="checkbox" name="image" value="on" onchange="valid('tT')" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+       <input type="checkbox" name="image" value="on" onchange="valid('tT')"%/>
         [*image/images]1
       </label>
       <br%/>
@@ -228,25 +222,25 @@
         <tr>
           <td align="%left;">[*color]&nbsp;</td>
           <td>
-            <input type="radio" name="color" value="" checked="checked" onchange="valid('tT')" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+            <input type="radio" name="color" value="" checked="checked" onchange="valid('tT')"%/>
           </td>
           <td class="bg1">
-            <input type="radio" name="color" value="bg1" onchange="valid('tT')" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+            <input type="radio" name="color" value="bg1" onchange="valid('tT')"%/>
           </td>
           <td class="bg2">
-            <input type="radio" name="color" value="bg2" onchange="valid('tT')" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+            <input type="radio" name="color" value="bg2" onchange="valid('tT')"%/>
           </td>
           <td class="bg3">
-            <input type="radio" name="color" value="bg3" onchange="valid('tT')" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+            <input type="radio" name="color" value="bg3" onchange="valid('tT')"%/>
           </td>
           <td class="bg4">
-            <input type="radio" name="color" value="bg4" onchange="valid('tT')" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+            <input type="radio" name="color" value="bg4" onchange="valid('tT')"%/>
           </td>
           <td class="bg5">
-            <input type="radio" name="color" value="bg5" onchange="valid('tT')" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+            <input type="radio" name="color" value="bg5" onchange="valid('tT')"%/>
           </td>
           <td class="bg6">
-            <input type="radio" name="color" value="bg6" onchange="valid('tT')" onkeydown="if (event.keyCode == 13) javascript:document.desmenu.submit();"%/>
+            <input type="radio" name="color" value="bg6" onchange="valid('tT')"%/>
           </td>
         </tr>
       </table>
