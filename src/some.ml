@@ -84,7 +84,7 @@ value print_branch_to_alphabetic conf x nb_branch = do {
 
 
 (* **********************************************************************)
-(*  [Fonc] print_branch_to_alphabetic : conf -> string -> int -> unit   *)
+(*  [Fonc] print_alphabetic_to_branch : conf -> string -> int -> unit   *)
 (** [Description] : A partir de l'affichage alphabétique, permet 
                     d'afficher les liens pour un affichage par branches.
     [Args] :
@@ -202,9 +202,9 @@ value print_elem conf base is_surname (p, xl) =
          else Wserver.wprint "%s" p;
          Wserver.wprint "</a>";
          Wserver.wprint "%s" (Date.short_dates_text conf base x);
-         Wserver.wprint " <em>";
-         specify_homonymous conf base x;
-         Wserver.wprint "</em>\n";
+         stag "em" begin
+           specify_homonymous conf base x True;
+         end;
        })
     xl
 ;
@@ -859,9 +859,9 @@ value surname_print conf base not_found_fun x =
       let pl =
         List.fold_right
           (fun p pl -> 
-	    if not (is_hide_names conf p) || (fast_auth_age conf p) 
-	    then [p :: pl] 
-	    else pl)
+	          if not (is_hide_names conf p) || (fast_auth_age conf p) 
+	          then [p :: pl] 
+	          else pl)
           pl []
       in
       print_family_alphabetic x conf base pl

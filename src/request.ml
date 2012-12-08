@@ -483,14 +483,14 @@ value family_m conf base =
   | Some "LEX" -> Srcfile.print_lexicon conf base
   | Some "MISC_NOTES" -> Notes.print_misc_notes conf base
   | Some "MISC_NOTES_SEARCH" -> Notes.print_misc_notes_search conf base
+  | Some "MOD_DATA" when conf.wizard -> UpdateData.print_mod conf base
+  | Some "MOD_DATA_OK" when conf.wizard -> UpdateData.print_mod_ok conf base
   | Some "MOD_FAM" when conf.wizard -> UpdateFam.print_mod conf base
   | Some "MOD_FAM_OK" when conf.wizard -> UpdateFamOk.print_mod conf base
   | Some "MOD_IND" when conf.wizard -> UpdateInd.print_mod conf base
   | Some "MOD_IND_OK" when conf.wizard -> UpdateIndOk.print_mod conf base
   | Some "MOD_NOTES" when conf.wizard -> Notes.print_mod conf base
   | Some "MOD_NOTES_OK" when conf.wizard -> Notes.print_mod_ok conf base
-  | Some "MOD_P" when conf.wizard -> Place.print_mod conf base
-  | Some "MOD_P_OK" when conf.wizard -> Place.print_mod_ok conf base
   (* Fonction obsolète, la documentation n'étant plus à jour *)
   (* | Some "MOD_WDOC" when conf.wizard -> Doc.print_mod_wdoc conf *)
   (* | Some "MOD_WDOC_OK" when conf.wizard -> Doc.print_mod_wdoc_ok conf base *)
@@ -848,7 +848,7 @@ value this_request_updates_database conf =
         "KILL_ANC" | "MOD_FAM_OK" | "MOD_IND_OK" | "MOD_NOTES_OK" |
         "MOD_WIZNOTES_OK" | "MRG_DUP_IND_Y_N" | "MRG_DUP_FAM_Y_N" |
         "MRG_IND" | "MRG_MOD_FAM_OK" | "MRG_MOD_IND_OK" |
-        "MOD_P_OK" | "SND_IMAGE_OK" -> True
+        "MOD_DATA_OK" | "SND_IMAGE_OK" -> True
       | _ -> False ]
   | _ -> False ]
 ;

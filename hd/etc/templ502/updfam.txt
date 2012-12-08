@@ -156,7 +156,7 @@ function changeCalendar(e,v,m,c) {
     <tr>
       <td>xlab</td>
       <td>
-        %if;([ !dates order]0 = "ddmmyy")
+        %if;([ !dates order]0 = "ddmmyy" or [ !dates order]0 = "ddmmyyyy" or [ !dates order]0 = "dmyyyy")
           <label>
           [year/month/day]2
           <input name="xvar_dd" size="2" maxlength="2" value="%xdate.day;"%/>
@@ -164,6 +164,19 @@ function changeCalendar(e,v,m,c) {
           [year/month/day]1
           <span id="xvar_mm_sel"><input name="xvar_mm" size="2"%sp;
            maxlength="2" value="%xdate.month;"%/></span></label><label>
+          [year/month/day]0
+          <input name="xvar_yyyy" size="6" maxlength="6"%sp;
+           value="%xdate.year;"%/>
+          </label>
+        %elseif;([ !dates order]0 = "mmddyyyy")
+          <label>
+          [year/month/day]1
+          <span id="xvar_mm_sel"><input name="xvar_mm" size="2"%sp;
+           maxlength="2" value="%xdate.month;"%/></span></label>
+          <label>
+          [year/month/day]2
+          <input name="xvar_dd" size="2" maxlength="2" value="%xdate.day;"%/>
+          </label><label>
           [year/month/day]0
           <input name="xvar_yyyy" size="6" maxlength="6"%sp;
            value="%xdate.year;"%/>
@@ -242,11 +255,18 @@ function changeCalendar(e,v,m,c) {
 
 %define;small_date(kind,xvar,xx,verbose)
   <td>
-    %if;([ !dates order]0 = "ddmmyy")
+    %if;([ !dates order]0 = "ddmmyy" or [ !dates order]0 = "ddmmyyyy" or [ !dates order]0 = "dmyyyy")
       <input name="xvar_dd" size="2" maxlength="2"%sp;
        value="%xx.create.kind_day;"%/>/
       <input name="xvar_mm" size="2" maxlength="2"%sp;
        value="%xx.create.kind_month;"%/>/
+      <input name="xvar_yyyy" size="6" maxlength="6"%sp;
+       value="%xx.create.kind_year;"%/>
+    %elseif;([ !dates order]0 = "mmddyyyy")
+      <input name="xvar_mm" size="2" maxlength="2"%sp;
+       value="%xx.create.kind_month;"%/>/
+      <input name="xvar_dd" size="2" maxlength="2"%sp;
+       value="%xx.create.kind_day;"%/>/
       <input name="xvar_yyyy" size="6" maxlength="6"%sp;
        value="%xx.create.kind_year;"%/>
     %else;
@@ -408,7 +428,7 @@ function changeCalendar(e,v,m,c) {
   </tr>
 </table>
 
-%apply;date([*date]0, "marr", "marriage")
+%apply;date([*date/dates]0, "marr", "marriage")
 %apply;source("marr", "marriage")
 
 <h4>[*witness/witnesses]1</h4>
@@ -483,7 +503,7 @@ function changeCalendar(e,v,m,c) {
  %if;(divorce = "separated") checked="checked"%end;%/>[*separated]
 </label>
 </p>
-%apply;date([*date]0, "div", "divorce")
+%apply;date([*date/dates]0, "div", "divorce")
 
 <h4><label for="comment">[*comment]</label></h4>
 
