@@ -16,6 +16,7 @@ type create_info =
     ci_death : death;
     ci_death_date : option date;
     ci_death_place : string;
+    ci_occupation : string;
     ci_public : bool }
 ;
 type create = [ Create of sex and option create_info | Link ];
@@ -290,6 +291,67 @@ value print_warning conf base =
           end;
         end;
       }
+  | ChangedOrderOfMarriages p before after -> do {
+      Wserver.wprint "%s\n"
+        (capitale (transl conf "changed order of marriages"));
+      Wserver.wprint "-&gt;\n";
+      let print_list arr diff_arr =
+        Array.iteri
+          (fun i ifam ->
+             let fam = foi base ifam in
+             let sp = spouse (get_key_index p) fam in
+             let sp = poi base sp in
+             tag "li" "%s"
+               (if diff_arr.(i) then "style=\"background:pink\"" else "")
+             begin
+               print_first_name conf base p;
+               Wserver.wprint "  &amp;";
+               Wserver.wprint "%s\n" 
+                 (Date.short_marriage_date_text conf base fam p sp);
+               print_someone conf base sp;
+               Wserver.wprint "\n";
+             end)
+          arr
+      in
+      let (bef_d, aft_d) = Diff.f before after in
+      tag "table" "style=\"margin:1em\"" begin
+        tag "tr" begin
+          tag "td" begin
+            tag "ul" "style=\"list-style-type:none\"" begin
+              print_list before bef_d;
+            end;
+          end;
+          tag "td" begin
+            tag "ul" "style=\"list-style-type:none\"" begin
+              print_list after aft_d;
+            end;
+          end;
+        end;
+      end
+    }
+  | CloseChildren ifam des elder x ->
+      let cpl = foi base ifam in
+      do {
+        Wserver.wprint
+          (fcapitale
+             (ftransl conf
+                "the following children of %t and %t are born very close"))
+          (fun _ ->
+             print_someone_strong conf base (poi base (get_father cpl)))
+          (fun _ ->
+             print_someone_strong conf base (poi base (get_mother cpl)));
+        Wserver.wprint ":\n";
+        tag "ul" begin
+          stag "li" begin
+            print_first_name_strong conf base elder;
+            Wserver.wprint "%s" (Date.short_dates_text conf base elder);
+          end;
+          stag "li" begin
+            print_first_name_strong conf base x;
+            Wserver.wprint "%s" (Date.short_dates_text conf base x);
+          end;
+        end;
+      }
   | DeadTooEarlyToBeFather father child ->
       Wserver.wprint
         (ftransl conf "\
@@ -338,6 +400,12 @@ value print_warning conf base =
       do {
         Wserver.wprint "%s\n%s\n" (print_someone_strong conf base p)
           (transl conf "is a very young parent");
+        Wserver.wprint "(%s)" (Date.string_of_age conf a);
+      }
+  | ParentTooOld p a ->
+      do {
+        Wserver.wprint "%s\n%s\n" (print_someone_strong conf base p)
+          (transl conf "is a very old parent");
         Wserver.wprint "(%s)" (Date.string_of_age conf a);
       }
   | TitleDatesError p t ->
@@ -493,9 +561,17 @@ value error_locked conf =
             List.iter
               (fun (x, v) ->
                  if x = "retry" then ()
-                 else
-                   xtag "input" "type=\"hidden\" name=\"%s\" value=\"%s\"" x
-                     (quote_escaped (decode_varenv v)))
+                 else do {
+                   (* Seul un textarea peut contenir des sauts de ligne. *)
+                   (* On remplace donc l'input par un textarea.          *)
+                   if x = "notes" then
+                     tag "textarea" "style=\"display:none;\" name=\"%s\"" x 
+                       begin
+                         Wserver.wprint "%s" (quote_escaped (decode_varenv v));
+                       end
+                   else
+                     xtag "input" "type=\"hidden\" name=\"%s\" value=\"%s\"" x
+                       (quote_escaped (decode_varenv v))})
               (conf.henv @ conf.env);
             (* just to see in the traces... *)
             xtag "input" "type=\"hidden\" name=\"retry\" value=\"%s\""
@@ -722,8 +798,16 @@ value print_create_conflict conf base p var =
     tag "form" "method=\"post\" action=\"%s\"" conf.command begin
       List.iter
         (fun (x, v) ->
-           xtag "input" "type=\"hidden\" name=\"%s\" value=\"%s\"" x
-             (quote_escaped (decode_varenv v)))
+           (* Seul un textarea peut contenir des sauts de ligne. *)
+           (* On remplace donc l'input par un textarea.          *)
+           if x = "notes" then
+             tag "textarea" "style=\"display:none;\" name=\"%s\"" x 
+               begin
+                 Wserver.wprint "%s" (quote_escaped (decode_varenv v));
+               end
+           else
+             xtag "input" "type=\"hidden\" name=\"%s\" value=\"%s\"" x
+               (quote_escaped (decode_varenv v)))
         (conf.henv @ conf.env);
       xtag "input" "type=\"hidden\" name=\"field\" value=\"%s\"" var;
       xtag "input" "type=\"hidden\" name=\"free_occ\" value=\"%d\"" free_n;
@@ -810,6 +894,11 @@ value insert_person conf base src new_persons (f, s, o, create, var) =
                 (dead, dpl)
             | _ -> (infer_death conf birth, "") ]
           in
+          let occupation = 
+            match info with
+            [ Some { ci_occupation = occupation } -> occupation
+            | _ -> "" ]
+          in
           let access =
             match info with
             [ Some {ci_public = p} -> if p then Public else IfTitles
@@ -822,7 +911,8 @@ value insert_person conf base src new_persons (f, s, o, create, var) =
              first_names_aliases = []; surnames_aliases = [];
              public_name = empty_string; qualifiers = []; aliases = [];
              titles = []; rparents = []; related = [];
-             occupation = empty_string; sex = sex; access = access;
+             occupation = Gwdb.insert_string base occupation;
+             sex = sex; access = access;
              birth = Adef.codate_of_od birth;
              birth_place = Gwdb.insert_string base birth_place;
              birth_src = empty_string; baptism = Adef.codate_of_od baptism;

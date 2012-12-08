@@ -1,8 +1,0 @@
-* Find a way to get the port number from /etc/default/geneweb for the
-menu entry. I tried command="/usr/bin/www-browser
-http://localhost:`cat /etc/default/geneweb |grep -e '^PORT'| cut -f2
--d'='`" in menu entry but this does not seem to work..:-(
-
-* Really deal with permissions : users should not be able to write
-other's databases
-
