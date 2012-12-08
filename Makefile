@@ -18,6 +18,7 @@ out::
 	cd gwb2ged; $(MAKE) all
 	cd setup; $(MAKE) all
 	cd gwtp; $(MAKE) all
+	cd gui; $(MAKE) all
 
 opt::
 	cd wserver; $(MAKE) opt
@@ -27,6 +28,7 @@ opt::
 	cd gwb2ged; $(MAKE) opt
 	cd setup; $(MAKE) opt
 	cd gwtp; $(MAKE) opt
+	cd gui; $(MAKE) opt
 
 install:
 	mkdir -p $(PREFIX)/bin
@@ -42,6 +44,8 @@ install:
 	mkdir -p $(LANGDIR)/lang
 	cp hd/lang/*.txt $(LANGDIR)/lang/.
 	mkdir -p $(LANGDIR)/images
+	mkdir -p $(LANGDIR)/images/flags
+	cp hd/images/flags/*.jpg hd/images/flags/*.png $(LANGDIR)/images/flags/.
 	cp hd/images/*.jpg hd/images/*.png hd/images/*.ico $(LANGDIR)/images/.
 	mkdir -p $(LANGDIR)/etc
 	cp -R hd/etc/* $(LANGDIR)/etc/.
@@ -75,6 +79,7 @@ wrappers:
 	  echo -ne 'endlocal\r\n' >> $(DESTDIR)/gwsetup.bat; \
 	  echo -ne 'cd bases\r\n' >> $(DESTDIR)/gwsetup.bat; \
 	  echo -ne 'start /MIN ..\\gw\\gwsetup -lang fr -gd ..\\gw\r\n' >> $(DESTDIR)/gwsetup.bat; \
+	  echo -ne 'start ..\\gw\\gui' > $(DESTDIR)/geneweb_gui.bat; \
 	else \
 	  (echo '#!/bin/sh'; \
 	   echo 'mkdir -p bases'; \
@@ -84,7 +89,9 @@ wrappers:
 	   echo 'mkdir -p bases'; \
 	   echo 'cd bases'; \
 	   echo 'exec ../gw/gwsetup -gd ../gw "$$@"') > $(DESTDIR)/gwsetup; \
-	  chmod +x $(DESTDIR)/gwd $(DESTDIR)/gwsetup; \
+	  (echo '#!/bin/sh'; \
+	   echo 'exec ../gw/gui') > $(DESTDIR)/geneweb_gui; \
+	  chmod +x $(DESTDIR)/gwd $(DESTDIR)/gwsetup $(DESTDIR)/geneweb_gui; \
 	fi
 
 new_distrib: classical_distrib
@@ -103,6 +110,8 @@ new_distrib: classical_distrib
 	cp setup/lang/*.htm $(DESTDIR)/gw/setup/lang/.
 	cp setup/lang/lexicon.txt $(DESTDIR)/gw/setup/lang/.
 	cp setup/gwsetup $(DESTDIR)/gw/gwsetup$(EXE)
+	cp gui/gw/gui_lex.txt $(DESTDIR)/gw/.
+	cp gui/gui $(DESTDIR)/gw/gui$(EXE)
 	cp LICENSE $(DESTDIR)/LICENSE.txt
 	cp etc/START.htm $(DESTDIR)/.
 	cp CHANGES $(DESTDIR)/CHANGES.txt
@@ -131,6 +140,8 @@ classical_distrib:
 	mkdir $(DESTDIR)/lang
 	cp hd/lang/*.txt $(DESTDIR)/lang/.
 	mkdir $(DESTDIR)/images
+	mkdir $(DESTDIR)/images/flags
+	cp hd/images/flags/*.jpg hd/images/flags/*.png $(DESTDIR)/images/flags/.
 	cp hd/images/*.jpg hd/images/*.png hd/images/*.ico $(DESTDIR)/images/.
 	mkdir $(DESTDIR)/etc
 	cp -R hd/etc/* $(DESTDIR)/etc/.
@@ -153,6 +164,7 @@ clean::
 	cd gwb2ged; $(MAKE) clean
 	cd setup; $(MAKE) clean
 	cd gwtp; $(MAKE) clean
+	cd gui; $(MAKE) clean
 	$(RM) -rf $(DESTDIR)
 	$(RM) -f *~ .#*
 
@@ -168,3 +180,4 @@ depend:
 	cd gwb2ged; $(MAKE) depend
 	cd setup; $(MAKE) depend
 	cd gwtp; $(MAKE) depend
+	cd gui; $(MAKE) depend

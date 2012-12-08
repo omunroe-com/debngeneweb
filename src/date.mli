@@ -10,7 +10,8 @@ value string_of_ondate : config -> date -> string;
 value string_of_date : config -> date -> string;
 value string_slash_of_date : config -> date -> string;
 value string_of_age : config -> dmy -> string;
-value prec_text : dmy -> string;
+value prec_year_text : config -> dmy -> string;
+value prec_text : config -> dmy -> string;
 value day_text : dmy -> string;
 value month_text : dmy -> string;
 value year_text : dmy -> string;
@@ -26,3 +27,5 @@ value before_date : dmy -> dmy -> bool;
 
 (* return the day of the week given the date as parameter *)
 value get_wday : config -> date -> string;
+
+value compare_date : date -> date -> int;

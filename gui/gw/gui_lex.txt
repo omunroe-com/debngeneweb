@@ -1,114 +1,202 @@
-# $Id: launch_lex.txt,v 1.2 2007-01-19 01:53:16 ddr Exp $
+# $Id: gui_lex.txt,v 1.2 2007-01-19 01:53:16 ddr Exp $
 # Copyright (c) 2006-2007 INRIA
 
-    Apply
-en: Apply
-fr: Appliquer
-
-    Available databases:
-en: Available databases:
-fr: Bases disponibles :
-
-    Browse
-en: Browse
-fr: Naviguer
-
-    Browser:
-en: Browser:
-fr: Navigateur :
-
-    Browser(s):
-en: Browser(s):
-fr: Navigateur(s) :
-
-    Cancel
-en: Cancel
-fr: Annuler
-
-    Change options
-en: Change options
-fr: Changer les options
-
-    Create a new database
-en: Create a new database
-fr: Créer une nouvelle base
-
-    Databases directory:
-en: Databases directory:
-fr: Répertoire des bases :
-
-    Enter the name:
-en: Enter the name:
-fr: Entrer le nom :
-
-    GeneWeb binary directory:
-en: GeneWeb binary directory:
-fr: Répertoire des binaires de GeneWeb :
-
-    GeneWeb system directory:
-en: GeneWeb system directory:
-fr: Répertoire système de GeneWeb :
-
-    HTTP Authentication:
-en: HTTP Authentication:
-fr: Authentification HTTP :
-
-    Next
-en: Next
-fr: Suivant
-
-    No databases.
-en: No databases.
-fr: Pas de bases.
+    error
+en: error
+fr: erreur
 
     OK
-en: OK
-fr: D'accord
+en: Ok
+fr: Ok
 
-    Port:
-en: Port:
-fr: Port :
+    open url in your favorite browser
+en: open this url in your favorite browser
+fr: ouvrez cette url dans votre navigateur préféré
 
-    Prev
-en: Prev
-fr: Précédent
+    Confirm
+en: confirm
+fr: confirmez
 
-    Quit
-en: Quit
-fr: Quitter
+    cancel
+en: cancel
+fr: annuler
 
-    Restart
-en: Restart
-fr: Redémarrer
+    database already exists
+en: database already exists
+fr: la base existe déjà
 
-    Select
-en: Select
-fr: Selectionner
+    log
+en: log
+fr: log
 
-    Select browser language if any:
-en: Select browser language if any:
-fr: Selectionner la langue du navigateur :
+    create
+en: create
+fr: créer
 
-    Server is running...
-en: Server is running...
-fr: Le serveur tourne... 
+    create a database
+en: create a database
+fr: créer une base
 
-    basic
-en: basic
-fr: basique
+    view log
+en: view log
+fr: voir le log
 
-    digest
-en: digest
-fr: digest
+    doc
+en: doc
+fr: doc
 
-    no
-en: no
-fr: non
+    view doc
+en: view doc
+fr: voir doc
 
-    other:
-en: other:
-fr: autre :
+    setup
+en: setup
+fr: paramètre
 
-    yes
-en: yes
-fr: oui
+    setup GeneWeb
+en: setup GeneWeb
+fr: paramétrer GeneWeb
+
+    quit
+en: quit
+fr: quitter
+
+    quit GeneWeb
+en: quit GeneWen
+fr: quitter GeneWeb
+
+    no databases.
+en: no databases.
+fr: pas de base.
+
+    available databases
+en: available databases
+fr: base disponibles
+
+    browse
+en: browse
+fr: parcourir
+
+    tools
+en: tools
+fr: outils
+
+    name of the database:
+en: name of the database:
+fr: nom de la base
+
+    select a file
+en: select a file
+fr: selectionnez un fichier
+
+    Configuration gwf file of 
+en: Configuration gwf file of 
+fr: configuration du fichier gwf de 
+
+    toolbox
+en: toolbox
+fr: Boîte à outil pour la base 
+
+    Unknown file
+en: Unknown file
+fr: Fichier inconnu
+
+    enter a name
+en: enter a name
+fr: entrez un nom
+
+    Setup GeneWeb
+en: Setup GeneWeb
+fr: Configurer GeneWeb
+
+    This assistant will help you to setup GeneWeb
+en: This assistant will help you to setup GeneWeb
+fr: Cet assistant va vous aider à configurer GeneWeb
+
+    select bases directory
+en: Select bases directory
+fr: Selectionnez le répertoire des bases
+
+    enter port
+en: Setup eventually the port number
+fr: Configurez éventuellement le numéro de port
+
+    select browser
+en: Select the browser you want to use
+fr: Selectionnez le navigateur que vous voulez utiliser
+
+    save preferences
+en: Save preference
+fr: Enregistrer la configuration
+
+    Introduction
+en: Introduction
+fr: Introduction
+
+    Setup bases directory
+en: Setup bases directory
+fr: Configuration du répertoire des bases
+
+    Setup port
+en: Setup port
+fr: Configuration du port
+
+    Setup browser
+en: Setup browser
+fr: Configuration du navigateur
+
+    Finnish
+en: Finnish
+fr: Terminer
+
+    Home
+en: Home
+fr: Accueil
+
+    extract gw file
+en: Save the base in the GeneWeb format
+fr: Sauvegarder la base au format GeneWeb
+
+    Extract GW
+en: Save GW
+fr: Sauvegarde GW
+
+    extract ged file
+en: Save the base in the Gedcom format
+fr: Sauvegarder la base au format Gedcom
+
+    Extract GED
+en: Save Gedcom
+fr: Sauvegarde Gedcom
+
+    setup base options
+en: Setup base options
+fr: Configurer les options de la base
+
+    setup gwf file
+en: Setup gwf file
+fr: Configuration du fichier gwf
+
+    Clean database
+en: Deep clean (save, import, consang, upd_nldb)
+fr: Netoyage en profondeur (export, import, consang, upd_nldb)
+
+    Clean
+en: Clean
+fr: Netoyage
+
+    Rename
+en: Rename
+fr: Renommer
+
+    Delete
+en: Delete
+fr: Supprimer
+
+    Consang
+en: Consang
+fr: Consang
+
+    Update_nldb
+en: Update_nldb
+fr: Update_nldb

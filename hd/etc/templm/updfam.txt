@@ -1,9 +1,11 @@
+%let;birth_symbol;%if;(bvar.birth_symbol != "")%bvar.birth_symbol;%else;&deg;%end;%in;
+%let;death_symbol;%if;(bvar.death_symbol != "")%bvar.death_symbol;%else;&dagger;%end;%in;
 %doctype;
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <!-- $Id: updfam.txt,v 5.10 2007/01/19 01:53:16 ddr Exp $ -->
   <!-- Copyright (c) 1998-2007 INRIA -->
-  <!-- Modified mickroue(a)yahoo.fr 2012/04/02 geneweb-6.04 templ=templm -->
+  <!-- Modified mickroue(a)yahoo.fr 20120930 templ=templm -->
   <title>%nn;
     %if;(evar_m = "ADD_FAM" or evar_m = "ADD_FAM_OK")
       [*add::family/families]0%nn;
@@ -16,6 +18,7 @@
     %end;
   </title>
   <meta name="robots" content="none"%/>
+  <meta name="format-detection" content="telephone=no"%/>
   <meta http-equiv="Content-Type" content="text/html; charset=%charset;"%/>
   <meta http-equiv="Content-Style-Type" content="text/css"%/>
   <link rel="shortcut icon" href="%image_prefix;/favicon_gwd.png"%/>
@@ -112,10 +115,9 @@
   {
     var d = document.getElementById(id);
     var val = c.options%[c.selectedIndex%].value;
-
     if (val == cond1 || val == cond2)
       {d.style.display='inline';}
-    else  
+    else
       {d.style.display='none';}
   }
   function changeFocus(event,id) {
@@ -124,7 +126,7 @@
     {
      document.getElementById(id).focus();
      return false;
-    }    
+    }
   }
   function valid(id) {
     document.getElementById(id).focus();
@@ -149,12 +151,21 @@
   {
     document.getElementById(id).className='background_sex_1';
   }
+  function compute(id,prec)
+  {
+   var x = document.getElementById(id);
+   var y = document.getElementById(prec);
+   if (x.value != '' && x.value != eval(x.value))
+   { x.value = eval(x.value);
+     y.value = 'about'
+   }
+  }
 -->
 </script>
   
   %define;sure_date(xvar)
     class="%if;(xvar.prec = "sure")sure%else;not_sure%end;"%nn;
-  %end;  
+  %end;
   
  %define;date(xlab,xvar,xdate)
     <span %apply;sure_date("xdate")>
@@ -166,18 +177,26 @@
         <option value="F"%if;(xdate.calendar = "french") selected="selected"%end;>[*gregorian/julian/french/hebrew]2</option>
         <option value="H"%if;(xdate.calendar = "hebrew") selected="selected"%end;>[*gregorian/julian/french/hebrew]3</option>
       </select>
-      %if;([ !dates order]0 = "ddmmyy")
-        <label %apply;accesskey("xvar")>xlab
+      %if;([ !dates order]0 = "ddmmyyyy")
+        <label %apply;accesskey("xvar")>xlab%nn;
           <input id="xvar_d1" name="xvar_dd" class="number" autocomplete="off" title="[year/month/day]2" size="2" maxlength="2"%sp;
            value="%xdate.day;" onkeypress="javascript:return changeFocus(event,'xvar_d2');"%/></label>
         <span id="xvar_mm_sel"><input id="xvar_d2" name="xvar_mm" class="number" autocomplete="off" title="[year/month/day]1" size="2" maxlength="2"%sp;
          value="%xdate.month;" onkeypress="javascript:return changeFocus(event,'xvar_d3');"%/></span>
-        <input id="xvar_d3" name="xvar_yyyy" class="number" autocomplete="off" title="? /[year/month/day]0/" size="5" maxlength="6"%sp;
-         value="%xdate.year;"onkeypress="javascript:return changeFocus(event,'xvar_d4');"%/>
+        <input id="xvar_d3" name="xvar_yyyy" class="number" autocomplete="off" title="? /[year/month/day]0/" size="6" maxlength="12"%sp;
+         value="%xdate.year;" onkeypress="javascript:return changeFocus(event,'xvar_d4');" onblur="javascript:compute('xvar_d3','xvar_d4')"%/>
+      %elseif;([ !dates order]0 = "mmddyyyy")
+        <label for="xvar_d1" %apply;accesskey("xvar")>xlab</label>%nn;
+          <span id="xvar_mm_sel"><input id="xvar_d1" name="xvar_mm" class="number" autocomplete="off" title="[year/month/day]1" size="2" maxlength="2"%sp;
+         value="%xdate.month;" onkeypress="javascript:return changeFocus(event,'xvar_d2');"%/></span>
+        <input id="xvar_d2" name="xvar_dd" class="number" autocomplete="off" title="[year/month/day]2" size="2" maxlength="2"%sp;
+           value="%xdate.day;" onkeypress="javascript:return changeFocus(event,'xvar_d3');"%/>
+        <input id="xvar_d3" name="xvar_yyyy" class="number" autocomplete="off" title="? /[year/month/day]0/" size="6" maxlength="12"%sp;
+         value="%xdate.year;" onkeypress="javascript:return changeFocus(event,'xvar_d4');" onblur="javascript:compute('xvar_d3','xvar_d4')"%/>
       %else;
         <label %apply;accesskey("xvar")>xlab
-          <input id="xvar_d1" name="xvar_yyyy" class="number" autocomplete="off" title="? /[year/month/day]0/" size="5" maxlength="6"%sp;
-           value="%xdate.year;" onkeypress="javascript:return changeFocus(event,'xvar_d2');"%/></label>
+          <input id="xvar_d1" name="xvar_yyyy" class="number" autocomplete="off" title="? /[year/month/day]0/" size="6" maxlength="12"%sp;
+           value="%xdate.year;" onkeypress="javascript:return changeFocus(event,'xvar_d2');" onblur="javascript:compute('xvar_d1','xvar_d4')"%/></label>
         <span id="xvar_mm_sel"><input id="xvar_d2" name="xvar_mm" class="number" autocomplete="off" title="[year/month/day]1" size="2" maxlength="2"%sp;
          value="%xdate.month;" onkeypress="javascript:return changeFocus(event,'xvar_d3');"%/></span>
         <input id="xvar_d3" name="xvar_dd" class="number" autocomplete="off" title="[year/month/day]2" size="2" maxlength="2"%sp;
@@ -205,17 +224,13 @@
   %end;
 
   %define;source(xvar, xx)
-    <label>[*source/sources]0
-    <input name="xvar_src" size="40" maxlength="200"
+    <label>[*source/sources]0%nn;
+    <input name="xvar_src" size="90" maxlength="200"
      value="%xx_src;"%sp;id="xvar_src"%/></label>
   %end;
 %(<!-- End define (used in updind.txt, updfam.txt)  -->%)
-    
-%( <!-- Begin define  --> %)
 
-  %let;death_symbol;
-    %if;(bvar.death_symbol != "")%bvar.death_symbol;%else;&dagger;%end;
-  %in;
+%( <!-- Begin define  --> %)
 
   %define;search_focus(xcnt)
     %if;(evar_ins_witnxcnt = "on")
@@ -243,8 +258,10 @@
     %elseif;(evar_ins_ch > 1 and evar.ins_ch < 10)
       onload="javascript:document.upd.submit();"%nn;
     %elseif;(marriage.prec != "sure")
-      %if;([ !dates order]0 = "ddmmyy")
+      %if;([ !dates order]0 = "ddmmyyyy")
         onload="javascript:document.upd.marr_dd.focus();"%nn;
+      %elseif;([ !dates order]0 = "mmddyyyy")
+        onload="javascript:document.upd.marr_mm.focus();"%nn;
       %else;
         onload="javascript:document.upd.marr_yyyy.focus();"%nn;
       %end;
@@ -260,7 +277,6 @@
   %end;
   <script type="text/javascript">
   <!--
-
     function changeFocusFn(event,id,id1,id2) {
       var key = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
       if (key == 42 || key == 60 || key == 62 || key == 95)
@@ -275,7 +291,7 @@
          document.getElementById(id1).focus();
          return false;
         }
-      }    
+      }
     }
     function linkCreateVisible(xx,yy,zz) {
       if(xx == 'pa')
@@ -310,27 +326,43 @@
       case "+": xx.value = document.upd.ch1d_pl.value;
       break;}
     }
+    function computeSD(id)
+    {
+     var x = document.getElementById(id);
+     if (x.value != '' && x.value != eval(x.value))
+     {
+      x.value = '/' + eval(x.value) + '/';
+     }
+    }
+
   //-->
   </script>
 
   %define;place(xvar,xx)
-    <label>[*place]
+    <label>[*place]%nn;
     <input name="xvar_place" size="40" maxlength="200"%sp;
     title="[place] : 1,2,3,4,*,0,+"%sp;
     value="%xx_place;" id="xvar_place" onblur="fillPlace(this)"%/></label>
   %end;
 
   %define;small_date(kind,xvar,xx,zz)
-    %if;([ !dates order]0 = "ddmmyy")
+    %if;([ !dates order]0 = "ddmmyyyy")
       <input name="xvar_dd" class="number" autocomplete="off" title="[year/month/day]2" size="2" maxlength="2"%sp;
       value="%xx.create.kind_day;" onkeypress="javascript:return changeFocus(event,'xvar_d2');"%/>
       <input id="xvar_d2" name="xvar_mm" class="number" autocomplete="off" title="[year/month/day]1" size="2" maxlength="2"%sp;
         value="%xx.create.kind_month;" onkeypress="javascript:return changeFocus(event,'xvar_yyyy');"%/>
-      <input id="xvar_yyyy" name="xvar_yyyy" class="number" autocomplete="off" title="? /[year/month/day]0/" size="5" maxlength="6"%sp;
-        value="%xx.create.kind_year;" onkeypress="javascript:return changeFocus(event,'zz');"%/>
+      <input id="xvar_yyyy" name="xvar_yyyy" class="number" autocomplete="off" title="? /[year/month/day]0/" size="6" maxlength="12"%sp;
+        value="%xx.create.kind_year;" onkeypress="javascript:return changeFocus(event,'zz');" onblur="javascript:computeSD('xvar_yyyy')"%/>
+    %elseif;([ !dates order]0 = "mmddyyyy")
+      <input name="xvar_mm" class="number" autocomplete="off" title="[year/month/day]1" size="2" maxlength="2"%sp;
+        value="%xx.create.kind_month;" onkeypress="javascript:return changeFocus(event,'xvar_d2');"%/>
+      <input id="xvar_d2" name="xvar_dd" class="number" autocomplete="off" title="[year/month/day]2" size="2" maxlength="2"%sp;
+      value="%xx.create.kind_day;" onkeypress="javascript:return changeFocus(event,'xvar_yyyy');"%/>
+      <input id="xvar_yyyy" name="xvar_yyyy" class="number" autocomplete="off" title="? /[year/month/day]0/" size="6" maxlength="12"%sp;
+        value="%xx.create.kind_year;" onkeypress="javascript:return changeFocus(event,'zz');" onblur="javascript:computeSD('xvar_yyyy')"%/>
     %else;
-      <input id="xvar_yyyy" name="xvar_yyyy" class="number" autocomplete="off" title="? /[year/month/day]0/" size="5" maxlength="6"%sp;
-        value="%xx.create.kind_year;" onkeypress="javascript:return changeFocus(event,'xvar_d2');"%/>
+      <input id="xvar_yyyy" name="xvar_yyyy" class="number" autocomplete="off" title="? /[year/month/day]0/" size="6" maxlength="12"%sp;
+        value="%xx.create.kind_year;" onkeypress="javascript:return changeFocus(event,'xvar_d2');" onblur="javascript:computeSD('xvar_yyyy')"%/>
       <input id="xvar_d2" name="xvar_mm" class="number" autocomplete="off" title="[year/month/day]1" size="2" maxlength="2"%sp;
         value="%xx.create.kind_month;" onkeypress="javascript:return changeFocus(event,'xvar_d3');"%/>
       <input id="xvar_d3" name="xvar_dd" class="number" autocomplete="off" title="[year/month/day]2" size="2" maxlength="2"%sp;
@@ -424,7 +456,7 @@
               onkeypress="javascript:return changeFocusFn(event,'begxcnt_p_link','begxcnt_sn','beg%zz;_fn');"
             %elseif;("beg"="ch")
               onkeypress="javascript:return changeFocusFn(event,'begxcnt_p_link','begxcnt_sex_2','beg%zz;_fn');"
-            %end;  
+            %end;
           %/>
     </td><td>
           <input name="begxcnt_sn" title="[surname/surnames]0" size="30" maxlength="200"%sp;
@@ -443,12 +475,19 @@
     %end;
     %if;("c2" = "yes")
       <td id="begxcnt_6" %apply;hide(xx.create)>
-        <div><abbr title="[birth]">o</abbr>%sp;   
-        %apply;birth("begxcnt","xx","","")
-        </div>
-        <div><abbr title="[death]">%death_symbol;</abbr>%sp;
-        %apply;death("begxcnt","xx","beg",zz)
-        </div>
+        <span><abbr title="[birth]"><tt>%birth_symbol;</tt></abbr>%nn;
+          %apply;birth("begxcnt","xx","","")
+          <br%/>
+          <abbr title="[death]">%death_symbol;</abbr>%nn;
+          %apply;death("begxcnt","xx","beg",zz)
+        </span>
+        <span>
+          <label>[*occupation/occupations]0%nn;
+            <input title="[occupation/occupations]0" 
+             name="begxcnt_occupation" size="40" maxlength="200" value="%xx.create.occupation" 
+             id="begxcnt_occupation"%/>
+          </label>
+        </span>
       </td>
     %end;
   %end;
@@ -479,7 +518,7 @@
         <th><abbr title="[sex]">[M/F]0 ? [M/F]1</abbr></th>
       %end;
       %if;("xx" != "witness")
-        <th>[date] [place]</th>
+        <th>[date/dates]0 [place] [occupation/occupations]0</th>
       %else;
         <td>&nbsp;</td>
       %end;
@@ -491,7 +530,7 @@
 <body%body_prop; id="upd" %apply;load_focus()>
 %message_to_wizard;
 <form name="upd" method="post" action="%action;">
-  <p>%hidden;  
+  <p>%hidden;
     <input type="hidden" name="digest" value="%digest;"%/>
     %if;(evar_ip != "")<input type="hidden" name="ip" value="%evar_ip;"%/>%nl;%end;
     %if;(evar_i != "")<input type="hidden" name="i" value="%evar_i;"%/>%nl;%end;
@@ -540,7 +579,7 @@
         </tr>
       %end;
     </table>
-    <dl>     
+    <dl>
       <dt>[*source/sources]1
         <label title="[source/sources]0 : [family/families]0 = [person/persons]1 ([create])">
           <input type="checkbox" name="rdsrc" value="on"%sp;
@@ -570,7 +609,7 @@
         <option value="no_ment"%if;(mrel = "no_ment") selected="selected"%end;>[*no mention]</option>
       </select>
       <span class="nobr">
-        %apply;date([*date], "marr", "marriage")
+        %apply;date([*date/dates]0, "marr", "marriage")
       </span>
       <br%/>
       <span class="nobr">
@@ -579,7 +618,7 @@
       </span>
       <br%/>
       <label>[*comment]
-        <textarea style="overflow: hidden;" name="comment" rows="2" cols="110" id="comment"%sp;
+        <textarea style="overflow: hidden;" name="comment" rows="2" cols="113" id="comment"%sp;
          onkeydown="if (event.keyCode == 13) javascript:document.upd.submit();">%comment;%sq;</textarea>
       </label>
       <br%/>
@@ -597,7 +636,7 @@
         <option value="divorced"%if;(divorce = "divorced") selected="selected"%end;>[*divorced]</option>
       </select>  
       <span id="date_divorce" %if;(divorce = "divorced")style="display: inline;"%else; style="display: none;"%end;>
-        %apply;date([*date], "div", "divorce")
+        %apply;date([*date/dates]0, "div", "divorce")
       </span>
     </p>
   </fieldset>

@@ -573,6 +573,15 @@ value rec subst sf =
   | Awid_hei s -> Awid_hei (sf s)
   | Aif e alt ale -> Aif (subst sf e) (substl sf alt) (substl sf ale)
   | Aforeach (loc, s, sl) pl al ->
+      (* Dans le cas d'une "compound variable", il faut la décomposer. *)
+      (* Ex: "ancestor.father".family  =>  ancestor.father.family      *)
+      let s1 = sf s in
+      let strm = Stream.of_string s1 in
+      let (_, s2, sl2) = get_compound_var strm in
+      let (s, sl) = 
+        if Stream.peek strm <> None then (s, sl)
+        else (s2, sl2 @ sl)
+      in
       Aforeach (loc, sf s, List.map sf sl) (List.map (substl sf) pl)
         (substl sf al)
   | Afor i min max al -> 
@@ -708,10 +717,47 @@ and eval_simple_variable conf =
   | "prefix" -> Util.commd conf
   | "prefix_base" ->
       conf.command ^ "?" ^ (if conf.cgi then "b=" ^ conf.bname ^ ";" else "")
+  | "prefix_no_iz" ->
+      let henv =
+        List.fold_left
+          (fun accu k -> List.remove_assoc k accu)
+          conf.henv ["iz"; "nz"; "pz"; "ocz"]
+      in
+      Util.commd {(conf) with henv = henv}
+  | "prefix_no_templ" ->
+      let henv =
+        List.fold_right
+          (fun (k, v) henv -> if k = "templ" then henv else [(k, v) :: henv])
+          conf.henv []
+      in
+      let c = conf.command ^ "?" in
+      List.fold_left (fun c (k, v) -> c ^ k ^ "=" ^ v ^ ";") c
+        (henv @ conf.senv)
   | "referer" -> Util.get_referer conf
   | "right" -> conf.right
   | "setup_link" -> if conf.setup_link then " - " ^ setup_link conf else ""
   | "sp" -> " "
+  | "suffix" ->
+      (* On supprime de env toutes les paires qui sont dans (henv @ senv) *)
+      let l =
+        List.fold_left
+          (fun accu (k, v) -> List.remove_assoc k accu)
+          conf.env (conf.henv @ conf.senv)
+      in
+      List.fold_left 
+        (fun c (k, v) -> c ^ k ^ "=" ^ v ^ ";") 
+        "" l
+  | "url" -> 
+      let c = Util.commd conf in
+      (* On supprime de env toutes les paires qui sont dans (henv @ senv) *)
+      let l =
+        List.fold_left
+          (fun accu (k, v) -> List.remove_assoc k accu)
+          conf.env (conf.henv @ conf.senv)
+      in
+      List.fold_left 
+        (fun c (k, v) -> c ^ k ^ "=" ^ v ^ ";") 
+        c l
   | "version" -> Version.txt
   | "/" -> conf.xhs
   | s -> raise Not_found ]
@@ -1275,10 +1321,7 @@ value old_include_hed_trl conf base_opt suff =
 ;
 
 value include_hed_trl conf base_opt name =
-  let fname =
-    Filename.concat (Util.base_path ["etc"] conf.bname) (name ^ ".txt")
-  in
-  match try Some (open_in fname) with [ Sys_error _ -> None ] with
+  match Util.open_hed_trl conf name with
   [ Some ic -> copy_from_templ conf [] ic
   | None -> old_include_hed_trl conf base_opt ("." ^ name) ]
 ;

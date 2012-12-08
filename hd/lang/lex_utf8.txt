@@ -1,33 +1,33 @@
 # Copyright (c) 1998-2007 INRIA
 
      !dates order
-af: yymmdd
-ar: ddmmyy
-bg: ddmmyy
-br: ddmmyy
-ca: ddmmyy
-cs: yymmdd
-da: ddmmyy
-de: ddmmyy
-en: yymmdd
-eo: ddmmyy
-es: ddmmyy
-et: ddmmyy
-fi: ddmmyy
-fr: ddmmyy
-he: ddmmyy
-is: ddmmyy
-it: ddmmyy
-lv: ddmmyy
-nl: ddmmyy
-no: ddmmyy
-pl: ddmmyy
-pt: ddmmyy
-ro: ddmmyy
-ru: ddmmyy
-sk: ddmmyy
-sl: ddmmyy
-sv: ddmmyy
+af: yyyymmdd
+ar: ddmmyyyy
+bg: ddmmyyyy
+br: ddmmyyyy
+ca: ddmmyyyy
+cs: yyyymmdd
+da: ddmmyyyy
+de: ddmmyyyy
+en: mmddyyyy
+eo: ddmmyyyy
+es: ddmmyyyy
+et: ddmmyyyy
+fi: ddmmyyyy
+fr: ddmmyyyy
+he: ddmmyyyy
+is: ddmmyyyy
+it: ddmmyyyy
+lv: ddmmyyyy
+nl: ddmmyyyy
+no: ddmmyyyy
+pl: ddmmyyyy
+pt: ddmmyyyy
+ro: ddmmyyyy
+ru: ddmmyyyy
+sk: ddmmyyyy
+sl: ddmmyyyy
+sv: ddmmyyyy
 
      !dir
 ar: rtl
@@ -75,7 +75,7 @@ en:  first line
 eo:  por vidi la unuan branĉon
 es:  la primera rama
 et:  esimese haru vaatamiseks
-fi:  nähdäksesi ensimmäisen haaran
+fi:  ensimmäinen sukuhaara
 fr:  la première
 he:   לראות את הענף הראשון
 is:  til að sjá fyrstu grein
@@ -203,16 +203,16 @@ sk: %1 :g:%2
 sl: %1 od :g:%2
 sv: %1 till %2
 
-    %d places starting with %s
-de: %d orts beginnend mit %s
-en: %d places starting with %s
-es: %d lugares comenzando con %s
-fi: %d paikoista ensimmäisenä %s
-fr: %d lieux commençant par %s
-it: %d luoghi partendo da %s
-nl: %d plaatsen beginnend met %s
-no: %d steder som starter med %s
-sv: %d orternas som börjar med %s
+    %d %s starting with %s
+de: %d %s beginnend mit "%s"
+en: %d %s starting with "%s"
+es: %d %s comenzando con "%s"
+fi: %d %s ensimmäisenä "%s"
+fr: %d %s commençant par "%s"
+it: %d %s partendo da "%s"
+nl: %d %s beginnend met "%s"
+no: %d %s som starter med "%s"
+sv: %d %s som börjar med "%s"
 
     %d years ago
 af: %d jaar gelede
@@ -899,6 +899,36 @@ sk: okolo
 sl: približno
 sv: omkring
 
+    about (short date)
+af: ca
+bg: ca
+br: ca
+ca: ca
+cs: ca
+da: ca
+de: ca
+en: ca
+eo: ca
+es: ca
+et: ca
+fi: ca
+fr: ca
+he: ca
+is: ca
+it: ca
+lv: ca
+nl: ca
+no: ca
+pl: ca
+pt: ca
+pt-br: ca
+ro: ca
+ru: ca
+sk: ca
+sl: ca
+sv: ca
+zh: ca
+
     a brother/a sister/a sibling
 af: 'n broer/'n sister/'n sibbe
 bg: брат/сестра/брат или сестра
@@ -1307,7 +1337,7 @@ en: age at death
 eo: mortaĝo
 es: Edad de defunción
 et: vanus surres
-fi: ikä kuollessa
+fi: elinikä
 fr: âge au décès
 he:   גיל במותו/מותה
 is: dánaraldur
@@ -2017,6 +2047,7 @@ sv: en farbror/en faster/en morbror/en moster
 de: jede beliebige Person im Stammbaum
 en: any individual in the family tree
 es: cualquier individuo del árbol
+fi: yksi henkilö sukupuussasi
 fr: n'importe quel individu de l'arbre
 it: un qualsiasi individuo dell’albero
 nl: om het even welk individu van de stamboom
@@ -2050,6 +2081,24 @@ ru: есть
 sk: sú
 sl: so
 sv: är
+
+    ascendants tree
+de: Stammbaum
+en: Family Tree
+es: Árbol de ascendencia
+fr: arbre d’ascendance
+it: Albero d’ascendenza
+nl: Stamboom voorouders
+sv: Antavla
+
+    in (place)
+de: in
+en: in
+es: en
+fr: à
+it: a
+nl: te
+sv: i
 
     a %s cousin
 af: 'n neef in die %s -de geslag/'n niggie in die %s -de geslag
@@ -2536,16 +2585,32 @@ sl: rojstni dnevi
 sv: födelsedagar
 zh:  出生于今日的记录
 
-    book of places
-de: ortsverzeichnis
-en: places
-es: diccionario de lugares
-fi: luettelo paikoista
-fr: dictionnaire des lieux
-it: dizionario dei luoghi
-nl: woordenboek der plaatsen
-no: liste over steder
-sv: orternas uppslagsbok
+    birth date and birth place
+de: Datum und Ort der Geburt
+en: Date & Place of birth
+es: Fecha y lugar de nacimiento
+fr: date et lieu de naissance
+it: Data e luogo di nascita
+
+    book of %s
+de: %s
+en: %s
+es: lista de %s
+fi: lista %s
+fr: liste des %s
+it: lista dei %s
+nl: lijst der %s
+no: liste over %s
+sv: %s seznam
+
+    book of ascendants
+de: Buch der Vorfahren
+en: Ancestry Book
+es: libro de ascendencia
+fr: livre d’ascendance
+it: libro d’ascendenza
+nl: boek met voorouders
+sv: Förfädersbok
 
     border
 af: rand
@@ -2920,6 +2985,9 @@ sk: zmeniť poradie detí
 sl: zamenjan vrstni red otrok
 sv: ändrade ordningen för barnen
 
+    changed order of marriages
+fr: changement de l'ordre des marriages
+
     change it (the number) yourself
 af: verander dit self
 bg: променете сами номера
@@ -3066,6 +3134,7 @@ sv: klicka "%s"
 de: naher Angehöriger
 en: a parent
 es: un amigo
+fi: sukulainen
 fr: un proche
 it: un parente
 nl: een naaste
@@ -3400,7 +3469,7 @@ sk: databázové fórum
 sl: forum baze podatkov
 sv: databas forum
 
-    date
+    date/dates
 af: datum
 bg: дата
 br: deiziad
@@ -3408,12 +3477,12 @@ ca: data
 cs: datum
 da: dato
 de: Datum
-en: date
+en: date/dates
 eo: dato
 es: fecha
 et: kuupäev
 fi: päivämäärä
-fr: date
+fr: date/dates
 he:   תאריך
 is: dagsetning
 it: data
@@ -3428,10 +3497,25 @@ sk: dátum
 sl: datum
 sv: datum
 
+    date begin
+de: Anfangsdatum
+en: from
+es: fecha de inicio
+fr: date de début
+it: data d'inizio
+
+    date end
+de: Enddatum
+en: to
+es: fecha final
+fr: date de fin
+it: data di fine
+
     date of birth
 de: Geburtsdatum
 en: date of birth
 es: fecha de nacimiento
+fi: syntymäpäivämäärä
 fr: date de naissance
 it: data di nascita
 nl: geboortedatum
@@ -3442,6 +3526,7 @@ sv: födelsedatum
 de: Todestag
 en: date of death
 es: fecha de defunción
+fi: kuolinpäivämäärä
 fr: date de décès
 it: data di morte
 nl: datum overlijden
@@ -3452,6 +3537,7 @@ sv: dödsdatum
 de: Hochzeitstag
 en: date of marriage
 es: fecha de matrimonio
+fi: vihkipäivämäärä
 fr: date de mariage
 it: data del matrimonio
 nl: huwelijksdatum
@@ -3514,6 +3600,13 @@ sk: úmrtie
 sl: smrti
 sv: död
 
+    death date and death place
+de: Datum und Ort des Todes
+en: Date & Place of death
+es: Fecha y lugar de fallecimiento
+fr: date et lieu de décès
+it: Data e luogo di morte
+
     delete
 af: verwyder
 bg: да няма
@@ -3570,6 +3663,13 @@ sk: potomkovia
 sl: potomci
 sv: ättlingar
 zh:  后代
+
+    descendants at the generation
+de: Nachkommen bis zu Generation...
+en: List by name
+es: Descendientes hasta la generación...
+fr: descendants à la génération...
+it: Discendenti fino alla generazione...
 
     died
 af: oorlede
@@ -3692,10 +3792,18 @@ sk: odpojené
 sl: prekinjeno
 sv: logga ut
 
+    display Aboville number
+de: Zeigen der Aboville-Nummerierung
+en: Display Sosa number
+es: Editar la numeración de Aboville
+fr: afficher la numérotation d’Aboville
+it: Visualizzare la numerazione d’Aboville
+
     display by/branch/alphabetic order
 de: anzuzeigen/nach Zweigen/alphabetisch geordnet
 en: display by:/line/alphabetical order
 es: edición por:/ramas/orden alfabético
+fi: näytetään:/sukuhaaroittain/aakkosjärjestyksessä
 fr: affichage par :/branches/ordre alphabétique
 it: visualizzazione per:/rami/ordine alfabetico
 nl: tonen per:/tak/alfabetische volgorde
@@ -3734,36 +3842,53 @@ sv: visa genom att dela sidan/sidbredd/överlappning/global bredd
 de: rahmen in den Bäumen zeigen
 en: display frame
 es: editar los marcos a los árboles
+fi: näytä rajat
 fr: afficher les bordures aux arbres
 it: visualizzare i bordi degli alberi
 nl: rand van de stambomen tonen
 no: vis kantlinje
 sv: visa kantlinje
 
-    display picture
-de: porträt zeigen
-en: display family picture
-es: editar retrato
-fr: afficher portrait
-it: visualizzare il ritratto
-nl: portret tonen
-no: vis bilder
-sv: visa bilder
+    display empty picture
+fr: toujours afficher les images
 
     display generation
 de: nummer der Generation anzeigen
 en: display generation
 es: editar el número de generación
+fi: näytä sukupolvinumero
 fr: afficher le numéro de génération
 it: pubblicare il numero di generazioni
 nl: nummer van de generatie tonen
 no: vis generasjonsnummer
 sv: visa generations nummer
 
+    display marriage date
+fr: afficher la date de mariage
+
+    display notes/sources inline
+de: fügen Sie Noten/Quellenangaben zum Inhalt hinzu
+en: display in individual data
+es: incluir las notas/fuentes al contenido
+fr: inclure les notes/sources au contenu
+it: includere le note/fonti al contenuto
+
+    display picture
+de: porträt zeigen
+en: display family picture
+es: editar retrato
+fi: näytä kuvat
+fr: afficher portrait
+it: visualizzare il ritratto
+nl: portret tonen
+no: vis bilder
+sv: visa bilder
+
     display smallest sosa number relative to ancestor
 de: Implexe anzeigen
 en: display pedigree collapse
 es: editar las implexiones
+fi: näytä sukupolvikato
 fr: afficher les implexes
 it: pubblicare il antenati consanguinei
 nl: kwartierherhaling tonen
@@ -3774,6 +3899,7 @@ sv: visa anförlusten
 de: ehepartner anzeigen
 en: display spouse
 es: editar cónyuge
+fi: näytä puolisot
 fr: afficher conjoint
 it: visualizzare il coniuge
 nl: partner tonen
@@ -4151,6 +4277,7 @@ sv: ny familj tillagd
 de: Geburtstage naher Angehöriger
 en: family birthday
 es: cumpleaños de amigos
+fi: syntymäpäivät
 fr: anniversaires des proches
 it: compleanni dei parenti
 nl: verjaardagen van de naasten
@@ -4762,6 +4889,34 @@ sk: gregoránsky/juliánsky/francúzsky/židovský
 sl: gregorijanski/julijanski/francoski/hebrejski
 sv: gregoriansk/juliansk/franska rep./hebreisk
 
+    groom/bride
+af: man/vrou
+bg: съпруг/съпруга
+br: pried/pried
+ca: marit/muller
+cs: manžel/manželka
+da: mand/hustru
+de: Ehegatte/Ehefrau
+en: groom/bride
+eo: edzo/edzino
+es: esposo/esposa
+et: mees/naine
+fi: aviomies/aviovaimo
+fr: époux/épouse
+he:   בעל/ אשה
+is: eiginmaður/eiginkona
+it: sposo/sposa
+lv: vīrs/sieva
+nl: echtgenoot/echtgenote
+no: mann/hustru
+pl: mąż/żona
+pt: marido/esposa
+ro: sot/sotie
+ru: муж/жена
+sk: manžel/manželka
+sl: mož/žena
+sv: partner/partner
+
     half siblings
 de: halbbrüder und-schwestern
 en: half-siblings
@@ -4820,11 +4975,19 @@ sk: všetko najlepšie k narodeninám!
 sl: srečen rojstni dan!
 sv: gratulerar på födelsedagen!
 
+    having a family
+en: having a fmaily
+fr: ayant une famille
+
+    having no family
+en: having no family
+fr: n'ayant pas de famille
+
     having as children
-af: met as kinders:-
-bg: деца:
+af: met as kinders
+bg: деца
 br: anezho ez eo bet ganet bugale
-ca: fills:
+ca: fills
 cs: měli spolu děti
 da: børn
 de: ihre Kinder
@@ -4838,22 +5001,29 @@ he:    עם ילדים
 is: börn
 it: da cui
 lv: bērni:
-nl: en hun kinderen:
+nl: en hun kinderen
 no: barn
-pl: dzieci:
+pl: dzieci
 pt: tiveram
 ro: cu copii
 ru: имели детей
 sk: mali spolu deti
-sl: otroci:
+sl: otroci
 sv: barn
 zh:  生有子女
 
-    help places
+    help modify data
 de: Klicken auf “[ändern]” um den Standort zu korrigieren: die Gesamtheit Ihrer Dateien die diesen Standort betreffen werden sofort korrigiert werden
-en: Click "[Update]" to edit a place: the place names will be automatically updated in your entire family tree
+en: Click "[Update]" to edit: your entire family tree will be automatically updated
 es: Pulse en "[modificar]" para corregir un lugar: las fichas de su árbol que contengan este lugar serán corregidas instantáneamente
-fr: Cliquez sur « Modifier » pour corriger un lieu : l’ensemble des fiches de votre arbre comportant ce lieu seront instantanément corrigées
+fr: Cliquez sur « l’élément de la liste » que vous souhaitez corriger : l’ensemble des fiches de votre arbre seront instantanément corrigées
+
+    help surname branch
+de: Um den Baum mit den Zweigen der Familiennamen zu erhalten, klicken Sie auf die Zahl der Zweige
+en: click the number of lines in the table below to view the family tree
+es: Para obtener el árbol de las ramas patronímicas, pulse en el número de rama
+fr: pour obtenir l'arbre des branches patronymiques, cliquez sur le nombre de branches
+it: Per ottenere l’albero dei rami del cognome, clicca sul numero del ramo
 
     here
 af: hier
@@ -5572,6 +5742,10 @@ sk: je
 sl: je
 sv: är
 
+    is a very old parent
+en: is a very old parent
+fr: est vraiment un parent très âgé
+
     is a very young parent
 af: is 'n baie jong ouer
 bg: твърде млад родител
@@ -5854,6 +6028,25 @@ ru: список
 sk: zoznam
 sl: seznam
 sv: lista/trädlista
+
+    list eclair
+de: Blitzliste
+en: list by name, place & date
+es: lista rápida
+fr: liste-éclair
+it: lista lampo
+
+    living after %s
+fr: vivant après %s
+
+    living before %s
+fr: vivant avant %s
+
+    living between %s and %s
+fr: vivant de %s à %s
+
+    living from/to
+fr: vivant de/à
 
     long display
 af: uitgebreide weergawe
@@ -6480,6 +6673,7 @@ sv: blandade noteringar
 de: verschiedene Felder
 en: other field
 es: campo diversos
+fi: muut kentät
 fr: champs divers
 it: voci diverse
 nl: verscheidene velden
@@ -6514,15 +6708,55 @@ sk: chýbajúci predkovia
 sl: manjkajoči predniki
 sv: anor som saknas
 
+    missing parents
+de: Fehlende Eltern
+en: Unknown parents
+es: Padres que faltan
+fr: parents manquants
+it: Genitori mancanti
+
+    missing sosa
+de: Fehlende Sosa
+en: Unknown Sosa number
+es: Sosa que faltan
+fr: sosa manquants
+it: Sosa mancanti
+
+    missing spouse
+de: Fehlende Partner
+en: Unknown spouse
+es: Cónyuges que faltan
+fr: conjoint manquant
+it: Coniugi mancanti
+
     missing sources
 de: fehlende Quellenangaben
 en: missing sources
 es: faltan fuentes
+fi: puuttuvat lähteet
 fr: sources manquantes
 it: senza fonte
 nl: ontbrekende bronnen
 no: savnede kilder
 sv: saknade källor
+
+    modification/modifications
+de: änderung/änderungen
+en: update/updates
+es: modificación/modificaciónes
+fr: modification/modifications
+it: modifica/modifiche
+nl: wijziging/wijzigingen
+sv: ändring/ändringar
+
+    modification successful
+de: änderung durchgeführt
+en: successfully updated
+es: modificación efectuada
+fr: modification effectuée
+it: mestiere modificato
+nl: wijziging uitgevoerd
+sv: ändring slutförd
 
     modify
 af: wysig
@@ -6578,6 +6812,34 @@ ro: modifica imagine
 ru: изменить :a: картинку
 sl: spremeni slika
 sv: ändra bild
+
+    modify %s
+af: wysig
+bg: да се променят
+br: kemmañ
+ca: modificar
+cs: změnit :a:
+da: ændre
+de: ändern +before
+en: edit
+eo: modifi :a:
+es: modificar
+et: muuda :g:
+fi: muokkaa
+fr: modifier %s
+he:  לשנות
+is: breyta
+it: modificare
+lv: izmainīt
+nl: wijzigen +before
+no: endre
+pl: zaktualizuj :a:
+pt: modificar
+ro: modifica
+ru: изменить :a:
+sk: zmeniť :a:
+sl: spremeni
+sv: ändra
 
     months old
 af: maande oud
@@ -6699,11 +6961,21 @@ sv: mördad
 de: Nr. Aboville
 en: d'Aboville System number
 es: N° de Aboville
-fr: n° d'Aboville
+fi: Numero
+fr: n° d’Aboville
 it: N° d’Aboville
 nl: Abovillenummer
 no: nummer
 sv: nummer
+
+    n° Sosa
+de: Nr. SOSA
+en: Sosa
+es: nº Sosa
+fr: n° Sosa
+it: n° Sosa
+nl: Sosa nr.
+sv: Annummer
 
     name
 af: naam
@@ -6831,8 +7103,9 @@ sv: navigering med %t som proband (Kekules system)
 
     NB: you should try another relationship computing mode
 de: zögern Sie nicht eine neue Berechnung auf einer anderen Basis zu beginnen
-en: cou can try another computing option
+en: you can try another computing option
 es: puede relanzar un cálculo eligiendo otro modo de cálculo
+fi: valitse toinen laskutapa ja laske uudelleen
 fr: n'hésitez pas à recommencer en utilisant un autre mode de calcul
 it: non esitare a riavviare un calcolo scegliendo un altro modo di calcolo
 nl: aarzel niet opnieuw te berekenen via een andere berekeningswijze
@@ -6872,6 +7145,10 @@ de: möchten Sie eine weitere Änderung durchführen
 en: continue edit
 es: ¿Quiere hacer una nueva corrección?
 fr: cliquez ici pour effectuer une nouvelle correction
+
+    next relationship path
+en: next relationship path
+fr: chemin suivant
 
     next sibling
 af: volgende broer/volgende suster/volgende broer of suster
@@ -7348,6 +7625,34 @@ sk: číslo
 sl: številka
 sv: nummer
 
+    nb branches
+de: nb. Zweige
+en: Lines
+es: Nº ramas
+fr: nb. branches
+it: N° rami
+
+    nb children
+de: nb. Kinder
+en: Children
+es: Nº hijos
+fr: nb. enfants
+it: N° figli
+
+    nb events
+de: Ereignisse
+en: events
+es: Nº acontecimientos
+fr: nb. événements
+it: N° d'eventi
+
+    nb individuals
+de: Individuen
+en: individuals
+es: Nº individuos
+fr: nb. individus
+it: N° individui
+
     number of branches
 af: aantal stake
 bg: брой на клоновете
@@ -7375,6 +7680,25 @@ ru: число ветвей
 sk: počet vetví
 sl: število vej
 sv: antal grenar
+
+    number of children
+de: anzahl der Kinder
+en: number of children
+es: número de hijos
+fr: nombre d’enfants
+it: numero di figli
+
+    number of individuals
+en: number of Individuals
+es: número de individuos
+fr: nombre d'individus
+it: numero d'individui
+
+    number of events
+en: number of Events
+es: número de acontecimientos
+fr: nombre d'événements
+it: numero d'eventi
 
     number of living persons:
 bg: брой на живите лица:
@@ -7412,7 +7736,7 @@ en: occupation/occupations
 eo: okupado
 es: profesión/profesións
 et: amet
-fi: ammatti
+fi: ammatti/ammatti
 fr: profession/professions
 he:  מקצוע
 is: starf
@@ -7600,6 +7924,9 @@ ru: до года
 sk: starý jeden rok/stará jeden rok
 sl: star eno leto
 sv: ett år
+
+    only with display by generation
+fr: seulement avec l'affichage par génération
 
     only the generation selected
 af: net die gekose geslag
@@ -7978,19 +8305,19 @@ sk: miesto
 sl: kraj
 sv: plats
 
-    place modified
-de: ort geändert
-en: place modified
-es: lugar modificada
-fi: paikka muokattu
-fr: lieu modifié
-it: luogo modificata
-nl: plaats veranderd
-no: sted er endret
-sv: plats ändrad
+    %s modified
+de: %s geändert
+en: %s modified
+es: %s modificada
+fi: %s muokattu
+fr: %s modifié
+it: %s modificata
+nl: %s veranderd
+no: %s er endret
+sv: %s ändrad
 
     places
-de: orts
+de: orte
 en: places
 es: lugares
 fi: paikoista
@@ -8303,6 +8630,7 @@ sv: erkännande far/erkännande mor/erkännande föräldrar
 de: referenz
 en: ID
 es: referencia
+fi: referenssi
 fr: référence
 it: riferimento
 nl: referentie
@@ -8369,6 +8697,7 @@ sv: släktskap
 de: Direkte Vorfahren
 en: ancestry
 es: ascendientes directos
+fi: esipolvet
 fr: ascendants directs
 it: ascendenti diretti
 nl: rechtstreekse voorouders
@@ -8436,6 +8765,7 @@ zh:  相关查询
 de: berechnungsart
 en: computing
 es: modo de cálculo
+fi: laskutapa
 fr: mode de calcul
 it: modo di calcolo
 nl: berekeningswijze
@@ -8446,7 +8776,8 @@ sv: uträkningssätt
 de: anzeigeoptionen der Verwandtschafts-Bäume:
 en: options:
 es: opciones de edición de los árboles de parentesco:
-fr: options d'affichage des arbres de parenté :
+fi: näyttötapa:
+fr: options d’affichage des arbres de parenté :
 it: opzioni di visualizzazione degli alberi di parentela:
 nl: toonopties van de verwantschapsstambomen
 no: visningsmåte
@@ -8484,6 +8815,7 @@ sv: anlinje/anlinjer
 de: verwandt mit ...
 en: family link with...
 es: parentesco con...
+fi: sukulaisuus henkilön kanssa...
 fr: lien de parenté avec...
 it: imparentato con...
 nl: verwantschapsband met...
@@ -8494,6 +8826,7 @@ sv: släktskap med...
 de: verknüpfungen:
 en: shortcuts:
 es: atajo:
+fi: oikotie:
 fr: raccourcis :
 it: scorciatoia:
 nl: binnenweg :
@@ -8528,6 +8861,10 @@ ru: приходится%t
 sk: vzťah %t s
 sl: zveza z %t
 sv: förhållande%t med
+
+    searching all
+en: searching all
+fr: recherche tous les
 
     search/case sensitive
 bg: търсене/с различаване на главни и малки букви
@@ -8616,11 +8953,24 @@ sv: se ovan
 de: siehe auch
 en: see also
 es: ver también
+fi: näytä myös
 fr: à voir aussi
 it: vedi anche
 nl: ook te bekijken
 no: vis også
 sv: visa också
+
+    see ascendants notes/sources
+fr: voir les notes/sources
+
+    see ascendants pictures
+fr: voir les portraits
+
+    see descendants notes/sources
+fr: voir les notes/sources
+
+    see descendants pictures
+fr: voir les portraits
 
     see further
 af: kyk verder
@@ -8654,16 +9004,27 @@ sv: se vidare
 de: auswählen :
 en: select:
 es: elegir:
+fi: valitse:
 fr: choisir :
 it: scegliere:
 nl: kiezen:
 no: velg
 sv: välj
 
+    select a letter
+de: einen Buchstaben wählen
+en: select a letter
+es: elija una letra
+fr: choisissez une lettre
+it: scegli una lettera
+nl: kies een letter
+sv: välj en bokstav 
+
     select a month to see all the anniversaries
 de: zum zeigen der Geburtstage den Monat auswählen
 en: select month
 es: elegir un mes para ver todos los cumpleaños
+fi: valitse kuukausi nähdäksesi kaikki syntymäpäivät
 fr: sélectionnez un mois pour voir tous les anniversaires
 it: scegliere un mese per vedere tutti i comlpeanni
 nl: een maand kiezen om alle verjaardagen te zien
@@ -8674,6 +9035,7 @@ sv: välj en månad för att visa alla födelsedagar
 de: auf die Person klicken, zu der Sie das Verwandtschaftsverhältnis berechnen möchten
 en: click an individual below to calculate the family link
 es: pulse en la persona con la que quiere realizar un cálculo de parentesco
+fi: napsauta henkilöä, jonka sukulaisuusasteen haluat laskea
 fr: cliquez sur la personne avec laquelle vous souhaitez réaliser un calcul de parenté
 it: clicca sulla persona per la quale vuoi fare un calcolo di parentela
 nl: op de persoon klikken van waaruit u een verwantschapsberekening wenst
@@ -8832,7 +9194,7 @@ en: shortest path
 eo: vojo plej mallonga
 es: atajo
 et: lühim tee
-fi: lyhin polku
+fi: lyhyin reitti
 fr: chemin le plus court
 he:   קשר הכי קרוב 
 is: stysta leið
@@ -8984,6 +9346,33 @@ sk: syn/dcéra/dieťa
 sl: sin/hčerka/otrok
 sv: son/dotter/barn
 
+    sort by/branch/alphabetic order
+de: sortieren nach:/Zweigen/Alphabetisch
+en: sort by:/Line/Alphabetical order
+es: organizar por:/Ramas/Orden alfabético
+fr: trier par :/branches/ordre alphabétique
+it: smistare per :/Rami/Ordine alfabetico
+nl: tonen per:/tak/alfabetische volgorde
+no: vises etter:/grener/alfabetisk orden
+sv: visas efter:/grenar/alfabetisk ordning
+
+    sort by/date begin/alphabetic order/nb individuals/nb events
+de: sortieren nach:/Anfangsdatum/Alphabetisch/Anzahl der Individuen/Anzahl der Ereignisse
+en: sort by:/Date/Alphabetical order/Number of Individuals/Number of Events
+es: organizar por:/Fecha de inicio/Orden alfabético/Número de individuos/Número de acontecimientos
+fr: trier par:/date de début/ordre alphabétique/nombre d'individus/nombre d'événements
+it: Smistare per :/Data d'inizio/Ordine alfabetico/Numero d'individui/Numero d'eventi
+
+    sort by/generation/alphabetic order
+de: Sortieren nach:/Generationen/Alphabetisch
+en: sort by:/Generation/Alphabetical order
+es: Organizar por :/Generaciones/Orden alfabético
+fr: trier par:/génération/ordre alphabétique
+it: Smistare per :/Generazioni/Ordine alfabetico
+nl: tonen per:/tak/alfabetische volgorde
+no: vises etter:/grener/alfabetisk orden
+sv: visas efter:/grenar/alfabetisk ordning
+
     Sosa
 af: Sosa
 bg: Число на Соса
@@ -9073,6 +9462,7 @@ zh:  从下列选取
 de: ehepartner/partner
 en: spouse/spouses
 es: cónyuge/cónyuges
+fi: puoliso/puoliso
 fr: conjoint/conjoints
 it: coniuge/coniugi
 nl: partner/partners
@@ -9167,7 +9557,15 @@ sv: statistik
 bg: статистика и годишнини
 en: statistics and anniversaries
 fr: Statistiques et anniversaires
-zh: zzz
+
+    summary book ascendants
+de: liste der Dateien
+en: list of individuals
+es: lista de fichas
+fr: liste des fiches
+it: lista delle schede
+nl: lijst van de fichen
+sv: lista över ansedlar
 
     surname alias
 af: van alias
@@ -9260,6 +9658,7 @@ sv: hittar inte efternamn
 de: zweige der Familiennamen
 en: lines by name
 es: ramas de apellidos
+fi: sukuhaarat
 fr: branches patronymiques
 it: rami per cognome
 nl: naamstakken
@@ -9331,6 +9730,7 @@ zh:  姓
 de: tabelle
 en: table
 es: cuadro
+fi: taulukko
 fr: tableau
 it: tabella
 nl: tabel
@@ -9760,6 +10160,9 @@ sk: súbor je uzamknutý, skúste znova.
 sl: ta datoteka je začasno zaklenjena: prosimo poskusite znova. Če še vedno ne deluje, prosimo počakajte trenutek
 sv: filen är temporärt låst: försök igen. Om det ändå inte fungerar, vänta ett tag innan nästa försök
 
+    the following children of %t and %t are born very close
+fr: les enfants suivants de %t et de %t sont nés très rapprochés
+
     the following children of %t and %t are not in order
 af: die volgende kinders van %t and %t is nie in die regte volgorde nie
 bg: следните деца на %t и %t не са в хронологичен ред
@@ -9995,11 +10398,11 @@ sl: zadnjih %t smrti
 sv: de senaste %t avlidna
 
     the modification impacted %d persons
-de: die Änderungen sind abgeschlossen : % der Datei (en) kopiert
+de: die Änderungen sind abgeschlossen : %d der Datei (en) kopiert
 en: successfully updated: %d places have been changed
 es: la modificación ha sido hecha: %d ficha(s) corregida(s)
 fr: la modification a bien été effectuée : %d fiche(s) corrigée(s)
-it: la modifica è stata correttamente eseguita : % di schede corrette
+it: la modifica è stata correttamente eseguita : %d di schede corrette
 
     the parents
 af: die ouers
@@ -10318,7 +10721,7 @@ ca: fins els fills
 cs: k dětem
 da: til børnene
 de: bis zu den Kindern
-en: to the children
+en: up to the children
 eo: ĝis la idoj
 es: hasta los hijos
 et: lasteni
@@ -10346,7 +10749,7 @@ ca: fins els nets
 cs: k vnoučatům
 da: til børnebørnene
 de: bis zu den Enkeln
-en: to the grandchildren
+en: up to the grandchildren
 eo: ĝis la genepoj
 es: hasta los nietos
 et: lastelasteni
@@ -10374,7 +10777,7 @@ ca: fins els avis
 cs: k prarodičům
 da: til bedsteforældrene
 de: bis zu den Großeltern
-en: to the grandparents
+en: up to the grandparents
 eo: ĝis la geavoj
 es: hasta los abuelos
 et: vanavanemateni
@@ -10402,7 +10805,7 @@ ca: fins els besnets
 cs: k pravnoučatům
 da: til oldebørnene
 de: bis zu den Urenkeln
-en: to the great-grandchildren
+en: up to the great-grandchildren
 eo: ĝis la gepranepoj
 es: hasta los bisnietos
 et: lastelastelasteni
@@ -10430,7 +10833,7 @@ ca: fins els besavis
 cs: k praprarodičům
 da: til oldeforældrene
 de: bis zu den Urgroßeltern
-en: to the great-grandparents
+en: up to the great-grandparents
 eo: ĝis la gepraavoj
 es: hasta los bisabuelos
 et: vanavanavanemateni
@@ -10458,7 +10861,7 @@ ca: fins els pares
 cs: k rodičům
 da: til forældrene
 de: bis zu den Eltern
-en: to the parents
+en: up to the parents
 eo: ĝis la gepatroj
 es: hasta los padres
 et: vanemateni
@@ -10486,7 +10889,7 @@ ca: fins a la %s generació
 cs: až do %s generace
 da: til den %s generation
 de: bis zur %s Generation
-en: to the %s generation
+en: up to the %s generation
 eo: ĝis la %s generacio
 es: hasta la %s generación
 et: %s sugupõlveni
@@ -10858,6 +11261,7 @@ sv: varningar
 de: Geburtsort
 en: where born
 es: lugar de nacimiento
+fi: syntymäpaikka
 fr: lieu de naissance
 it: luogo di nascita
 nl: geboorteplaats
@@ -10868,9 +11272,10 @@ sv: födelseort
 de: Sterbeort
 en: where dead
 es: lugar de defunción
+fi: kuolinpaikka
 fr: lieu de décès
 it: luogo della morte
-nl: datum overlijden
+nl: plaats overlijden
 no: dødssted
 sv: dödsort
 
@@ -10878,6 +11283,7 @@ sv: dödsort
 de: Ort der Trauung
 en: where married
 es: lugar de matrimonio
+fi: vihkipaikka
 fr: lieu de mariage
 it: luogo del matrimonio
 nl: huwelijksplaats
