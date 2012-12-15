@@ -1,3 +1,11 @@
+geneweb (6.06-1) UNRELEASED-experimantal; urgency=low
+
+  * New upstream version
+  * Add liblablgtk2-ocaml-dev to Build-Depends to be able
+    to build the newly added GUI
+
+ -- Christian Perrier <bubulle@debian.org>  Sat, 08 Dec 2012 18:23:50 +0100
+
 geneweb (6.05.1-1) unstable; urgency=low
 
   * New upstream "release" (indeed upstream fixed the 6.05 tarball
