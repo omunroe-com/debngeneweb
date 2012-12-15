@@ -1,4 +1,4 @@
-?package(geneweb):\
+?package(geneweb-gui):\
 needs="X11"\
 section="Applications/Data Management"\
 title="Geneweb GUI"\
