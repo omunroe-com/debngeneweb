@@ -1,3 +1,4 @@
+distribution/gw/update_nldb usr/bin
 distribution/gw/consang usr/bin
 distribution/gw/ged2gwb usr/bin
 distribution/gw/gwb2ged usr/bin
