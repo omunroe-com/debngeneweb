@@ -5,6 +5,7 @@ geneweb (6.06-1) UNRELEASED-experimantal; urgency=low
     to build the newly added GUI
   * Add update_nldb to binaries. Closes: #695511
   * Add gwc2 binary and corresponding manpage. Closes: #664264
+  * Add new geneweb-gui binary in a new binary package
 
  -- Christian Perrier <bubulle@debian.org>  Sat, 08 Dec 2012 18:23:50 +0100
 

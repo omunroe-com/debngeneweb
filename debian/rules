@@ -42,6 +42,7 @@ override_dh_clean:
 	dh_clean
 
 override_dh_install:
+	mv distribution/gw/gui distribution/gw/geneweb-gui
 	dh_install
 	# Doc files go to the appropriate directory
 	install -m 644 `pwd`/CHANGES \
