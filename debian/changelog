@@ -1,4 +1,4 @@
-geneweb (6.06-1) UNRELEASED-experimantal; urgency=low
+geneweb (6.06-1) experimental; urgency=low
 
   * New upstream version
   * Add liblablgtk2-ocaml-dev to Build-Depends to be able
@@ -10,7 +10,7 @@ geneweb (6.06-1) UNRELEASED-experimantal; urgency=low
     for Ocaml executables
   * Fix gwc2.1 syntax (bug reported upstream)
 
- -- Christian Perrier <bubulle@debian.org>  Sat, 08 Dec 2012 18:23:50 +0100
+ -- Christian Perrier <bubulle@debian.org>  Sun, 16 Dec 2012 19:14:56 +0100
 
 geneweb (6.05.1-1) unstable; urgency=low
 
