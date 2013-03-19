@@ -19,6 +19,8 @@
 %t is born after the death of his/her mother %t
 %t is born more than 2 years after the death of his/her father %t
 %t's sex is not coherent with his/her relations
+%t was witness after his/her death
+%t was witness before his/her birth
 (date)
 (decimal separator)
 (french revolution month)
@@ -84,6 +86,8 @@ at the same time
 average age at death
 back
 baptism
+baptism place
+baptism src
 baptized
 base index notes
 base notes
@@ -94,6 +98,8 @@ begin
 between (date)
 bibliography
 birth
+birth place
+birth src
 birthdays
 birth date and birth place
 book of %s
@@ -101,6 +107,8 @@ border
 born
 branch/branches
 burial
+burial place
+burial src
 buried
 calendar/calendars
 cancel GeneWeb links
@@ -120,6 +128,10 @@ click on "%s"
 close family
 color
 comment
+compare
+compare selected revisions
+compute all marriages
+compute approximatives dates
 connections
 consanguinity
 continue correcting
@@ -138,12 +150,16 @@ date of death
 date of marriage
 days old
 death
+death place
+death src
 death date and death place
 delete
 descendants
 descendants at the generation
 died
+died at an advanced age
 died young
+difference between the two revisions
 direct ancestor of %s
 disappeared
 disconnect
@@ -173,6 +189,7 @@ families with encoding
 family added
 family birthday
 family deleted
+family source
 family/families
 family history
 family modified
@@ -206,10 +223,12 @@ help modify data
 help surname branch
 here
 him/her
+history
 history of updates
 horizontally
 husband/wife
 ident/email/subject
+iftitles/public/private
 if titles
 image deleted
 image/images
@@ -225,11 +244,13 @@ index of the spouses (non descendants)
 individual notes
 in (month year)
 insert
+insufficient revision history for %s
 inversion done
 invert
 invert the order of the following families
 in (year)
 is
+is a very old individual
 is a very old parent
 is a very young parent
 is born after his/her child
@@ -248,12 +269,17 @@ living before %s
 living between %s and %s
 living from/to
 long display
+looking for
 loop in database: %s is his/her own ancestor
 M/F
 main title
+male/female/neuter
 male line/female line
 marriage had occured after the death of %t
 marriage had occured before the birth of %t
+marriage date
+marriage place
+marriage src
 marriage/marriages
 marriage notes
 marriage of %t after his/her death
@@ -273,6 +299,7 @@ M/F
 miscellaneous notes
 miscellaneous informations
 missing ancestors
+missing events
 missing parents
 missing sosa
 missing spouse
@@ -289,6 +316,7 @@ msg error disconnected
 murdered
 n° d'Aboville
 n° Sosa
+n° Sosa relative to
 name
 name %s already used by %tthis person%t
 navigation
@@ -333,7 +361,6 @@ one day old
 one month old
 one year old
 only the generation selected
-only with display by generation
 on %s's side
 on (weekday day month year)
 optional
@@ -344,6 +371,7 @@ paternal grand-parents
 person added
 person deleted
 person modified
+person source
 person/persons
 persons having the same name
 place
@@ -373,6 +401,9 @@ relationship link/relationship links
 relationship link between
 relationship shortcut
 relationship%t to
+revision history
+revision of
+same ancestor as n° Sosa
 searching all
 search/case sensitive
 see
@@ -387,6 +418,7 @@ select
 select a letter
 select a month to see all the anniversaries
 select person to compute relationship
+select the two revisions you want to compare
 send
 separated
 several answers
@@ -403,6 +435,7 @@ sort by/branch/alphabetic order
 sort by/date begin/alphabetic order/nb individuals/nb events
 sort by/generation/alphabetic order
 Sosa
+Sosa reference: %t
 source/sources
 specify
 spouse/spouses
@@ -424,6 +457,7 @@ the base has changed; do "back", "reload", and refill the form
 the birthday
 the children
 the day after tomorrow
+the difference of age between %t and %t is quite important
 the %d first names
 the %d oldest couples perhaps still alive and engaged
 the %d oldest perhaps still alive

@@ -1,5 +1,4 @@
-<!-- trl.txt Modified mickroue(a)yahoo.fr 20121128 templ=templm -->
-<!-- How to : copy this file to bases/etc/base_name/ -->
+<!-- trl.txt Modified mickroue(a)yahoo.fr 20130114 templ=templm -->
 
 %if;(not cancel_links)
   <script type="text/javascript">
@@ -46,7 +45,7 @@
   -->
   </script>
 
-  <div id="trl" style="clear:both;">
+  <div id="trl">
     <form id="Tsearch" method="get" action="%action;">
       <div>
         %hidden;
@@ -66,7 +65,7 @@
                      onkeypress="javascript:return computeSosa(event,'Tn')"%/>
         <input type="submit" value="[*search/case sensitive]0 (²)"%/>
         %if;(bvar.hide_advanced_request = "no")
-          <a href="%prefix;m=H;v=advanced">[advanced request]</a>
+          <a class="button" href="%prefix;m=H;v=advanced">[advanced request]</a>
         %end;
         <p id="templ">
           <a href="%prefix_no_templ;templ=;%suffix;">default</a>
@@ -103,9 +102,7 @@
         ';
         document.getElementById("reloadclose").focus();}
     }
-    
-    if (htmlTitle == "[*place modified]" || htmlTitle == "[*no modification]" )
-    {document.getElementsByTagName("a")[2].focus();}
+
     -->
     </script>
   %end;
