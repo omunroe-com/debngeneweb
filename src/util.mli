@@ -13,6 +13,8 @@ value images_url : ref string;
 value image_prefix : config -> string;
 value base_path : list string -> string -> string;
 
+value find_misc_file : string -> string;
+
 value search_in_lang_path : string -> string;
 value search_in_doc_path : string -> string;
 
@@ -42,6 +44,7 @@ value hidden_env : config -> unit;
 
 value nobtit : config -> base -> person -> list title;
 
+value strictly_after_private_years : config -> dmy -> bool;
 value authorized_age : config -> base -> person -> bool;
 value is_old_person : config -> gen_person iper istr -> bool;
 value fast_auth_age : config -> person -> bool;
@@ -264,6 +267,7 @@ value reduce_list : int -> list 'a -> list 'a;
 
 value print_reference : config -> string -> int -> string -> unit;
 
+value gen_print_tips : config -> string -> unit;
 value print_tips_relationship : config -> unit;
 
 value print_image_sex : config -> person -> int -> unit;

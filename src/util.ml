@@ -547,6 +547,12 @@ value nobtit conf base p =
   Gwdb.nobtit base conf.allowed_titles conf.denied_titles p
 ;
 
+value strictly_after_private_years conf a =
+  if a.year > conf.private_years then True
+  else if a.year < conf.private_years then False
+  else a.month > 0 || a.day > 0 
+;
+
 value is_old_person conf p =
   match
     (Adef.od_of_codate p.birth, Adef.od_of_codate p.baptism,
@@ -555,13 +561,13 @@ value is_old_person conf p =
   [ (_, _, NotDead, _) when conf.private_years > 0 -> False
   | (Some (Dgreg d _), _, _, _) ->
       let a = CheckItem.time_elapsed d conf.today in
-      a.year > conf.private_years
+      strictly_after_private_years conf a
   | (_, Some (Dgreg d _), _, _) ->
       let a = CheckItem.time_elapsed d conf.today in
-      a.year > conf.private_years
+      strictly_after_private_years conf a
   | (_, _, _, Some (Dgreg d _)) ->
       let a = CheckItem.time_elapsed d conf.today in
-      a.year > conf.private_years
+      strictly_after_private_years conf a
   | (None, None, DontKnowIfDead, None) ->
       p.access <> Private && conf.public_if_no_date
   | _ -> False ]
@@ -652,13 +658,13 @@ value authorized_age conf base p =
     [ (_, _, NotDead, _) when conf.private_years > 0 -> False
     | (Some (Dgreg d _), _, _, _) ->
         let a = CheckItem.time_elapsed d conf.today in
-        a.year > conf.private_years
+        strictly_after_private_years conf a
     | (_, Some (Dgreg d _), _, _) ->
         let a = CheckItem.time_elapsed d conf.today in
-        a.year > conf.private_years
+        strictly_after_private_years conf a
     | (_, _, _, Some (Dgreg d _)) ->
         let a = CheckItem.time_elapsed d conf.today in
-        a.year > conf.private_years
+        strictly_after_private_years conf a
     | (None, None, DontKnowIfDead, None) ->
         get_access p <> Private && conf.public_if_no_date
     | _ ->
@@ -669,7 +675,7 @@ value authorized_age conf base p =
             match Adef.od_of_codate (get_marriage fam) with
             [ Some (Dgreg d _) ->
                 let a = CheckItem.time_elapsed d conf.today in
-                a.year > conf.private_years
+                strictly_after_private_years conf a
             | _ -> loop (i + 1) ]
         in
         loop 0 ]
@@ -1409,6 +1415,21 @@ value image_prefix conf =
   if images_url.val <> "" then images_url.val
   else if conf.cgi then conf.command ^ "?m=IM;v="
   else "images"
+;
+
+
+(* 
+   On cherche le fichier dans cet ordre :
+    - dans la base (bases/etc/name.txt)
+    - dans le répertoire des programmes (gw/etc/name.txt)
+*)
+value find_misc_file name = 
+  let base_tpl_dir = Filename.concat (base_path ["etc"] "") name in
+  let etc_tpl_dir = Filename.concat (search_in_lang_path "etc") name in
+  if Sys.file_exists base_tpl_dir then base_tpl_dir
+  else
+    if Sys.file_exists etc_tpl_dir then etc_tpl_dir
+    else ""
 ;
 
 (* Code mort. Géré par le css
@@ -3348,7 +3369,9 @@ value reduce_list size list =
       match list with
        [ [] -> reduced_list
        | [x :: l] -> loop size (cnt + 1) [x :: reduced_list] l ]
-  in loop size 0 [] list
+  in 
+  let sublist = loop size 0 [] list in
+  List.rev sublist
 ;
 
 
@@ -3373,11 +3396,32 @@ value print_reference conf fn occ sn =
 
 
 (* ********************************************************************** *)
+(*  [Fonc] gen_print_tips : conf -> string -> unit                        *)
+(** [Description] : Affiche un tips.
+    [Args] :
+      - conf : configuration de la base
+      - s    : le contenu du tips
+    [Retour] : Néant
+    [Rem] : Non exporté en clair hors de ce module.                       *)
+(* ********************************************************************** *)
+value gen_print_tips conf s = do {
+  tag "div" "class=\"tips\"" begin 
+    tag "table" begin
+      tag "tr" begin
+        tag "td" begin
+          Wserver.wprint "%s" s;
+        end;
+      end;
+    end;
+  end;
+  xtag "br" 
+};
+
+(* ********************************************************************** *)
 (*  [Fonc] print_tips_relationship : conf -> unit                         *)
 (** [Description] : Lors d'un calcul de parenté, il n'est pas évident de
-                    savoir qu'il faut cliquer sur la personne pour lancer
-                    le calcul. 
-                    On affiche donc une petite aide pour l'utilisateur.
+      savoir qu'il faut cliquer sur la personne pour lancer le calcul. 
+      On affiche donc une petite aide pour l'utilisateur.
     [Args] :
       - conf : configuration de la base
     [Retour] :
@@ -3386,19 +3430,11 @@ value print_reference conf fn occ sn =
 (* ********************************************************************** *)
 value print_tips_relationship conf =
   if p_getenv conf.env "em" = Some "R" || 
-     p_getenv conf.env "m" = Some "C" then do {
-    tag "div" "class=\"tips\"" begin 
-      tag "table" begin
-        tag "tr" begin
-          tag "td" begin
-            Wserver.wprint "%s"
-              (capitale (transl conf "select person to compute relationship"));
-          end;
-        end;
-      end;
-    end;
-    xtag "br" 
-  }
+     p_getenv conf.env "m" = Some "C" then
+    let s = 
+      (capitale (transl conf "select person to compute relationship")) 
+    in
+    gen_print_tips conf s
   else ()
 ;
 
