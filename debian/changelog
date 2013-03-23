@@ -1,10 +1,10 @@
-geneweb (6.07-1) UNRELEASED; urgency=low
+geneweb (6.07-1) experimental; urgency=low
 
   * New upstream release
   * Add a patch to compile the gui in Makefile as it was
     apparetly dropped in this release
 
- -- Christian Perrier <bubulle@debian.org>  Tue, 19 Mar 2013 19:52:06 +0100
+ -- Christian Perrier <bubulle@debian.org>  Thu, 21 Mar 2013 19:21:50 +0100
 
 geneweb (6.06-1) experimental; urgency=low
 
