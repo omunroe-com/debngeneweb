@@ -1,3 +1,10 @@
+geneweb (6.07-2) UNRELEASED; urgency=low
+
+  * Use utf8.ml from upstream SVN to avoid build failures on
+    some architectures.
+
+ -- Christian Perrier <bubulle@debian.org>  Fri, 12 Apr 2013 10:34:21 +0200
+
 geneweb (6.07-1) experimental; urgency=low
 
   * New upstream release
