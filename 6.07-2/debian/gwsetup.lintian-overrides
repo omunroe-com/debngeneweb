@@ -1,0 +1,2 @@
+gwsetup: hardening-no-relro usr/bin/gwsetup
+gwsetup: hardening-no-fortify-functions usr/bin/gwsetup

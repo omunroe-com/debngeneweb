@@ -1,0 +1,9 @@
+?package(geneweb-gui):\
+needs="X11"\
+section="Applications/Data Management"\
+title="Geneweb GUI"\
+longtitle="Geneweb genealogy software - graphical interface"\
+hints="genealogy"\
+command="/usr/bin/geneweb-gui"\
+icon="/usr/share/pixmaps/geneweb.xpm"
+
