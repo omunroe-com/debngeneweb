@@ -1209,7 +1209,8 @@ value make_conf cgi from_addr (addr, request) script_name contents env = do {
     (fun fname -> 
       add_lexicon fname (if lang = "" then default_lang else lang) lexicon)
     lexicon_list.val;
-  (* COMMENTAIRE FLH *)
+  (* A l'initialisation de la config, il n'y a pas de sosa_ref. *)
+  (* Il sera mis à jour par effet de bord dans request.ml       *)
   let default_sosa_ref = (Adef.iper_of_int (-1), None) in
   let ar =
     authorization cgi from_addr request base_env passwd access_type utm
@@ -1299,6 +1300,11 @@ value make_conf cgi from_addr (addr, request) script_name contents env = do {
        if ar.ar_wizard || ar.ar_friend then False
        else
          try List.assoc "no_image_for_visitor" base_env = "yes" with
+         [ Not_found -> False ];
+     no_note =
+       if ar.ar_wizard || ar.ar_friend then False
+       else
+         try List.assoc "no_note_for_visitor" base_env = "yes" with
          [ Not_found -> False ];
      bname = base_file; env = env; senv = [];
      henv =
@@ -1540,11 +1546,83 @@ value image_request cgi script_name env =
       if Util.start_with s 0 "images/" then
         let i = String.length "images/" in
         let fname = String.sub s i (String.length s - i) in
-        let fname = Filename.basename fname in
+        (* Je ne sais pas pourquoi on fait un basename, mais ça empeche *)
+        (* empeche d'avoir des images qui se trouvent dans le dossier   *)
+        (* image. Si on ne fait pas de basename, alors ça marche.       *)
+        (* let fname = Filename.basename fname in *)
         let fname = Util.image_file_name fname in
         let _ = Image.print_image_file cgi fname in
         True
       else False ]
+;
+
+
+(* Une version un peu à cheval entre avant et maintenant afin de   *)
+(* pouvoir inclure une css, un fichier javascript (etc) facilement *)
+(* et que le cache du navigateur puisse prendre le relais.         *)
+type misc_fname =
+  [ Css of string
+  | Js of string 
+  | Other of string ]
+;
+
+value content_misc cgi len misc_fname = do {
+  if not cgi then Wserver.http "" else ();
+  let (fname, t) = 
+    match misc_fname with
+    [ Css fname -> (fname, "text/css")
+    | Js fname -> (fname, "text/javascript")
+    | Other fname -> (fname, "text/plain") ]
+  in
+  Wserver.wprint "Content-type: %s" t;
+  Util.nl ();
+  Wserver.wprint "Content-length: %d" len;
+  Util.nl ();
+  Wserver.wprint "Content-disposition: inline; filename=%s"
+    (Filename.basename fname);
+  Util.nl ();
+  Util.nl ();
+  Wserver.wflush ();
+};
+
+value print_misc_file cgi misc_fname =
+  match misc_fname with
+  [ Css fname | Js fname ->
+      match 
+        try Some (Secure.open_in_bin fname) with [ Sys_error _ -> None ]
+      with
+      [ Some ic ->
+          let buf = String.create 1024 in
+          let len = in_channel_length ic in
+          do {
+            content_misc cgi len misc_fname;
+            let rec loop len =
+              if len = 0 then ()
+              else do {
+                let olen = min (String.length buf) len in
+                really_input ic buf 0 olen;
+                Wserver.wprint "%s" (String.sub buf 0 olen);
+                loop (len - olen)
+              }
+            in
+            loop len;
+            close_in ic;
+            True
+          }
+      | None -> False ]
+  | Other _ -> False ]
+;
+
+value misc_request cgi fname =
+  let fname = Util.find_misc_file fname in
+  if fname <> "" then
+    let misc_fname =
+      if Filename.check_suffix fname ".css" then Css fname
+      else if Filename.check_suffix fname ".js" then Js fname
+      else Other fname
+    in
+    print_misc_file cgi misc_fname
+  else False
 ;
 
 value strip_quotes s =
@@ -1650,6 +1728,7 @@ value connection cgi (addr, request) script_name contents =
         try
           let (contents, env) = build_env request contents in
           if image_request cgi script_name env then ()
+          else if misc_request cgi script_name then ()
           else
             conf_and_connection cgi from (addr, request) script_name contents
               env

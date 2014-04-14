@@ -156,13 +156,23 @@ function changeCalendar(e,v,m,c) {
   <tr>
   <td>xlab</td>
   <td>
-    %if;([ !dates order]0 = "ddmmyy")
+    %if;([ !dates order]0 = "ddmmyy" or [ !dates order]0 = "ddmmyyyy" or [ !dates order]0 = "dmyyyy")
       <label>[year/month/day]2
       <input name="xvar_dd" size="2" maxlength="2"%sp;
        value="%xdt.day;"xcond%/></label>
       <label>[year/month/day]1
       <span id="xvar_mm_sel"><input name="xvar_mm" size="2" maxlength="2"%sp;
        value="%xdt.month;"xcond%/></span></label>
+      <label>[year/month/day]0
+      <input name="xvar_yyyy" size="5" maxlength="6"%sp;
+       value="%xdt.year;"xcond%/></label>
+    %elseif;([ !dates order]0 = "mmddyyyy")
+      <label>[year/month/day]1
+      <span id="xvar_mm_sel"><input name="xvar_mm" size="2" maxlength="2"%sp;
+       value="%xdt.month;"xcond%/></span></label>
+      <label>[year/month/day]2
+      <input name="xvar_dd" size="2" maxlength="2"%sp;
+       value="%xdt.day;"xcond%/></label>
       <label>[year/month/day]0
       <input name="xvar_yyyy" size="5" maxlength="6"%sp;
        value="%xdt.year;"xcond%/></label>
@@ -416,7 +426,7 @@ function changeCalendar(e,v,m,c) {
 %end;
 </table>
 
-<h4>[*birth]</h4>
+<h4><a name="birth">[*birth]</a></h4>
 
 <table border="1" width=700px>
 <tr>
@@ -429,7 +439,7 @@ function changeCalendar(e,v,m,c) {
 </tr>
 </table>
 
-%apply;date([*date]0, "birth", "birth", "")
+%apply;date([*date/dates]0, "birth", "birth", "")
 
 %apply;source("birth")
 
@@ -446,11 +456,11 @@ function changeCalendar(e,v,m,c) {
 </tr>
 </table>
 
-%apply;date([*date]0, "bapt", "bapt", "")
+%apply;date([*date/dates]0, "bapt", "bapt", "")
 
 %apply;source("bapt")
 
-<h4>[*death]</h4>
+<h4><a name="death">[*death]</a></h4>
 
 <table border="1" width=700px>
 <tr>
@@ -480,7 +490,7 @@ function changeCalendar(e,v,m,c) {
 </tr>
 </table>
 
-%apply;date([*date]0, "death", "death", " onfocus='setDead()'")
+%apply;date([*date/dates]0, "death", "death", " onfocus='setDead()'")
 
 <table border="1" width=700px>
 <tr>
@@ -529,7 +539,7 @@ function changeCalendar(e,v,m,c) {
 </tr>
 </table>
 
-%apply;date([*date]0, "burial", "burial", "")
+%apply;date([*date/dates]0, "burial", "burial", "")
 
 %apply;source("burial")
 

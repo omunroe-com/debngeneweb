@@ -23,7 +23,7 @@ value person_is_std_key conf base p k =
 
 value select_std_eq conf base pl k =
   List.fold_right
-    (fun p pl ->
+    (fun p pl -> 
        if person_is_std_key conf base p k then [p :: pl] else pl)
     pl []
 ;
@@ -463,6 +463,10 @@ value family_m conf base =
       [ Some f -> Srcfile.print conf base f
       | None -> Hutil.incorrect_request conf ]
   | Some "HIST" -> History.print conf base
+  | Some "HIST_CLEAN" when conf.wizard -> History_diff.print_clean conf base
+  | Some "HIST_CLEAN_OK" when conf.wizard -> 
+      History_diff.print_clean_ok conf base
+  | Some "HIST_DIFF" -> History_diff.print conf base
   | Some "HIST_SEARCH" -> History.print_search conf base
   | Some "IMH" -> Image.print_html conf base
   | Some "INV_FAM" when conf.wizard -> UpdateFam.print_inv conf base
@@ -483,14 +487,14 @@ value family_m conf base =
   | Some "LEX" -> Srcfile.print_lexicon conf base
   | Some "MISC_NOTES" -> Notes.print_misc_notes conf base
   | Some "MISC_NOTES_SEARCH" -> Notes.print_misc_notes_search conf base
+  | Some "MOD_DATA" when conf.wizard -> UpdateData.print_mod conf base
+  | Some "MOD_DATA_OK" when conf.wizard -> UpdateData.print_mod_ok conf base
   | Some "MOD_FAM" when conf.wizard -> UpdateFam.print_mod conf base
   | Some "MOD_FAM_OK" when conf.wizard -> UpdateFamOk.print_mod conf base
   | Some "MOD_IND" when conf.wizard -> UpdateInd.print_mod conf base
   | Some "MOD_IND_OK" when conf.wizard -> UpdateIndOk.print_mod conf base
   | Some "MOD_NOTES" when conf.wizard -> Notes.print_mod conf base
   | Some "MOD_NOTES_OK" when conf.wizard -> Notes.print_mod_ok conf base
-  | Some "MOD_P" when conf.wizard -> Place.print_mod conf base
-  | Some "MOD_P_OK" when conf.wizard -> Place.print_mod_ok conf base
   (* Fonction obsolète, la documentation n'étant plus à jour *)
   (* | Some "MOD_WDOC" when conf.wizard -> Doc.print_mod_wdoc conf *)
   (* | Some "MOD_WDOC_OK" when conf.wizard -> Doc.print_mod_wdoc_ok conf base *)
@@ -520,40 +524,59 @@ value family_m conf base =
       [ Some v -> Some.surname_print conf base Some.surname_not_found v
       | _ -> Alln.print_surnames conf base ]
   | Some "NG" ->
-      match (p_getenv conf.env "n", p_getenv conf.env "select") with
-      [ (Some n, Some "input" | None) ->
-          match p_getenv conf.env "t" with
-          [ Some "P" ->
-              do {
-                conf.cancel_links := False; Some.first_name_print conf base n
-              }
-          | Some "N" ->
-              do {
-                conf.cancel_links := False;
-                Some.surname_print conf base Some.surname_not_found n
-              }
-          | _ ->
-              if n = "" then unknown conf n
-              else
-                let (pl, sosa_acc) = find_all conf base n in
-                match pl with
-                [ [] ->
-                    do {
-                      conf.cancel_links := False;
-                      Some.surname_print conf base unknown n
-                    }
-                | [p] ->
-                    if sosa_acc ||
-                       Gutil.person_of_string_key base n <> None ||
-                       person_is_std_key conf base p n
-                    then
-                      person_selected conf base p
-                    else specify conf base n pl
-                | pl -> specify conf base n pl ] ]
-      | (_, Some i) ->
+      (* Rétro-compatibilité <= 6.06 *)
+      let env = 
+        match p_getenv conf.env "n" with
+        [ Some n ->
+            match p_getenv conf.env "t" with
+            [ Some "P" -> [("fn", n) :: conf.env]
+            | Some "N" -> [("sn", n) :: conf.env]
+            | _ -> [("v", n) :: conf.env] ]
+        | None -> conf.env ]
+      in
+      let conf = {(conf) with env = env} in
+      (* Nouveau mode de recherche. *)
+      match p_getenv conf.env "select" with
+      [ Some "input" | None ->
+          (* Récupère le contenu non vide de la recherche. *)
+          let real_input label =
+            match p_getenv conf.env label with
+            [ Some s -> if s = "" then None else Some s
+            | None -> None ]
+          in
+          (* Recherche par clé, sosa, alias ... *)
+          let search n =
+            let (pl, sosa_acc) = find_all conf base n in
+            match pl with
+            [ [] -> unknown conf n
+            | [p] ->
+                if sosa_acc ||
+                   Gutil.person_of_string_key base n <> None ||
+                   person_is_std_key conf base p n
+                then
+                  person_selected conf base p
+                else specify conf base n pl
+            | pl -> specify conf base n pl ]
+          in
+          match real_input "v" with
+          [ Some n -> search n
+          | None ->
+              match (real_input "fn", real_input "sn") with
+              [ (Some fn, Some sn) -> search (fn ^ " " ^ sn)
+              | (Some fn, None) ->
+                  do { 
+                    conf.cancel_links := False; 
+                    Some.first_name_print conf base fn
+                  }
+              | (None, Some sn) ->
+                  do { 
+                    conf.cancel_links := False; 
+                    Some.surname_print conf base unknown sn
+                  }
+              | (None, None) -> incorrect_request conf ] ]
+      | Some i ->
           relation_print conf base
-            (pget conf base (Adef.iper_of_int (int_of_string i)))
-      | _ -> () ]
+            (pget conf base (Adef.iper_of_int (int_of_string i))) ]
   | Some "NOTES" -> Notes.print conf base
   | Some "OA" when conf.wizard || conf.friend ->
       BirthDeath.print_oldest_alive conf base
@@ -848,7 +871,7 @@ value this_request_updates_database conf =
         "KILL_ANC" | "MOD_FAM_OK" | "MOD_IND_OK" | "MOD_NOTES_OK" |
         "MOD_WIZNOTES_OK" | "MRG_DUP_IND_Y_N" | "MRG_DUP_FAM_Y_N" |
         "MRG_IND" | "MRG_MOD_FAM_OK" | "MRG_MOD_IND_OK" |
-        "MOD_P_OK" | "SND_IMAGE_OK" -> True
+        "MOD_DATA_OK" | "SND_IMAGE_OK" -> True
       | _ -> False ]
   | _ -> False ]
 ;

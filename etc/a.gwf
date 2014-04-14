@@ -99,17 +99,11 @@ supervisor=
 # Notify change program (e.g. shell script) to be executed for each
 # database change. First argument is the name of the base, then the
 # individual and finaly the action performed.
+# If you want to test a specific change, such as, delete an individual,
+# you should test the fourth argument as equal to dp (delete person).
+# You can check the list of possible modifications in the updhist.txt file
+# (see update_text).
 # notify_change=
-
-# Notify key program (e.g. shell script) to be executed for each
-# database individual's name change. First argument is the name of the base,
-# then the old key of the individual and finaly the new key of the individual.
-# notify_key=
-
-# Notify delete program (e.g. shell script) to be executed for each
-# database individual's name deleted. First argument is the name of the base,
-# then the old key of the individual.
-# notify_delete=
 
 # Wizard loosing his powers, becoming just a "friend"
 # Set it to "yes" or "no"
@@ -150,6 +144,9 @@ show_consang=yes
 # Death symbol in dates (default: christians' one)
 # death_symbol=†
 
+# Birth symbol in dates (default: christians' one)
+# birth_symbol=°
+
 # Allow the usage of the request m=KILL_ANC
 can_kill_ancestors=no
 
@@ -163,6 +160,10 @@ images_path=
 # Useful if the images are hosted in a site protected by a password that
 # only wizards and friend know.
 no_image_for_visitor=no
+
+# Don't search notes if normal visitor (i.e. neither "wizard" nor "friend").
+# Notes = individual note or Marriage note.
+no_note_for_visitor=yes/no
 
 # Global authorization file for this database (overriding the value
 # of the option "-auth" of "gwd"). This file must hold lines of the
@@ -240,6 +241,18 @@ always_surname=no
 # the old information if you want (oldest = begin of file) or you can remove
 # it when it is too large, if you prefer.
 history=no
+
+# History: set it to yes to save update traces in database (in a directory 
+# named "history_d" in the database directory "base.gwb" or the directory
+# specified by history_path (view below)). It allows you to see the differences
+# between two modifications.
+# Warning: this directory grows indefinitively... 
+history_diff=no
+
+# You can define a specific path where to store all the histories. If you
+# don't specify it, it will save the history in your database directory 
+# (which is juste fine).
+history_path=
 
 # Consider persons having titles as public, i.e. even not friends can see
 # their dates; "yes" = consider; "no" = don't consider
@@ -346,8 +359,9 @@ expand_env=no
 #counter=yes/no
 
 # Default value if not specified is 5000 (which means that it will
-# take at most 5 seconds to modify the "set of places".
-#max_places_update=...
+# take at most 5 seconds to realize a set of modifications (such as the 
+# "set of places", "set of sources" ...
+#max_nb_update=2000
 
 # Authorized wizards notes. By default, wizards notes are not allowed.
 #authorized_wizards_notes=yes/no

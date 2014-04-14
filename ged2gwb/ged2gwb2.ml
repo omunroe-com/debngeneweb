@@ -910,15 +910,37 @@ value this_year =
   tm.Unix.tm_year + 1900
 ;
 
-value infer_death birth =
-  match birth with
-  [ Some (Dgreg d _) ->
+value infer_death birth bapt =
+  match (birth, bapt) with
+  [ (Some (Dgreg d _), _) ->
+      let a = this_year - d.year in
+      if a > dead_years.val then DeadDontKnowWhen
+      else if a <= alive_years.val then NotDead
+      else DontKnowIfDead
+  | (_, Some (Dgreg d _)) ->
       let a = this_year - d.year in
       if a > dead_years.val then DeadDontKnowWhen
       else if a <= alive_years.val then NotDead
       else DontKnowIfDead
   | _ -> DontKnowIfDead ]
 ;
+
+(* Hashtbl qui font la correspondance entre : *)
+(*   - l'encoding -> le nom                   *)
+(*   - le nom     -> l'encoding               *)
+value (ht_e_n, ht_n_e) =
+  do {
+    let ht_e_n = Hashtbl.create 5003 in
+    let ht_n_e = Hashtbl.create 5003 in
+    List.iter
+      (fun (encoding, name) ->
+        do {
+          Hashtbl.add ht_n_e name encoding;
+          Hashtbl.add ht_e_n encoding name;
+        })
+      Utf8.utf8_list;
+    (ht_e_n, ht_n_e)
+};
 
 value string_ini_eq s1 i s2 =
   loop i 0 where rec loop i j =
@@ -929,38 +951,115 @@ value string_ini_eq s1 i s2 =
 ;
 
 value particle s i =
-  string_ini_eq s i "des " || string_ini_eq s i "DES " ||
-  string_ini_eq s i "de " || string_ini_eq s i "DE " ||
-  string_ini_eq s i "du " || string_ini_eq s i "DU " ||
-  string_ini_eq s i "d'" || string_ini_eq s i "D'" ||
-  string_ini_eq s i "y " || string_ini_eq s i "Y "
+  let particles = 
+    ["af "; "d'"; "d’"; "dal "; "de "; "des "; "di "; "du "; "of "; 
+     "van "; "von und zu "; "von "; "y "; "zu "; "zur ";
+     "AF "; "D'"; "D’"; "DAL "; "DE "; "DES "; "DI "; "DU "; "OF "; 
+     "VAN "; "VON UND ZU "; "VON "; "Y "; "ZU "; "ZUR "]
+  in
+  List.exists (string_ini_eq s i) particles
+;
+
+(* Converti le caractère s en majuscule ou minuscule. *)
+value lowercase_or_uppercase_utf8 lower s =
+  (* liste des code hexa correspondant à l'encodage du caractère e. *)
+  let list_of_encodings e =
+    let rec loop len e l =
+      if e = "" then l
+      else 
+        let i = String.index e '/' in
+        let j = try String.index_from e (i+1) '/' with [ Not_found -> String.length e ] in
+        let k = "0" ^ String.sub e (i+1) (j-1) in
+        loop (len+1) (String.sub e j (String.length e - j)) [int_of_string k :: l]
+    in
+    let l = loop 0 e [] in
+    List.rev l
+  in
+  (* l'encodage du caractère s. *)
+  let encoding = 
+    loop 0 s "" where rec loop i s e =
+      if i = String.length s then e
+      else
+        let e = e ^ Printf.sprintf "/x%x" (Char.code s.[i]) in
+        loop (i + 1) s e
+  in
+  try 
+    let name = Hashtbl.find ht_e_n encoding in
+    let name = 
+      if lower then Str.replace_first (Str.regexp "CAPITAL") "SMALL" name 
+      else Str.replace_first (Str.regexp "SMALL") "CAPITAL" name 
+    in
+    let new_encoding = Hashtbl.find ht_n_e name in
+    let (el, len) = 
+      let l = list_of_encodings new_encoding in
+      (l, List.length l)
+    in
+    let s = String.create len in
+    loop 0 el s where rec loop i el s =
+      match el with
+      [ [] -> s
+      | [e :: ell] -> 
+          let _s = String.set s i (Char.chr e) in
+          loop (i + 1) ell s ]
+  with [ Not_found -> s ]
 ;
 
 value lowercase_name s =
   let s = String.copy s in
-  let rec loop uncap i =
-    if i = String.length s then s
-    else do {
-      let c = s.[i] in
-      let (c, uncap) =
-        match c with
-        [ 'a'..'z' ->
-            (if uncap then c
-             else Char.chr (Char.code c - Char.code 'a' + Char.code 'A'),
-             True)
-        | 'A'..'Z' ->
-            (if not uncap then c
-             else Char.chr (Char.code c - Char.code 'A' + Char.code 'a'),
-             True)
-        | c ->
-            if Char.code c < 128 then (c, particle s (i + 1))
-            else (c, uncap) ]
-      in
-      s.[i] := c;
-      loop uncap (i + 1)
-    }
-  in
-  loop (particle s 0) 0
+  copy False 0 0 (particle s 0) where rec copy special i len uncap =
+    if i = String.length s then Buff.get len
+    else
+      match s.[i] with
+      [ 'a'..'z' as c ->
+          let c = 
+            if uncap then c 
+            else Char.chr (Char.code c - Char.code 'a' + Char.code 'A')
+          in
+          copy False (i + 1) (Buff.store len c) True
+      | 'A'..'Z' as c ->
+          let c =
+            if not uncap then c
+            else Char.chr (Char.code c - Char.code 'A' + Char.code 'a')
+          in
+          copy False (i + 1) (Buff.store len c) True
+      | c ->
+          if Char.code c < 128 then 
+            copy False (i + 1) (Buff.store len c) (particle s (i+1))
+          else
+            let nbc = Name.nbc s.[i] in
+            let s = String.sub s i nbc in
+            let s = if not uncap then s else lowercase_or_uppercase_utf8 True s in
+            let (t, j) = (s, i + nbc) in
+            copy False j (Buff.mstore len t) True ]
+;
+
+value uppercase_name s =
+  let s = String.copy s in
+  copy False 0 0 (particle s 0) where rec copy special i len uncap =
+    if i = String.length s then Buff.get len
+    else
+      match s.[i] with
+      [ 'a'..'z' as c ->
+          let c = 
+            if uncap then c 
+            else Char.chr (Char.code c - Char.code 'a' + Char.code 'A')
+          in
+          copy False (i + 1) (Buff.store len c) uncap
+      | 'A'..'Z' as c ->
+          let c =
+            if not uncap then c
+            else Char.chr (Char.code c - Char.code 'A' + Char.code 'a')
+          in
+          copy False (i + 1) (Buff.store len c) uncap
+      | c ->
+          if Char.code c < 128 then 
+            copy False (i + 1) (Buff.store len c) (particle s (i+1))
+          else
+            let nbc = Name.nbc s.[i] in
+            let s = String.sub s i nbc in
+            let s = if uncap then s else lowercase_or_uppercase_utf8 False s in
+            let (t, j) = (s, i + nbc) in
+            copy False j (Buff.mstore len t) False ]
 ;
 
 value look_like_a_number s =
@@ -991,7 +1090,7 @@ value rec next_sep_pos s i =
 ;
 
 value public_name_word =
-  ["Ier"; "I�re"; "der"; "den"; "die"; "el"; "le"; "la"; "the"]
+  ["Ier"; "Ière"; "der"; "den"; "die"; "el"; "le"; "la"; "the"]
 ;
 
 value rec is_a_public_name s i =
@@ -1371,7 +1470,9 @@ value applycase_surname s =
   match case_surnames.val with
   [ NoCase -> s
   | LowerCase -> lowercase_name s
-  | UpperCase -> String.uppercase s ]
+  | UpperCase -> 
+      if charset.val = Utf8 then uppercase_name s
+      else String.uppercase s ]
 ;
 
 value add_indi gen r =
@@ -1389,12 +1490,13 @@ value add_indi gen r =
     match name_sons with
     [ Some n ->
         let (f, s) = parse_name (Stream.of_string n.rval) in
-        let pn = if givn = f then "" else givn in
-        let fal = [] in
+        let pn = "" in
+        let fal = if givn = f then [] else [givn] in
         let (f, fal) =
           match first_names_brackets.val with
+(*
           [ Some (' ', eb) ->
-              try
+              let first_enclosed f =
                 let j = String.index f eb in
                 let i =
                   try String.rindex_from f (j - 1) ' ' with
@@ -1402,14 +1504,26 @@ value add_indi gen r =
                 in
                 let fn = String.sub f (i + 1) (j - i - 1) in
                 let fa =
-                  String.sub f 0 j ^
+                  String.sub f 0 j ^ fn ^
                     String.sub f (j + 1) (String.length f - j - 1)
                 in
-                if fn = fa then (fn, fal) else (fn, [fa :: fal])
-              with
-              [ Not_found -> (f, fal) ]
-          | Some (bb, eb) ->
-              try
+                (fn, fa)
+              in
+              loop True f "" where rec loop first ff accu =
+                try
+                  let (fn, fa) = first_enclosed ff in
+                  let accu =
+                    if first then fn 
+                    else if fn <> "" then accu ^ " " ^ fn 
+                    else accu
+                  in
+                  loop False fa accu
+                with
+                [ Not_found ->
+                    if f = ff then (f, fal) else (accu, [ff :: fal]) ]
+*)
+          [ Some (bb, eb) ->
+              let first_enclosed f =
                 let i = String.index f bb in
                 let j =
                   if i + 2 >= String.length f then raise Not_found
@@ -1420,9 +1534,20 @@ value add_indi gen r =
                   String.sub f 0 i ^ fn ^
                     String.sub f (j + 1) (String.length f - j - 1)
                 in
-                if fn = fa then (fn, fal) else (fn, [fa :: fal])
-              with
-              [ Not_found -> (f, fal) ]
+                (fn, fa)
+              in
+              loop True f "" where rec loop first ff accu =
+                try 
+                  let (fn, fa) = first_enclosed ff in
+                  let accu =
+                    if first then fn 
+                    else if fn <> "" then accu ^ " " ^ fn 
+                    else accu
+                  in
+                  loop False fa accu
+                with
+                [ Not_found -> 
+                    if f = ff then (f, fal) else (accu, [ff :: fal]) ]
           | None -> (f, fal) ]
         in
         let (f, pn, fal) =
@@ -1614,15 +1739,15 @@ value add_indi gen r =
           [ Some r -> strip_spaces r.rval
           | _ -> "" ]
         in
-        (Adef.codate_of_od d, p, source gen r)
-    | None -> (Adef.codate_None, "", ("", [])) ]
+        (d, p, source gen r)
+    | None -> (None, "", ("", [])) ]
   in
   let (death, death_place, (death_src, death_nt)) =
     match find_field "DEAT" r.rsons with
     [ Some r ->
         if r.rsons = [] then
           if r.rval = "Y" then (DeadDontKnowWhen, "", ("", []))
-          else (infer_death birth, "", ("", []))
+          else (infer_death birth bapt, "", ("", []))
         else
           let d =
             match find_field "DATE" r.rsons with
@@ -1638,7 +1763,7 @@ value add_indi gen r =
             | _ -> "" ]
           in
           (d, p, source gen r)
-    | None -> (infer_death birth, "", ("", [])) ]
+    | None -> (infer_death birth bapt, "", ("", [])) ]
   in
   let (burial, burial_place, (burial_src, burial_nt)) =
     let (buri, buri_place, (buri_src, buri_nt)) =
@@ -1686,6 +1811,7 @@ value add_indi gen r =
     | _ -> (buri, buri_place, (buri_src, buri_nt)) ]
   in
   let birth = Adef.codate_of_od birth in
+  let bapt = Adef.codate_of_od bapt in
   let (psources, psources_nt) =
     let (s, s_nt) = source gen r in
     if s = "" then (default_source.val, s_nt) else (s, s_nt)
@@ -2466,6 +2592,7 @@ be - First names enclosed -
    ("-no_nd", Arg.Set no_negative_dates, " \
 - No negative dates -
        Don't interpret a year preceded by a minus sign as a negative year");
+   ("-nc", Arg.Clear Db2link.do_check, "\n       No consistency check");
    ("-nopicture", Arg.Set no_picture, " \
 - Don't extract individual picture.");
    ("-udi", Arg.String set_undefined_death_interval, "\

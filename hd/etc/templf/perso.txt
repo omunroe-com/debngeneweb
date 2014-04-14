@@ -1,7 +1,7 @@
 %doctype;
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <!-- $Id: perso.txt, Template f v 6.05d 2012/06/02 12:00:00 ddr/dd Exp $ -->
+  <!-- $Id: perso.txt, Template f v 6.06d 2012/11/29 16:00:00 ddr/dd Exp $ -->
   <!-- copyright (c) 1998-2012 INRIA -->
   <title>%nn;
     %if;has_public_name;
@@ -73,16 +73,16 @@
   <li class="%if;xx.has_families;%if;(count!=0)desc%else;nodesc%end;%else;nospou%end;">%nn;
 %end;
 
-%define;display_3arrows()
+%define;display_arrows()
   %if;not cancel_links;
     <table style="float: %right;" border="%border;"><tr><td>
       %if;has_referer;
-        <a href="%referer;"><img style="border-width: thin" alt="" title="&lt;&lt;"%sp;
+        <a href="%referer;"><img style="border-width: thin" alt="" title="&lt;&lt;"%sp;%nn;
           src="%image_prefix;/left.png"%wid_hei;left.png;%/></a>
       %end;
       <a href="%prefix;"><img style="border-width: thin" alt="" title="^^"%sp;
         src="%image_prefix;/up.png"%wid_hei;up.png;%/></a>
-      <a href="%prefix;%self.access;;cgl=on"><img style="border-width: thin"%sp;
+      <a href="%url;cgl=on" target="_blank"><img style="border-width: thin"%sp;
         src="%image_prefix;/right.png"%wid_hei;right.png; alt="" title="[cancel GeneWeb links]"%/></a>
     </td></tr></table>
   %end;
@@ -123,14 +123,6 @@
     %else;<a href="%prefix;%xx.access;">%xx;</a>%end;
   %end;%sp;
   %xx.title;%xx.dates;%if;xx.birthday; ([happy birthday to you!])%end;
-%end;
-
-%define;very_short_display_person(xx)
-  %if;(xx.index=central_index)<b>%xx;</b>%else;
-    %if;(cancel_links or xx.is_restricted)%xx;
-    %else;<a href="%prefix;%xx.access;">%xx;</a>%end;
-  %end;%sp;
-  %xx.title;%xx.dates;%nn;
 %end;
 
 %define;age_at_birth_of(xxx)
@@ -290,7 +282,8 @@
 %define;display_date_marriage_parent(xx)
   %foreach;xx.mother.family;
     %if;(spouse.access=xx.father.access)
-      %if;(marriage_date.year!="")<em>-&nbsp;%marriage_date.year;&nbsp;-</em>%else;&nbsp;%end;
+      %if;(marriage_date.year!="")<em>-&nbsp;%marriage_date.prec;
+        %marriage_date.year;&nbsp;-</em>%else;&nbsp;%end;
     %end;
   %end;
 %end;
@@ -381,7 +374,7 @@
   %apply;image_MF("self","13")
 </div>
 
-%apply;display_3arrows()
+%apply;display_arrows()
 
 <h1 class="highlight" style="text-align: center">
   %if;has_public_name;
@@ -828,28 +821,32 @@
             </tr>
 
             <tr>
-              %( line 2 : up to 8 vertical lines with number %)
+              %( line 2 : up to 8 vertical lines with numbers and marriage dates %)
               %if;(father.has_parents and father.father.has_parents)
                 <td style="text-align: center;font-size: 80%%">|<br%/>8</td>
-                <td>&nbsp;</td>
+                <td style="text-align: center;font-size: 80%%">%nn;
+                  %apply;display_date_marriage_parent("father.father")</td>
                 <td style="text-align: center;font-size: 80%%">|<br%/>9</td>
               %end;
               <td>&nbsp;</td>
               %if;(father.has_parents and father.mother.has_parents)
                 <td style="text-align: center;font-size: 80%%">|<br%/>10</td>
-                <td>&nbsp;</td>
+                <td style="text-align: center;font-size: 80%%">%nn;
+                  %apply;display_date_marriage_parent("father.mother")</td>
                 <td style="text-align: center;font-size: 80%%">|<br%/>11</td>
               %end;
               <td>&nbsp;</td>
               %if;(mother.has_parents and mother.father.has_parents)
                 <td style="text-align: center;font-size: 80%%">|<br%/>12</td>
-                <td>&nbsp;</td>
+                <td style="text-align: center;font-size: 80%%">%nn;
+                  %apply;display_date_marriage_parent("mother.father")</td>
                 <td style="text-align: center;font-size: 80%%">|<br%/>13</td>
               %end;
               <td>&nbsp;</td>
               %if;(mother.has_parents and mother.mother.has_parents)
                 <td style="text-align: center;font-size: 80%%">|<br%/>14</td>
-                <td>&nbsp;</td>
+                <td style="text-align: center;font-size: 80%%">%nn;
+                  %apply;display_date_marriage_parent("mother.mother")</td>
                 <td style="text-align: center;font-size: 80%%">|<br%/>15</td>
               %end;
             </tr>
@@ -941,16 +938,18 @@
             </tr>
 
             <tr>
-              %( line 6 : up to 4 vertical lines with number %)
+              %( line 6 : up to 4 vertical lines with numbers and marriage dates %)
               %if;father.has_parents;
                 <td colspan="3" style="text-align: center;font-size: 90%%">|<br%/>4</td>
-                <td>&nbsp;</td>
+                <td style="text-align: center;font-size: 90%%">%nn;
+                  %apply;display_date_marriage_parent("father")</td>
                 <td colspan="3" style="text-align: center;font-size: 90%%">|<br%/>5</td>
               %end;
               <td>&nbsp;</td>
               %if;mother.has_parents;
                 <td colspan="3" style="text-align: center;font-size: 90%%">|<br%/>6</td>
-                <td>&nbsp;</td>
+                <td style="text-align: center;font-size: 90%%">%nn;
+                  %apply;display_date_marriage_parent("mother")</td>
                 <td colspan="3" style="text-align: center;font-size: 90%%">|<br%/>7</td>
               %end;
             </tr>
@@ -1000,9 +999,10 @@
           </tr>
 
           <tr>
-            %( line 10 : 2 vertical lines with number %)
+            %( line 10 : 2 vertical lines with numbers and marriage date %)
             <td colspan="7" style="text-align: center">|<br%/>2</td>
-            <td>&nbsp;</td>
+            <td style="text-align: center;">%nn;
+              %apply;display_date_marriage_parent("self")</td>
             <td colspan="7" style="text-align: center">|<br%/>3</td>
           </tr>
 

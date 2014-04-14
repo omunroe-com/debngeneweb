@@ -4,5 +4,6 @@
 004_gwd.ml-readauth
 010_gwsetup-fhs
 012_gwc.1-syntax
-013_cleaner-Makefile
 014_no-warn-error
+015_compile-gui
+016_reduce-utf8.ml

@@ -6,7 +6,7 @@
  to see the first relationship link
  to try again with this number
 %1 of %2
-%d places starting with %s
+%d %s starting with %s
 %d years ago
 %s access cancelled for that page
 %s cousins
@@ -19,6 +19,8 @@
 %t is born after the death of his/her mother %t
 %t is born more than 2 years after the death of his/her father %t
 %t's sex is not coherent with his/her relations
+%t was witness after his/her death
+%t was witness before his/her birth
 (date)
 (decimal separator)
 (french revolution month)
@@ -32,6 +34,7 @@
 a 2nd cousin
 a 3rd cousin
 about (date)
+about (short date)
 a brother/a sister/a sibling
 a brother-in-law/a sister-in-law
 access
@@ -74,6 +77,8 @@ anniversaries of marriage
 an uncle/an aunt
 any individual in the base
 are
+ascendants tree
+at
 a %s cousin
 a son/a daughter/a child
 a son-in-law/a daughter-in-law
@@ -81,6 +86,8 @@ at the same time
 average age at death
 back
 baptism
+baptism place
+baptism src
 baptized
 base index notes
 base notes
@@ -91,12 +98,17 @@ begin
 between (date)
 bibliography
 birth
+birth place
+birth src
 birthdays
-book of places
+birth date and birth place
+book of %s
 border
 born
 branch/branches
 burial
+burial place
+burial src
 buried
 calendar/calendars
 cancel GeneWeb links
@@ -107,6 +119,7 @@ cannot change sex of a married person
 celebrities
 change children's names
 changed order of children
+changed order of marriages
 change it (the number) yourself
 child/children
 children's names changed
@@ -115,6 +128,10 @@ click on "%s"
 close family
 color
 comment
+compare
+compare selected revisions
+compute all marriages
+compute approximatives dates
 connections
 consanguinity
 continue correcting
@@ -125,23 +142,35 @@ cousins (general term)
 create
 cremated
 database forum
-date
+date/dates
+date begin
+date end
 date of birth
 date of death
 date of marriage
 days old
 death
+death place
+death src
+death date and death place
 delete
 descendants
+descendants at the generation
 died
+died at an advanced age
 died young
+difference between the two revisions
 direct ancestor of %s
 disappeared
 disconnect
+display Aboville number
 display by/branch/alphabetic order
 display by slices/slice width/overlap/total width
 display border tree
+display empty picture
 display generation
+display marriage date
+display notes/sources inline
 display picture
 display smallest sosa number relative to ancestor
 display spouse
@@ -160,6 +189,7 @@ families with encoding
 family added
 family birthday
 family deleted
+family source
 family/families
 family history
 family modified
@@ -181,18 +211,24 @@ godson/goddaughter/godchild
 grand-parents
 great-grand-parents
 gregorian/julian/french/hebrew
+groom/bride
 half siblings
 half-siblings
 happy birthday to them!
 happy birthday to you!
+having a family
+having no family
 having as children
-help places
+help modify data
+help surname branch
 here
 him/her
+history
 history of updates
 horizontally
 husband/wife
 ident/email/subject
+iftitles/public/private
 if titles
 image deleted
 image/images
@@ -208,11 +244,14 @@ index of the spouses (non descendants)
 individual notes
 in (month year)
 insert
+insufficient revision history for %s
 inversion done
 invert
 invert the order of the following families
 in (year)
 is
+is a very old individual
+is a very old parent
 is a very young parent
 is born after his/her child
 it is the same person!
@@ -224,13 +263,23 @@ link between
 linked pages
 link to use
 list/list (ancestors)
+list eclair
+living after %s
+living before %s
+living between %s and %s
+living from/to
 long display
+looking for
 loop in database: %s is his/her own ancestor
 M/F
 main title
+male/female/neuter
 male line/female line
 marriage had occured after the death of %t
 marriage had occured before the birth of %t
+marriage date
+marriage place
+marriage src
 marriage/marriages
 marriage notes
 marriage of %t after his/her death
@@ -250,15 +299,24 @@ M/F
 miscellaneous notes
 miscellaneous informations
 missing ancestors
+missing events
+missing parents
+missing sosa
+missing spouse
 missing sources
+modification/modifications
+modification successful
 modify
 modify picture
+modify %s
 months old
 moon age/new moon/first quarter/full moon/last quarter
 more than %d answers
 msg error disconnected
 murdered
 n° d'Aboville
+n° Sosa
+n° Sosa relative to
 name
 name %s already used by %tthis person%t
 navigation
@@ -266,6 +324,7 @@ navigation with %t as Sosa reference
 NB: you should try another relationship computing mode
 nephews and nieces
 new modification
+next relationship path
 next sibling
 no anniversary
 no birthday
@@ -285,7 +344,14 @@ nth
 nth (cousin)
 nth (generation)
 number
+nb branches
+nb children
+nb individuals
+nb events
 number of branches
+number of children
+number of individuals
+number of events
 number of living persons:
 occupation/occupations
 of course dead
@@ -305,10 +371,11 @@ paternal grand-parents
 person added
 person deleted
 person modified
+person source
 person/persons
 persons having the same name
 place
-place modified
+%s modified
 places
 population pyramid
 possible duplications
@@ -334,14 +401,24 @@ relationship link/relationship links
 relationship link between
 relationship shortcut
 relationship%t to
+revision history
+revision of
+same ancestor as n° Sosa
+searching all
 search/case sensitive
 see
 see above
 see also
+see ascendants notes/sources
+see ascendants pictures
+see descendants notes/sources
+see descendants pictures
 see further
 select
+select a letter
 select a month to see all the anniversaries
 select person to compute relationship
+select the two revisions you want to compare
 send
 separated
 several answers
@@ -354,7 +431,11 @@ should be male
 siblings
 since the last click
 son/daughter/child
+sort by/branch/alphabetic order
+sort by/date begin/alphabetic order/nb individuals/nb events
+sort by/generation/alphabetic order
 Sosa
+Sosa reference: %t
 source/sources
 specify
 spouse/spouses
@@ -376,6 +457,7 @@ the base has changed; do "back", "reload", and refill the form
 the birthday
 the children
 the day after tomorrow
+the difference of age between %t and %t is quite important
 the %d first names
 the %d oldest couples perhaps still alive and engaged
 the %d oldest perhaps still alive
@@ -384,6 +466,7 @@ the %d who lived the longest
 the father-in-law/the mother-in-law
 the father/the mother/a parent
 the file is temporarily locked: please try again
+the following children of %t and %t are born very close
 the following children of %t and %t are not in order
 the grandchildren
 the grandparents

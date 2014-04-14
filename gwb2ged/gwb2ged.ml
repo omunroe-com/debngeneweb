@@ -15,6 +15,7 @@ type charset =
 
 value charset = ref Utf8;
 value no_notes = ref False;
+value no_picture = ref False;
 
 value month_txt =
   [| "JAN"; "FEB"; "MAR"; "APR"; "MAY"; "JUN"; "JUL"; "AUG"; "SEP"; "OCT";
@@ -106,12 +107,7 @@ value ged_header base oc ifile ofile =
     fprintf oc "2 VERS %s\n" Version.txt;
     fprintf oc "2 NAME %s\n" (Filename.basename Sys.argv.(0));
     fprintf oc "2 CORP INRIA\n";
-    fprintf oc "3 ADDR Domaine de Voluceau\n";
-    fprintf oc "4 CONT B.P 105 - Rocquencourt\n";
-    fprintf oc "4 CITY Le Chesnay Cedex\n";
-    fprintf oc "4 POST 78153\n";
-    fprintf oc "4 CTRY France\n";
-    fprintf oc "3 PHON +33 01 39 63 55 11\n";
+    fprintf oc "3 ADDR http://www.geneweb.org\n";
     fprintf oc "2 DATA %s\n"
       (let fname = Filename.basename ifile in
        if Filename.check_suffix fname ".gwb" then fname else fname ^ ".gwb");
@@ -130,7 +126,9 @@ value ged_header base oc ifile ofile =
       fprintf oc "1 FILE %s\n" (Filename.basename ofile)
     else ();
     fprintf oc "1 GEDC\n";
-    fprintf oc "2 VERS 5.5\n";
+    match charset.val with
+    [ Ansel | Ascii -> fprintf oc "2 VERS 5.5\n"
+    | Utf8 -> fprintf oc "2 VERS 5.5.1\n" ];
     fprintf oc "2 FORM LINEAGE-LINKED\n";
     match charset.val with
     [ Ansel -> fprintf oc "1 CHAR ANSEL\n"
@@ -482,9 +480,9 @@ value ged_multimedia_link base oc per =
   match sou base (get_image per) with
   [ "" -> ()
   | s ->
-      do {
-        fprintf oc "1 OBJE\n"; fprintf oc "2 FILE %s\n" s;
-      } ]
+      if not no_picture.val then
+        do {fprintf oc "1 OBJE\n"; fprintf oc "2 FILE %s\n" s;}
+      else () ]
 ;
 
 value ged_note base oc per =
@@ -498,8 +496,9 @@ value ged_marriage base oc fam =
     (Adef.od_of_codate (get_marriage fam), sou base (get_marriage_place fam),
      get_relation fam)
   with
-  [ (None, "", Married | Engaged) -> ()
-  | (d, pl, _) ->
+  (* Pourquoi ne pas exporter dans ce cas ? *)
+  (*[ (None, "", Married | Engaged) -> ()*)
+  [ (d, pl, _) ->
       do {
         fprintf oc "1 %s"
           (if get_relation fam = Engaged then "ENGA" else "MARR");
@@ -721,6 +720,7 @@ value speclist =
    ("-nsp", Arg.Set no_spouses_parents,
     ": no spouses' parents (for options -s and -d)");
    ("-nn", Arg.Set no_notes, ": no (database) notes");
+   ("-nopicture", Arg.Set no_picture, ": Don't extract individual picture.");
    ("-c", Arg.Int (fun i -> censor.val := i), "\
 <num> :
      When a person is born less than <num> years ago, it is not exported unless

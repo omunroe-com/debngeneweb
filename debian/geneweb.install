@@ -1,7 +1,9 @@
+distribution/gw/update_nldb usr/bin
 distribution/gw/consang usr/bin
 distribution/gw/ged2gwb usr/bin
 distribution/gw/gwb2ged usr/bin
 distribution/gw/gwc usr/bin
+distribution/gw/gwc2 usr/bin
 distribution/gw/gwd usr/bin
 distribution/gw/gwu usr/bin
 distribution/gw/lang/* usr/share/geneweb/lang
