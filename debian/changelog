@@ -1,3 +1,32 @@
+geneweb (6.07-2) experimental; urgency=low
+
+  * Use utf8.ml from upstream SVN to avoid build failures on
+    some architectures.
+
+ -- Christian Perrier <bubulle@debian.org>  Fri, 12 Apr 2013 10:42:51 +0200
+
+geneweb (6.07-1) experimental; urgency=low
+
+  * New upstream release
+  * Add a patch to compile the gui in Makefile as it was
+    apparetly dropped in this release
+
+ -- Christian Perrier <bubulle@debian.org>  Thu, 21 Mar 2013 19:21:50 +0100
+
+geneweb (6.06-1) experimental; urgency=low
+
+  * New upstream version
+  * Add liblablgtk2-ocaml-dev to Build-Depends to be able
+    to build the newly added GUI
+  * Add update_nldb to binaries. Closes: #695511
+  * Add gwc2 binary and corresponding manpage. Closes: #664264
+  * Add new geneweb-gui binary in a new binary package
+  * Add lintian overrides for missing hardening that have no meaning
+    for Ocaml executables
+  * Fix gwc2.1 syntax (bug reported upstream)
+
+ -- Christian Perrier <bubulle@debian.org>  Sun, 16 Dec 2012 19:14:56 +0100
+
 geneweb (6.05.1-1) unstable; urgency=low
 
   * New upstream "release" (indeed upstream fixed the 6.05 tarball
