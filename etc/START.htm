@@ -1,0 +1,227 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" 
+"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <link rel="shortcut icon" href="gw/images/favicon_gwd.png" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta http-equiv="Content-Style-Type" content="text/css" />
+  <style type="text/css">
+    html { background:url('gw/images/gwback.jpg'); }
+    body { width:100%; height:100%; font-family: Arial; }
+    a:link { color: black; }
+    .main_container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-top: -200px;
+      margin-left: -355px;
+      width: 710px;
+      height: 400px;
+      border: 2px solid #e7edb3;
+      background-color: white;
+    }
+    .logo_arbre { float: left; padding-left: 20px; padding-top: 20px; }
+    .link_container { float: right; padding-right: 20px; padding-top: 50px; }
+    .logo_titre { }
+    .langue { float: left; font-size: 12px; align: center; }
+    .acces { 
+      font-size: 18px; 
+      text-align: left; 
+      list-style-image: url(gw/images/puce_marron.png); 
+    }
+    .doc { 
+      font-size: 14px; 
+      text-align: left; 
+      list-style-image: url(gw/images/img_documentation.png);
+    }
+    .bottom { font-size: 12px; float: right; padding-top: 50px; }
+  </style>
+  <title>GeneWeb</title>
+  <script type="text/javascript">
+    function init() {
+      var lang = (navigator.userlanguage || navigator.language 
+                  || navigator.browserLanguage || navigator.systemLanguage 
+                  || 'en').substr(0, 2).toLowerCase();
+      var lang_tab = new Array("de", "en", "es", "fr", "it", "nl", "no", "fi", "sv");
+      for (var i=0; i < lang_tab.length; i++) {
+        var my_div = document.getElementById(lang_tab[i]);
+        if (lang == lang_tab[i]) {
+          my_div.style.display = "block";
+        }
+        else {
+          my_div.style.display = "none";
+        }
+      }
+    }
+
+    function change_language(lang) {
+      var lang_tab = new Array("de", "en", "es", "fr", "it", "nl", "no", "fi", "sv");
+      for (var i=0; i < lang_tab.length; i++) {
+        var my_div = document.getElementById(lang_tab[i]);
+        if (lang == lang_tab[i]) {
+          my_div.style.display = "block";
+        }
+        else {
+          my_div.style.display = "none";
+        }
+      }
+      return false;
+    }
+  </script>
+</head>
+
+<body onload="init()">
+  <div class="main_container">
+    <div class="logo_arbre">
+      <img src="gw/images/arbre_start.png" style="border: 0" alt="Tree" title="Tree" align="left" />
+    </div>
+
+    <div class="link_container" id="de">
+      <div class="logo_titre"><img src="gw/images/geneweb_start.png" alt="GeneWeb" title="GeneWeb"/></div>
+      <ul class="acces">
+        <li><a href="http://localhost:2317/" target="_blank">Zugang zu den Stammbäumen</a></li>
+        <li><a href="http://localhost:2316/de" target="_blank">Verwaltung und Erstellung</a></li>   
+      </ul>
+      <ul class="doc">
+        <li><a href="http://opensource.geneanet.org/projects/geneweb/wiki/en_home" target="_blank">Bedienungsanleitung</a></li>
+      </ul>
+      <div class="bottom">
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Licence" target="_blank">Lizenz</a> /
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Credits" target="_blank">Impressum</a>
+      </div>
+    </div>
+
+    <div class="link_container" id="en">
+      <div class="logo_titre"><img src="gw/images/geneweb_start.png" alt="GeneWeb" title="GeneWeb"/></div>
+      <ul class="acces">
+        <li><a href="http://localhost:2317/" target="_blank">Family Tree</a></li>
+        <li><a href="http://localhost:2316/en" target="_blank">Management and creation</a></li>   
+      </ul>
+      <ul class="doc">
+        <li><a href="http://opensource.geneanet.org/projects/geneweb/wiki/en_home" target="_blank">User Guide</a></li>
+      </ul>
+      <div class="bottom">
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Licence" target="_blank">License</a> /
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Credits" target="_blank">Credits</a>
+      </div>
+    </div>
+
+    <div class="link_container" id="es">
+      <div class="logo_titre"><img src="gw/images/geneweb_start.png" alt="GeneWeb" title="GeneWeb"/></div>
+      <ul class="acces">
+        <li><a href="http://localhost:2317/" target="_blank">Acceso a los árboles</a></li>
+        <li><a href="http://localhost:2316/es" target="_blank">Ggestión y Creación</a></li>   
+      </ul>
+      <ul class="doc">
+        <li><a href="http://opensource.geneanet.org/projects/geneweb/wiki/en_home" target="_blank">Modo de empleo</a></li>
+      </ul>
+      <div class="bottom">
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Licence" target="_blank">Licencia</a> /
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Credits" target="_blank">Créditos</a>
+      </div>
+    </div>
+
+    <div class="link_container" id="fr">
+      <div class="logo_titre"><img src="gw/images/geneweb_start.png" alt="GeneWeb" title="GeneWeb"/></div>
+      <ul class="acces">
+        <li><a href="http://localhost:2317/" target="_blank">Ouvrir une généalogie</a></li>
+        <li><a href="http://localhost:2316/fr" target="_blank">Gestion et création</a></li>   
+      </ul>
+      <ul class="doc">
+        <li><a href="http://opensource.geneanet.org/projects/geneweb/wiki/Fr_home" target="_blank">Mode d'emploi</a></li>
+      </ul>
+      <div class="bottom">
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Licence" target="_blank">Licence</a> /
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Credits" target="_blank">Crédits</a>
+      </div>
+    </div>
+
+    <div class="link_container" id="it">
+      <div class="logo_titre"><img src="gw/images/geneweb_start.png" alt="GeneWeb" title="GeneWeb"/></div>
+      <ul class="acces">
+        <li><a href="http://localhost:2317/" target="_blank">Accesso agli alberi</a></li>
+        <li><a href="http://localhost:2316/it" target="_blank">Gestione e la creazione</a></li>   
+      </ul>
+      <ul class="doc">
+        <li><a href="http://opensource.geneanet.org/projects/geneweb/wiki/en_home" target="_blank">Istruzioni per l'uso</a></li>
+      </ul>
+      <div class="bottom">
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Licence" target="_blank">Licenza</a> /
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Credits" target="_blank">Crediti</a>
+      </div>
+    </div>
+
+    <div class="link_container" id="nl">
+      <div class="logo_titre"><img src="gw/images/geneweb_start.png" alt="GeneWeb" title="GeneWeb"/></div>
+      <ul class="acces">
+        <li><a href="http://localhost:2317/" target="_blank">Family Tree</a></li>
+        <li><a href="http://localhost:2316/en" target="_blank">Gwsetup</a></li>   
+      </ul>
+      <ul class="doc">
+        <li><a href="http://opensource.geneanet.org/projects/geneweb/wiki/en_home" target="_blank">User Guide</a></li>
+      </ul>
+      <div class="bottom">
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Licence" target="_blank">License</a> /
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Credits" target="_blank">Credits</a>
+      </div>
+    </div>
+
+    <div class="link_container" id="no">
+      <div class="logo_titre"><img src="gw/images/geneweb_start.png" alt="GeneWeb" title="GeneWeb"/></div>
+      <ul class="acces">
+        <li><a href="http://localhost:2317/" target="_blank">Family Tree</a></li>
+        <li><a href="http://localhost:2316/en" target="_blank">Gwsetup</a></li>   
+      </ul>
+      <ul class="doc">
+        <li><a href="http://opensource.geneanet.org/projects/geneweb/wiki/en_home" target="_blank">User Guide</a></li>
+      </ul>
+      <div class="bottom">
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Licence" target="_blank">License</a> /
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Credits" target="_blank">Credits</a>
+      </div>
+    </div>
+
+    <div class="link_container" id="fi">
+      <div class="logo_titre"><img src="gw/images/geneweb_start.png" alt="GeneWeb" title="GeneWeb"/></div>
+      <ul class="acces">
+        <li><a href="http://localhost:2317/" target="_blank">Family Tree</a></li>
+        <li><a href="http://localhost:2316/en" target="_blank">Gwsetup</a></li>   
+      </ul>
+      <ul class="doc">
+        <li><a href="http://opensource.geneanet.org/projects/geneweb/wiki/en_home" target="_blank">User Guide</a></li>
+      </ul>
+      <div class="bottom">
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Licence" target="_blank">License</a> /
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Credits" target="_blank">Credits</a>
+      </div>
+    </div>
+
+    <div class="link_container" id="sv">
+      <div class="logo_titre"><img src="gw/images/geneweb_start.png" alt="GeneWeb" title="GeneWeb"/></div>
+      <ul class="acces">
+        <li><a href="http://localhost:2317/" target="_blank">Family Tree</a></li>
+        <li><a href="http://localhost:2316/sv" target="_blank">ledning och skapande</a></li>   
+      </ul>
+      <ul class="doc">
+        <li><a href="http://opensource.geneanet.org/projects/geneweb/wiki/en_home" target="_blank">User Guide</a></li>
+      </ul>
+      <div class="bottom">
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Licence" target="_blank">License</a> /
+        <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Credits" target="_blank">Credits</a>
+      </div>
+    </div>
+
+    <div class="langue">
+      <a onclick="change_language('de')" href="#">Deutsch</a>, 
+      <a onclick="change_language('en')" href="#">English</a>, 
+      <a onclick="change_language('es')" href="#">Español</a>, 
+      <a onclick="change_language('fr')" href="#">Français</a>, 
+      <a onclick="change_language('it')" href="#">Italiano</a>, 
+      <a onclick="change_language('nl')" href="#">Nederlands</a>, 
+      <a onclick="change_language('no')" href="#">Norsk</a>, 
+      <a onclick="change_language('fi')" href="#">Suomi</a>, 
+      <a onclick="change_language('sv')" href="#">Svenska</a>
+    </div>
+  </div>
+</body>
+</html>

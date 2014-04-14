@@ -1,0 +1,32 @@
+%doctype;
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <title>%old; -&gt; %new;</title>
+  <meta http-equiv="Content-Style-Type" content="text/css"%/>
+  <meta http-equiv="Content-Type" content="text/html; charset=%charset;"%/>
+  <meta name="robots" content="none"%/>
+  <link rel="shortcut icon" href="%image_prefix;/favicon_gwd.png"%/>
+%include.css;
+</head>
+<body>
+<h1>%old; -&gt; %new;</h1>
+
+<p>
+%apply;interp([
+en: The database "%old;" has been renamed "%new;".
+    Please use now:
+fr: La base de données "%old;" est renommée "%new;".
+    Utiliser maintenant:
+it: La base di dati "%old;" ha cambiato nome "%new;".
+    Utilizzate:
+])
+<ul>
+<li>
+<a href="%link;">%link;</a>
+</ul>
+</p>
+
+%base_trailer;
+%copyright;
+</body>
+</html>
