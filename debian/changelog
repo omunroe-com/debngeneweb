@@ -4,6 +4,7 @@ geneweb (6.07dfsg-1) UNRELEASED; urgency=low
     modifiable source. Upstream tarball repacked as 6.07dfsg without
     these files. Closes: #744704
   * Upload to unstable
+  * Switch to git: update VCS-* accordingly
 
  -- Christian Perrier <bubulle@debian.org>  Mon, 14 Apr 2014 09:47:41 +0200
 
