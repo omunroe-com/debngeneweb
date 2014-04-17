@@ -1,4 +1,4 @@
-geneweb (6.07dfsg-1) UNRELEASED; urgency=low
+geneweb (6.07dfsg-1) unstable; urgency=low
 
   * Drop Javascript files provided in upstream tarball without any
     modifiable source. Upstream tarball repacked as 6.07dfsg without
@@ -7,7 +7,7 @@ geneweb (6.07dfsg-1) UNRELEASED; urgency=low
   * Switch to git: update VCS-* accordingly
   * Drop outdated debian/watch file
 
- -- Christian Perrier <bubulle@debian.org>  Mon, 14 Apr 2014 09:47:41 +0200
+ -- Christian Perrier <bubulle@debian.org>  Thu, 17 Apr 2014 07:22:13 +0200
 
 geneweb (6.07-2) experimental; urgency=low
 
