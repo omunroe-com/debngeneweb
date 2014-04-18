@@ -19,6 +19,8 @@ override_dh_installdeb:
 	dh_buildinfo
 	dh_installdeb
 	
+override_dh_auto_clean:
+
 override_dh_auto_install:
 
 override_dh_auto_build:
