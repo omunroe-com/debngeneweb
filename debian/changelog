@@ -7,7 +7,7 @@ geneweb (6.07dfsg-1) unstable; urgency=low
   * Switch to git: update VCS-* accordingly
   * Drop outdated debian/watch file
   * Add lintian override file for "untranslatable-debconf-templates"
-  * Bump Stadards to 3.9.5 (checked)
+  * Bump Standards to 3.9.5 (checked)
 
  -- Christian Perrier <bubulle@debian.org>  Thu, 17 Apr 2014 07:22:13 +0200
 
