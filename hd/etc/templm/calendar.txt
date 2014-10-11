@@ -3,7 +3,7 @@
 <head>
   <!-- $Id: calendar.txt,v 5.9 2007-07-25 15:01:02 ddr Exp $ -->
   <!-- Copyright (c) 1998-2007 INRIA -->
-  <!-- Modified mickroue(a)yahoo.fr 20121230 templ=templm -->
+  <!-- Modified mickroue(a)yahoo.fr 20130412 templ=templm -->
   <title>[*calendar/calendars]1</title>
   <meta name="robots" content="none"%/>
   <meta name="format-detection" content="telephone=no"%/>
@@ -18,10 +18,7 @@
 
 %if;not cancel_links;
   <div class="menu2">
-    %if;has_referer;
-      <a href="%referer;" title="[back]">&lt;&lt;</a>
-    %end;
-      <a href="%prefix;" title="[visualize/show/hide/summary]3">^^</a>
+    <a href="%prefix;" title="[visualize/show/hide/summary]3">^^</a>
   </div>
 %end;
 
@@ -29,15 +26,7 @@
 
 %define;french_day(xx)
   %apply;nth%with;
-    /Primidi/Duodi/Tridi/Quartidi/Quintidi/Sextidi/Septidi/Octidi/Nonidi/Décadi
-    /Primidi/Duodi/Tridi/Quartidi/Quintidi/Sextidi/Septidi/Octidi/Nonidi/Décadi
-    /Primidi/Duodi/Tridi/Quartidi/Quintidi/Sextidi/Septidi/Octidi/Nonidi/Décadi
-  %and;xx%end;
-%end;
-
-%define;french_year(xx)
-  %apply;nth%with;
-    /I/II/III/IV/V/VI/VII/VIII/IX/X/XI/XII/XIII/XIV
+    /Primidi/Duodi/Tridi/Quartidi/Quintidi/Sextidi/Septidi/Octidi/Nonidi/Décadi/Primidi/Duodi/Tridi/Quartidi/Quintidi/Sextidi/Septidi/Octidi/Nonidi/Décadi/Primidi/Duodi/Tridi/Quartidi/Quintidi/Sextidi/Septidi/Octidi/Nonidi/Décadi/
   %and;xx%end;
 %end;
 
@@ -150,10 +139,11 @@
       %apply;capitalize%with;%apply;nth([(week day)], date.week_day)%end;
       %if;(date.julian_day = today.julian_day)%sp;%time;%end;
     </li>
-    %if;(date.julian_day > 2375839 and date.julian_day < 2380688)
-      <li>%apply;french_day(date.french.day),%sp;%date.french.day;
-          %sp;%apply;capitalize%with;%apply;nth([(french revolution month)], date.french.month -1)%end;
-          %sp;an %apply;french_year(date.french.year) 
+    %if;(date.julian_day > 2375839)
+      <li %if;(date.julian_day < 2380688)style="font-weight:bold;"%end;>
+        %apply;french_day(date.french.day),%sp;%date.french.day;
+        %sp;%apply;capitalize%with;%apply;nth([(french revolution month)], date.french.month -1)%end;
+        %sp;an %date.french.year.roman; 
       </li>
     %end;
     <li>
@@ -209,7 +199,20 @@
       <input type="submit" value="Ok" %/>
       </p>
     </form>
+    %let;lang;
+      %if;(evar.lang != "")
+        %evar.lang;
+      %elseif;(bvar.default_lang != "")
+        %bvar.default_lang;
+      %else;en%nn;
+      %end;
+    %in;
     <ul>
+      <li>
+        <a href="http://%lang;.wikipedia.org/wiki/%date.gregorian.year;">
+          http://%lang;.wikipedia.org/wiki/%date.gregorian.year;
+        </a>
+      </li>
       <li>
         <a href="%prefix;m=POP_PYR;int=5;lim=0;y=%date.gregorian.year;">
           [population pyramid] (%date.gregorian.year;)

@@ -22,6 +22,20 @@ value get_date conf =
     conf.today.year
 ;
 
+(*
+   On cherche le fichier dans cet ordre :
+    - dans la base (bases/bname/cnt/)
+    - dans le répertoire des bases (bases/)
+*)
+value find_cnt_file conf =
+  let bases_cnt = Filename.concat Util.cnt_dir.val "cnt" in
+  let bname_cnt =
+    List.fold_left Filename.concat Util.cnt_dir.val [conf.bname; "cnt"]
+  in
+  if Sys.file_exists bname_cnt then bname_cnt
+  else bases_cnt
+;
+
 value adm_file f =
   List.fold_right Filename.concat [Util.cnt_dir.val; "cnt"] f
 ;
@@ -624,19 +638,18 @@ value print_start conf base =
 ;
 
 (* code déplacé et modifié pour gérer advanced.txt *)
-value print conf base fname = 
-  match fname with
-  [ "advanced" -> do {
-      Wserver.wrap_string.val := Util.xml_pretty_print;
-      Hutil.interp conf base "advanced"
-        {Templ.eval_var = eval_var conf base;
-         Templ.eval_transl env = Templ.eval_transl conf;
-         Templ.eval_predefined_apply = eval_predefined_apply conf;
-         Templ.get_vother = get_vother; Templ.set_vother = set_vother;
-         Templ.print_foreach = fun []}
-        [] ()
-    }
-  | _ -> gen_print True Lang conf base fname ]
+value print conf base fname =
+  if Sys.file_exists (Util.etc_file_name conf fname) then do {
+    Wserver.wrap_string.val := Util.xml_pretty_print;
+    Hutil.interp conf base fname
+      {Templ.eval_var = eval_var conf base;
+       Templ.eval_transl env = Templ.eval_transl conf;
+       Templ.eval_predefined_apply = eval_predefined_apply conf;
+       Templ.get_vother = get_vother; Templ.set_vother = set_vother;
+       Templ.print_foreach = fun []}
+      [] ()
+  }
+  else gen_print True Lang conf base fname
 ;
 
 (* lexicon (info) *)
