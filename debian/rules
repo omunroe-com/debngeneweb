@@ -39,7 +39,6 @@ override_dh_clean:
 	# Add here commands to clean up after the build process.
 	[ ! -f tools/Makefile.inc ] || [ ! -f Makefile ] || $(MAKE) clean
 	# Clean out cruft left by former builds
-	rm -f tools/Makefile.inc
 	rm -f compilation.ml
 	dh_clean
 
