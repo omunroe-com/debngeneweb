@@ -80,6 +80,9 @@ value header_without_http conf title = do {
   match Util.open_templ conf "css" with
   [ Some ic -> Templ.copy_from_templ conf [] ic
   | None -> () ];
+  match Util.open_templ conf "js" with
+  [ Some ic -> Templ.copy_from_templ conf [] ic
+  | None -> () ];
   Templ.include_hed_trl conf None "hed";
   Wserver.wprint "</head>\n";
   let s =
@@ -160,14 +163,17 @@ value error_cannot_access conf fname = do {
   trailer conf;
 };
 
-value interp conf base fname ifun env ep = do {
+value gen_interp header conf base fname ifun env ep = do {
   let v = Templ.template_file.val in
   Templ.template_file.val := fname;
   try
     match Templ.input_templ conf fname with
     [ Some astl -> do {
-        Util.html conf;
-        Util.nl ();
+        if header then do {
+          Util.html conf;
+          Util.nl ();
+        }
+        else ();
         Templ.interp_ast conf (Some base) ifun env ep astl
       }
     | None ->
@@ -176,3 +182,10 @@ value interp conf base fname ifun env ep = do {
     do { Templ.template_file.val := v; raise e };
   Templ.template_file.val := v;
 };
+
+value interp_no_header conf base fname ifun env ep = 
+  gen_interp False conf base fname ifun env ep;
+
+value interp conf base fname ifun env ep = 
+  gen_interp True conf base fname ifun env ep;
+

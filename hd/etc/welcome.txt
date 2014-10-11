@@ -8,10 +8,10 @@
   <meta http-equiv="Content-Style-Type" content="text/css"%/>
   <meta name="robots" content="none"%/>
   <link rel="shortcut icon" href="%image_prefix;/favicon_gwd.png"%/>
-  <script type="text/javascript" src="jquery_1_9_1_min.js"></script>
+  %include.js;
   <script type="text/javascript" src="jquery_placeholder_min.js"></script>
-%include.css;
-%base_header;
+  %include.css;
+  %base_header;
 </head>
 <body%body_prop;>
 
@@ -162,7 +162,7 @@ fr: Les droits des magiciens sont actuellement suspendus pour maintenance.
           <input type="text" name="fn" placeholder="[*first name/first names]0" size="25" maxlength="200"%/>
           <input type="text" name="sn" placeholder="[*surname/surnames]0" size="25" maxlength="200"%/>
           <br%/>
-          <input type="text" name="v" placeholder="[*public name], [*alias] %if;browsing_with_sosa_ref;, [n° Sosa relative to]%end; ..." size="53" maxlength="200"%/>
+          <input type="text" name="n" placeholder="[*public name], [*alias] %if;browsing_with_sosa_ref;, [n° Sosa relative to]%end; ..." size="53" maxlength="200"%/>
           <input type="submit" value="Ok"%/>
           <br%/>
           %if;browsing_with_sosa_ref;%apply;display_sosa_ref%with;%sosa_ref;%end;%end;

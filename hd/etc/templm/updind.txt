@@ -3,7 +3,7 @@
 <head>
   <!-- $Id: updind.txt,v 5.10 2007/01/19 01:53:16 ddr Exp $ -->
   <!-- Copyright (c) 1998-2007 INRIA -->
-  <!-- Modified mickroue(a)yahoo.fr 20120930 templ=templm -->
+  <!-- Modified mickroue(a)yahoo.fr 20130627 templ=templm -->
   <title>%nn;
     %if;(evar_m = "MRG_IND_OK" or evar_m = "MRG_MOD_IND_OK")
       [*merge::person/persons]1 # %index;
@@ -17,7 +17,11 @@
   <meta http-equiv="Content-Style-Type" content="text/css"%/>
   <link rel="shortcut icon" href="%image_prefix;/favicon_gwd.png"%/>
   %include.css;
+  <script type="text/javascript" src="templm/upd.js"></script>
   %base_header;
+
+  %let;l_on;onclick="this.focus()" onkeydown="if (event.keyCode == 13) javascript:document.upd.submit();"%in;
+  %let;l_on1;onclick="this.focus()"%in;
 
   %define;search_focus(xcnt)
     %if;(evar_add_qualifierxcnt = "on")
@@ -139,58 +143,9 @@
        break;
     }
   }
-  function changeDisplay(id,c,cond1,cond2) 
-  {
-    var d = document.getElementById(id);
-    var val = c.options%[c.selectedIndex%].value;
-    if (val == cond1 || val == cond2)
-      {d.style.display='inline';}
-    else
-      {d.style.display='none';}
-  }
-  function changeFocus(event,id) {
-    var key = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
-    if (key == 42 || key == 60 || key == 62 || key == 95)
-    {
-     document.getElementById(id).focus();
-     return false;
-    }
-  }
-  function valid(id) {
-    document.getElementById(id).focus();
-    document.getElementById(id).checked = true;
-  }
-  function addRow(event,id) {
-    var key = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
-    if (key == 49 || key == 13)
-    { document.getElementById(id).checked = true;
-      document.upd.submit()
-    }
-  }
-  function no_sex(id)
-  {
-    document.getElementById(id).className='background_sex_2';
-  }
-  function male(id) 
-  {
-    document.getElementById(id).className='background_sex_0';
-  }
-  function female(id) 
-  {
-    document.getElementById(id).className='background_sex_1';
-  }
-  function compute(id,prec)
-  {
-   var x = document.getElementById(id);
-   var y = document.getElementById(prec);
-   if (x.value != '' && x.value != eval(x.value))
-   { x.value = eval(x.value);
-     y.value = 'about'
-   }
-  }
 -->
 </script>
-  
+
   %define;sure_date(xvar)
     class="%if;(xvar.prec = "sure")sure%else;not_sure%end;"%nn;
   %end;
@@ -212,7 +167,9 @@
         <span id="xvar_mm_sel"><input id="xvar_d2" name="xvar_mm" class="number" autocomplete="off" title="[year/month/day]1" size="2" maxlength="2"%sp;
          value="%xdate.month;" onkeypress="javascript:return changeFocus(event,'xvar_d3');"%/></span>
         <input id="xvar_d3" name="xvar_yyyy" class="number" autocomplete="off" title="? /[year/month/day]0/" size="6" maxlength="12"%sp;
-         value="%xdate.year;" onkeypress="javascript:return changeFocus(event,'xvar_d4');" onblur="javascript:compute('xvar_d3','xvar_d4')"%/>
+         value="%xdate.year;"
+         onkeypress="javascript:return orYear(event,'xvar_d4','lab_xvar_oryear','xvar_d5');javascript:return changeFocus(event,'xvar_d4');"
+         onblur="javascript:compute('xvar_d3','xvar_d4')"%/>
       %elseif;([ !dates order]0 = "mmddyyyy")
         <label for="xvar_d1" %apply;accesskey("xvar")>xlab</label>%nn;
           <span id="xvar_mm_sel"><input id="xvar_d1" name="xvar_mm" class="number" autocomplete="off" title="[year/month/day]1" size="2" maxlength="2"%sp;
@@ -220,11 +177,15 @@
         <input id="xvar_d2" name="xvar_dd" class="number" autocomplete="off" title="[year/month/day]2" size="2" maxlength="2"%sp;
            value="%xdate.day;" onkeypress="javascript:return changeFocus(event,'xvar_d3');"%/>
         <input id="xvar_d3" name="xvar_yyyy" class="number" autocomplete="off" title="? /[year/month/day]0/" size="6" maxlength="12"%sp;
-         value="%xdate.year;" onkeypress="javascript:return changeFocus(event,'xvar_d4');" onblur="javascript:compute('xvar_d3','xvar_d4')"%/>
+         value="%xdate.year;"
+         onkeypress="javascript:return orYear(event,'xvar_d4','lab_xvar_oryear','xvar_d5');javascript:return changeFocus(event,'xvar_d4');"
+         onblur="javascript:compute('xvar_d3','xvar_d4')"%/>
       %else;
         <label %apply;accesskey("xvar")>xlab
           <input id="xvar_d1" name="xvar_yyyy" class="number" autocomplete="off" title="? /[year/month/day]0/" size="6" maxlength="12"%sp;
-           value="%xdate.year;" onkeypress="javascript:return changeFocus(event,'xvar_d2');" onblur="javascript:compute('xvar_d1','xvar_d4')"%/></label>
+           value="%xdate.year;"
+           onkeypress="javascript:return orYear(event,'xvar_d4','lab_xvar_oryear','xvar_d5');javascript:return changeFocus(event,'xvar_d2');"
+           onblur="javascript:compute('xvar_d1','xvar_d4')"%/></label>
         <span id="xvar_mm_sel"><input id="xvar_d2" name="xvar_mm" class="number" autocomplete="off" title="[year/month/day]1" size="2" maxlength="2"%sp;
          value="%xdate.month;" onkeypress="javascript:return changeFocus(event,'xvar_d3');"%/></span>
         <input id="xvar_d3" name="xvar_dd" class="number" autocomplete="off" title="[year/month/day]2" size="2" maxlength="2"%sp;
@@ -242,7 +203,7 @@
         <option value="before"%if;(xdate.prec = "before") selected="selected"%end;>[*before (date)]0</option>
         <option value="after"%if;(xdate.prec = "after") selected="selected"%end;>[*after (date)]0</option>
         <option value="oryear"%if;(xdate.prec = "oryear") selected="selected"%end;>[*or] -&gt;</option>
-        <option value="yearint"%if;(xdate.prec = "yearint") selected="selected"%end;>[*between (date)] -&gt;</option>
+        <option value="yearint"%if;(xdate.prec = "yearint") selected="selected"%end;>..[*between (date)] -&gt;</option>
       </select>
       <label id="lab_xvar_oryear" %if;(xdate.oryear = "") style="display: none;"%end;>
         <input id="xvar_d5" name="xvar_oryear" class="number" autocomplete="off" title="[year/month/day]0" size="5" maxlength="5" value="%xdate.oryear;"%/>
@@ -260,67 +221,6 @@
 
 %(<!-- Begin define  -->%)
 
-<script type="text/javascript">
-<!--
-  function setDead(c) 
-  {
-    var doc = document.upd;
-    var d1 = document.getElementById('content_death');
-    var d2 = document.getElementById('content_burial');
-    var d3 = document.getElementById('content_death_reason');
-    var val = c.options%[c.selectedIndex%].value;
-      if (val == 'Auto' || val == 'NotDead' || val == 'DontKnowIfDead' || val == 'OfCourseDead')
-        {d1.style.display='none';
-         d2.style.display='none';
-         d3.style.display='none';
-         doc.burial.value = "UnknownBurial";
-         doc.burial_dd.value = "";
-         doc.burial_mm.value = "";
-         doc.burial_yyyy.value = "";
-         doc.burial_prec.value = "-";
-         doc.burial_oryear.value = "";
-         doc.burial_text.value = "";
-         doc.burial_place.value = "";
-         doc.burial_src.value = "";
-        }
-      else
-        {d1.style.display='inline';
-         d2.style.display='inline';
-         d3.style.display='inline';
-        }
-  }
-  function changeFocusDeath(event)
-  {
-    var d1 = document.getElementById('content_death');
-    var d2 = document.getElementById('content_burial');
-    var d3 = document.getElementById('content_death_reason');
-    var id = document.getElementById('death');
-    var key = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
-    
-    if (key == 42 || key == 43 || key == 60 || key == 62 || key == 95)
-      {id.value = "Death";
-       d1.style.display='inline';
-       d2.style.display='inline';
-       d3.style.display='inline';
-       document.getElementById('death_d1').focus();
-       return false;
-      }
-  }
-  function fill_place(xx)
-  {
-    switch(xx.value) {
-    case "2": xx.value = document.upd.birth_place.value;
-    break;
-    case "3": xx.value = document.upd.bapt_place.value;
-    break;
-    case "4": xx.value = document.upd.death_place.value;
-    break;
-    case "5": xx.value = document.upd.burial_place.value;
-    break;}
-  }
--->
-</script>
-
 %define;accesskey(xvar)
   %if;("xvar"="birth")
     title="[*birth] (2)" accesskey="2"%nn;
@@ -335,7 +235,7 @@
   <label>[*place]%nn;
     <input name="xvar_place" size="90" maxlength="200"%sp;
      title="[*place] : 2=[birth], 3=[baptism], 4=[death], 5=[burial]"%sp; 
-     value="%xx_place;" id="xvar_place" onblur="fill_place(this)"%/>
+     value="%xx_place;" id="xvar_place" onblur="fillPlaceInd(this)"%/>
    </label>
 %end;
 
@@ -365,9 +265,8 @@
     <input name="t_nthxcnt" class="number" autocomplete="off" size="3" value="%title.t_nth;"%sp;
     id="t_nthxcnt"%/></label>
   <label>
-    <input type="checkbox" name="t_main_titlexcnt" value="on"%sp;
-    %if;title.t_main; checked="checked"%end;%sp;
-    onkeydown="if (event.keyCode == 13) javascript:document.upd.submit();"%/>[*main title]0</label>
+    <input type="checkbox" name="t_main_titlexcnt" value="on" %l_on;%sp;
+    %if;title.t_main; checked="checked"%end;%/>[*main title]0</label>
   <dl class="nobr">
     <dt>[*begin]0</dt>
       <dd>%apply;date("", "t_date_startxcnt", "title_date_start")</dd>
@@ -383,7 +282,7 @@
     %else;
       title="[insert::relation/relations]0"
     %end;>
-   <input type="checkbox" id="add_relationxcnt" name="add_relationxcnt" value="on"%sp;
+   <input type="checkbox" id="add_relationxcnt" name="add_relationxcnt" value="on" %l_on1;%sp;
      onkeypress="return addRow(event,'add_relationxcnt')"%/></label>
 %end;
 
@@ -420,11 +319,11 @@
     <input id="rxcnt_xvar_p_l" type="radio" name="rxcnt_xvar_p" value="link" title="[link]"%sp;
       %if;relation.xrel.link;%sp;checked="checked" %end;%sp;
       onkeydown="if (event.keyCode == 13) javascript:document.upd.submit();
-                 if (event.keyCode == 32) javascript:valid('rxcnt_xvar_p_c');"%/>
+                 if (event.keyCode == 32) javascript:valid('rxcnt_xvar_p_c');" %l_on1;%/>
     <input id="rxcnt_xvar_p_c" type="radio" name="rxcnt_xvar_p" value="create" title="[create]"%sp;
       %if;relation.xrel.create;%sp;checked="checked"%end;%sp;
       onkeydown="if (event.keyCode == 13) javascript:document.upd.submit();
-                 if (event.keyCode == 32) javascript:valid('rxcnt_xvar_p_l');"%/>
+                 if (event.keyCode == 32) javascript:valid('rxcnt_xvar_p_l');" %l_on1;%/>
   </td><td>
     <input name="rxcnt_xvar_fn" style="text-align: right;" size="30" maxlength="200"%sp;
       value="%relation.xrel.first_name;" id="rxcnt_xvar_fn"%sp;
@@ -492,15 +391,15 @@
     <label>[*surname/surnames]0<input name="surname" size="30" maxlength="200" value="%surname;"%sp;id="surname"%/></label>%nn;
     <br%/>
     <label>[*number]0<input name="occ" class="number" autocomplete="off" size="3" maxlength="8" value="%occ;" id="occ"%/></label>
-        [*sex] : <label class="background_sex_0"><input type="radio" id="sexM" name="sex" value="M" onclick="male('sex_person')"
+        [*sex] : <label class="background_sex_0"><input type="radio" id="sexM" name="sex" value="M" onclick="male('sex_person');this.focus()"
       %if;is_male;%sp;checked="checked"%end;%sp;
       onkeydown="if (event.keyCode == 13) javascript:document.upd.submit();
                  if (event.keyCode == 32) javascript:valid('sexU'), no_sex('sex_person');"%/>[M/F]0 </label>%nn;
-    <label class="background_sex_2"><input type="radio" id="sexU" name="sex" value="N" onclick="no_sex('sex_person')"
+    <label class="background_sex_2"><input type="radio" id="sexU" name="sex" value="N" onclick="no_sex('sex_person');this.focus()"
       %if;not(is_male or is_female)%sp;checked="checked"%end;%sp;
       onkeydown="if (event.keyCode == 13) javascript:document.upd.submit();
                  if (event.keyCode == 32) javascript:valid('sexF'), female('sex_person');"%/>? </label>%nn;
-    <label class="background_sex_1"><input type="radio" id="sexF" name="sex" value="F" onclick="female('sex_person')"
+    <label class="background_sex_1"><input type="radio" id="sexF" name="sex" value="F" onclick="female('sex_person');this.focus()"
      %if;is_female;%sp;checked="checked"%end;%sp;
       onkeydown="if (event.keyCode == 13) javascript:document.upd.submit();
                  if (event.keyCode == 32) javascript:valid('sexM'), male('sex_person');"%/>[M/F]1 </label> <br%/>
@@ -509,64 +408,64 @@
       [*access]0 :
       <label><input id="access_1" type="radio" name="access" value="Public"%if;acc_public; checked="checked"%end;%sp;
         onkeydown="if (event.keyCode == 13) javascript:document.upd.submit();
-                   if (event.keyCode == 32) javascript:valid('access_2');"%/>[public]0</label>
+                   if (event.keyCode == 32) javascript:valid('access_2');" %l_on1;%/>[public]0</label>
       <label><input id="access_2" type="radio" name="access" value="IfTitles"%if;acc_if_titles; checked="checked"%end;%sp;
         onkeydown="if (event.keyCode == 13) javascript:document.upd.submit();
-                   if (event.keyCode == 32) javascript:valid('access_3');"%/>[if titles]0</label>
+                   if (event.keyCode == 32) javascript:valid('access_3');" %l_on1;%/>[if titles]0</label>
       <label><input id="access_3" type="radio" name="access" value="Private"%if;acc_private; checked="checked"%end;%sp;
         onkeydown="if (event.keyCode == 13) javascript:document.upd.submit();
-                   if (event.keyCode == 32) javascript:valid('access_1');"%/>[private]0</label>
+                   if (event.keyCode == 32) javascript:valid('access_1');" %l_on1;%/>[private]0</label>
     <br%/><br%/>
     %if;has_qualifiers;
       %foreach;qualifier;
     <label>[*qualifier]0<input name="qualifier%cnt;" size="30" value="%qualifier;"%sp; id="qualifier%cnt;"%/></label>%nn;
     <label class="addrow"><input type="checkbox" title="[insert::qualifier]" name="add_qualifier%cnt;" value="on"%sp;
-      id="add_qualifier%cnt;" onkeypress="return addRow(event,'add_qualifier%cnt;')"%/></label>%nn;
+      id="add_qualifier%cnt;" onkeypress="return addRow(event,'add_qualifier%cnt;')" %l_on1;%/></label>%nn;
     <br%/>
       %end;
     %elseif;(bvar.propose_qualifier != "no")
     <label>[*qualifier]0<input name="qualifier0" size="30" value="" id="qualifier0"%/></label>%nn;
     <label class="addrow"><input type="checkbox" title="[insert::qualifier]" name="add_qualifier0" value="on"%sp;
-      id="add_qualifier0" onkeypress="return addRow(event,'add_qualifier0')"%/></label>%nn;
+      id="add_qualifier0" onkeypress="return addRow(event,'add_qualifier0')" %l_on1;%/></label>%nn;
     <br%/>
     %end;
     %if;has_aliases;
       %foreach;alias;
     <label>[*alias]0<input name="alias%cnt;" size="30" value="%alias;"%sp; id="alias%cnt;"%/></label>%nn;
     <label class="addrow"><input type="checkbox" title="[insert::alias]" name="add_alias%cnt;" value="on"%sp;
-      id="add_alias%cnt;" onkeypress="return addRow(event,'add_alias%cnt;')"%/></label>%nn;
+      id="add_alias%cnt;" onkeypress="return addRow(event,'add_alias%cnt;')" %l_on1;%/></label>%nn;
     <br%/>
       %end;
     %elseif;(bvar.propose_alias != "no")
       <label>[*alias]0<input name="alias0" size="30" value="" id="alias0"%/></label>%nn;
       <label class="addrow"><input type="checkbox" title="[insert::alias]" name="add_alias0" value="on"%sp;
-        id="add_alias0" onkeypress="return addRow(event,'add_alias0')"%/></label>%nn;
+        id="add_alias0" onkeypress="return addRow(event,'add_alias0')" %l_on1;%/></label>%nn;
     <br%/>
     %end;
     %if;has_first_names_aliases;
       %foreach;first_name_alias;
     <label>[*first name alias]0<input name="first_name_alias%cnt;" size="30"%sp; value="%first_name_alias;" id="first_name_alias%cnt;"%/></label>%nn;
     <label class="addrow"><input type="checkbox" title="[insert::first name alias]" name="add_first_name_alias%cnt;"%sp;
-      value="on" id="add_first_name_alias%cnt;" onkeypress="return addRow(event,'add_first_name_alias%cnt;')"%/></label>%nn;
+      value="on" id="add_first_name_alias%cnt;" onkeypress="return addRow(event,'add_first_name_alias%cnt;')" %l_on1;%/></label>%nn;
     <br%/>
       %end;
     %else;
       <label>[*first name alias]0<input name="first_name_alias0" size="30" value=""%sp; id="first_name_alias0"%/></label>%nn;
       <label class="addrow"><input type="checkbox" title="[insert::first name alias]" name="add_first_name_alias0" value="on"%sp;
-        id="add_first_name_alias0" onkeypress="return addRow(event,'add_first_name_alias0')"%/></label>%nn;
+        id="add_first_name_alias0" onkeypress="return addRow(event,'add_first_name_alias0')" %l_on1;%/></label>%nn;
     <br%/>
     %end;
     %if;has_surnames_aliases;
       %foreach;surname_alias;
     <label>[*surname alias]0<input name="surname_alias%cnt;" size="30" value="%surname_alias;"%/></label>%nn;
     <label class="addrow"><input type="checkbox" title="[insert::surname alias]" name="add_surname_alias%cnt;" value="on"%sp;
-        id="add_surname_alias%cnt;" onkeypress="return addRow(event,'add_surname_alias%cnt;')"%/></label>%nn;
+        id="add_surname_alias%cnt;" onkeypress="return addRow(event,'add_surname_alias%cnt;')" %l_on1;%/></label>%nn;
     <br%/>
       %end;
     %else;
       <label>[*surname alias]0<input name="surname_alias0" size="30" value=""%sp; id="surname_alias0"%/></label>%nn;
       <label class="addrow"><input type="checkbox" title="[insert::surname alias]" name="add_surname_alias0" value="on"%sp;
-        id="add_surname_alias0" onkeypress="return addRow(event,'add_surname_alias0')"%/></label>%nn;
+        id="add_surname_alias0" onkeypress="return addRow(event,'add_surname_alias0')" %l_on1;%/></label>%nn;
     <br%/>
     %end;
     <br%/>

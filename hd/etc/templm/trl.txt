@@ -1,108 +1,72 @@
-<!-- trl.txt Modified mickroue(a)yahoo.fr 20130114 templ=templm -->
+<!-- trl.txt Modified mickroue(a)yahoo.fr 20130701 templ=templm -->
 
 %if;(not cancel_links)
-  <script type="text/javascript">
-  <!--
-    function TchangeTri(xx) {
-       var TlabelTriA = document.getElementById('TlabelTriA')
-       var TtriA = document.getElementById('TtriA')
-       var TmNG = document.getElementById('TmNG')
-       var TtP = document.getElementById('TtP')
-       var TtN = document.getElementById('TtN')
-       var Tn = document.getElementById('Tn')
-       
-       TtriA.style.visibility=xx;
-       TlabelTriA.style.visibility=xx;
-       if(xx == 'visible' && TtriA.checked == true)
-      {
-        if(TtP.checked == true) TmNG.value='P';
-        if(TtN.checked == true) TmNG.value='N';
-        Tn.name='k';
-      }
-       if(xx == 'hidden' || TtriA.checked == false)
-      {
-       TmNG.value='NG';
-       Tn.name='n';
-      }
-    }
-    
-    function computeSosa(event,id)
-    {
-      var x = document.getElementById(id);
-      var key = event.keyCode ? event.keyCode : event.which ? event.which : event.charCode;
-      var string = String.fromCharCode(key);
-      
-      if (x.value > 0)
-      {
-        switch (string)
-        {
-          case "*" : x.value = x.value * 2; return false; break;
-          case "/" : x.value = parseInt(x.value / 2); return false; break;
-        }
-      }
-    }
-
-  -->
-  </script>
-
   <div id="trl">
     <form id="Tsearch" method="get" action="%action;">
       <div>
         %hidden;
         <input id="TmNG" type="hidden" name="m" value="NG"%/>
         <label><input id="TtPN" type="radio" name="t" value="PN" checked="checked"
-                      onclick="TchangeTri('hidden')"
+                      onclick="TchangeTri('hidden');this.focus()"
                 %/><abbr title="[first name/first names]0/[surname/surnames]0, [public name], [alias], Sosa…">[person/persons]0</abbr></label>
         <label><input id="TtP" type="radio" name="t" value="P" 
-                      onclick="TchangeTri('visible')"%/>[first name/first names]0</label>
+                      onclick="TchangeTri('visible');this.focus()"%/>[first name/first names]0</label>
         <label><input id="TtN" type="radio" name="t" value="N" 
-                      onclick="TchangeTri('visible')"%/>[surname/surnames]0</label>
+                      onclick="TchangeTri('visible');this.focus()"%/>[surname/surnames]0</label>
         <label id="TlabelTriA" style="visibility:hidden;">
                <input id="TtriA" type="checkbox" name="tri" value="A"
-                      onclick="TchangeTri('visible')"%/>[starting with]</label>
+                      onclick="TchangeTri('visible');this.focus()"%/>[starting with]</label>
         <br%/><input id="Tn" name="n" size="54" maxlength="200"
                      title="[*search/case sensitive]0 (²)" accesskey="²"
-                     onkeypress="javascript:return computeSosa(event,'Tn')"%/>
+                     onclick="this.focus()" onkeypress="javascript:return computeSosa(event,'Tn')"%/>
         <input type="submit" value="[*search/case sensitive]0 (²)"%/>
         %if;(bvar.hide_advanced_request = "no")
-          <a class="button" href="%prefix;m=H;v=advanced">[advanced request]</a>
+          <span class="button"><a href="%prefix;m=H;v=advanced">[*advanced request]</a></span>
         %end;
-        <p id="templ">
-          <a href="%prefix_no_templ;templ=;%suffix;">default</a>
-          <a href="%prefix_no_templ;templ=templa;%suffix;">templa</a>
-          <a href="%prefix_no_templ;templ=templb;%suffix;">templb</a>
-          <a href="%prefix_no_templ;templ=templc;%suffix;">templc</a>
-          <a href="%prefix_no_templ;templ=templd;%suffix;">templd</a>
-          <a href="%prefix_no_templ;templ=templf;%suffix;">templf</a>
-          <a href="%prefix_no_templ;templ=templh;%suffix;">templh</a>
-          <a href="%prefix_no_templ;templ=templm;%suffix;">templm</a>
-          <a href="%prefix_no_templ;templ=templ502;%suffix;">templ502</a>
-        </p>
       </div>
     </form>
   </div>
+  %if;(evar.digest = "")
+    <div id="templ">
+      <a href="%prefix_no_templ;templ=;%suffix;">default</a>
+      <a href="%prefix_no_templ;templ=templa;%suffix;">templa</a>
+      <a href="%prefix_no_templ;templ=templb;%suffix;">templb</a>
+      <a href="%prefix_no_templ;templ=templc;%suffix;">templc</a>
+      <a href="%prefix_no_templ;templ=templd;%suffix;">templd</a>
+      <a href="%prefix_no_templ;templ=templf;%suffix;">templf</a>
+      <a href="%prefix_no_templ;templ=templh;%suffix;">templh</a>
+      <a href="%prefix_no_templ;templ=templm;%suffix;">templm</a>
+      <a href="%prefix_no_templ;templ=templ502;%suffix;">templ502</a>
+    </div>
+    <div class="button" style="margin-top:-1.3em;margin-left:2px;">
+      <a href="http://opensource.geneanet.org/projects/geneweb/wiki/Fr_templm">Doc templm</a>
+    </div>
+   %end;
   %if;(wizard)
     <script type="text/javascript">
     <!--
-    function reloadClose() {
-        window.opener.location = window.opener.location;
-        parent.close();
+    function reloadClose()
+    {
+      window.opener.location = window.opener.location;
+      parent.close();
     }
     var htmlTitle = document.title;
-    if (
-         htmlTitle == "[*person modified]" ||
-         htmlTitle == "[*family modified]" ||
-         htmlTitle == "[*person added]" || 
-         htmlTitle == "[*family added]"
-        )
+    if
+    (
+      htmlTitle == "[*person modified]" ||
+      htmlTitle == "[*family modified]" ||
+      htmlTitle == "[*person added]" ||
+      htmlTitle == "[*family added]"
+    )
     {
-      if (window.opener && !window.opener.closed) {
+      if (window.opener && !window.opener.closed) 
+      {
         document.getElementById("trl").innerHTML = '\
-        <p><a id="reloadclose" href="javascript:reloadClose()">[X]</a></p>\
+        <p><a id="reloadclose" href="javascript:reloadClose()">[X]<\/a><\/p>\
         ';
-        document.getElementById("reloadclose").focus();}
+        document.getElementById("reloadclose").focus();
+      }
     }
-
     -->
     </script>
   %end;

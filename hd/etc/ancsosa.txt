@@ -447,35 +447,9 @@
     [and]%sp;
     <b><a href="#%ancestor.mother_sosa;">%ancestor.mother_sosa;</a></b>.
   %end;
-  %if;((evar.notes = "on" and ancestor.has_notes and evar.inline = "on") or (evar.src = "on" and ancestor.has_sources and evar.inline = "on"))
-    <p class="asc_notes_src_inline">
-      %if;ancestor.has_notes;
-        [*note/notes]0 : %apply;clean_html_tags(ancestor.notes)
-        <br%/>
-      %end;
-      %if;ancestor.has_sources;
-        <em>
-          [*source/sources]1 :
-          %foreach;ancestor.source;
-            %source_type;: %apply;clean_html_tags(source)
-            %if;(not is_last),%sp;%end;
-          %end;
-        </em>
-      %end;
-    </p>
-  %end;
-  %if;((evar.notes = "on" and ancestor.has_notes or evar.src = "on" and ancestor.has_sources) and evar.inline != "on")
-    %if;(evar.notes = "on")%[[*note/notes]0%sp;
-    %else;%[[*source/sources]1%sp;
-    %end;
-    <b><a href="#notes-%ancestor.anc_sosa.v;">%ancestor.anc_sosa;</a></b>%].
-  %end;
   %if;(evar.siblings = "on")
     %foreach;ancestor.family;
       %if;(ancestor.index = index or family.index != ancestor.family.index)
-        %if;(evar.inline= "on" and ((ancestor.has_notes and evar.notes = "on") or (ancestor.has_sources and evar.src = "on")))
-          <br%/>
-        %end; 
         %apply;capitalize%with;
           %apply;married_to%with;
             %ancestor.is_male;
@@ -497,6 +471,29 @@
         %end;.
       %end;
     %end;
+  %end;
+  %if;((evar.notes = "on" and ancestor.has_notes and evar.inline = "on") or (evar.src = "on" and ancestor.has_sources and evar.inline = "on"))
+    <p class="asc_notes_src_inline">
+      %if;(evar.notes = "on" and ancestor.has_notes)
+        [*note/notes]0 : %apply;clean_html_tags(ancestor.notes)
+        <br%/>
+      %end;
+      %if;(evar.src = "on" and ancestor.has_sources)
+        <em>
+          [*source/sources]1 :
+          %foreach;ancestor.source;
+            %source_type;: %apply;clean_html_tags(source)
+            %if;(not is_last),%sp;%end;
+          %end;
+        </em>
+      %end;
+    </p>
+  %end;
+  %if;((evar.notes = "on" and ancestor.has_notes or evar.src = "on" and ancestor.has_sources) and evar.inline != "on")
+    %if;(evar.notes = "on")%[[*note/notes]0%sp;
+    %else;%[[*source/sources]1%sp;
+    %end;
+    <b><a href="#notes-%ancestor.anc_sosa.v;">%ancestor.anc_sosa;</a></b>%].
   %end;
 %end;
 
@@ -537,11 +534,11 @@
     %end;
     %if;((evar.notes = "on" and child.has_notes and evar.inline = "on") or (evar.src = "on" and child.has_sources and evar.inline = "on"))
       <p class="asc_notes_src_inline">
-        %if;child.has_notes;
+        %if;(evar.notes = "on" and child.has_notes)
           [*note/notes]0 : %apply;clean_html_tags(child.notes)
           <br%/>
         %end;
-        %if;child.has_sources;
+        %if;(evar.src = "on" and child.has_sources)
           <em>
             [*source/sources]1 :
             %foreach;child.source;
@@ -1023,7 +1020,7 @@
     %foreach;ancestor_level(nb_gen)
       %foreach;ancestor;
         %if;(ancestor.same = "")
-          %if;(ancestor.first_name != "?" and ancestor.surname != "?" and ((not ancestor.has_parents and level < nb_gen) or (ancestor.has_families and (ancestor.spouse.first_name = "?" and ancestor.spouse.surname = "?"))))
+          %if;(ancestor.first_name != "?" and ancestor.surname != "?" and (not ancestor.has_parents or (ancestor.has_families and (ancestor.spouse.first_name = "?" and ancestor.spouse.surname = "?"))))
             %if;(dates_in_interval(ancestor.var) = "true")
               %incr_count;
               %apply;add_in_sorted_list%with
@@ -1036,7 +1033,7 @@
                 %and;%apply;ancestor_missing_birth("ancestor")
                 %and;%apply;ancestor_missing_death("ancestor")
                 %and;
-                  %if;(not ancestor.has_parents and level < nb_gen)
+                  %if;(not ancestor.has_parents)
                     x
                   %else;
                     &nbsp;
@@ -1172,7 +1169,7 @@
       </tr>
       %let;nb_col;%expr(count + 4)%in;
       %reset_count;
-      %foreach;ancestor_level(nb_gen-1)
+      %foreach;ancestor_level(nb_gen)
         %apply;lazy_print%with;
           <tr>
             <th align="left" colspan="%nb_col;">[*generation/generations]0 %expr(level+1)</th>

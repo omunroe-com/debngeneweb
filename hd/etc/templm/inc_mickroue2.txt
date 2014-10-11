@@ -1,13 +1,5 @@
-%( <!-- Begin inc_mickroue2 20121019 --> %)
+%( <!-- Begin inc_mickroue2 20130518 --> %)
 %( <!-- display linked pages : Images --> %)
-
-  %define;display_images_marriage(xx, yy, zz)
-    %if;(is_male)
-       %apply;display_images_him_her("xx","yy","zz","self","spouse")
-    %else;
-       %apply;display_images_him_her("xx","yy","zz","spouse","self")
-    %end;
-  %end;
 
   %define;display_images_him_her(xx, yy, zz, hhim, hher)
     %if;(has_linked_page.xxyy and spouse.has_linked_page.xxyy)
@@ -92,6 +84,14 @@
           <a href="%prefix;m=MOD_NOTES;f=images:xxyy;base=%base.name;;text=*%zz_date.year;&nbsp;:&nbsp;%[%[%first_name_key;/%surname_key;/%occ;/%self;%]%];file=%first_name_key_val;_%surname_key_val;_%occ;_xxyy;" title="images:xxyy">%apply;v_linked_page("xxyy")</a>
         %end;
       %end;
+    %end;
+  %end;
+
+  %define;display_images_marriage(xx, yy, zz)
+    %if;(is_male)
+       %apply;display_images_him_her("xx","yy","zz","self","spouse")
+    %else;
+       %apply;display_images_him_her("xx","yy","zz","spouse","self")
     %end;
   %end;
 
