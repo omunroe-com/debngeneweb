@@ -2,6 +2,7 @@ geneweb (6.08dfsg-1) UNRELEASED; urgency=low
 
   * New upstream release
   * Update Standards to 3.9.6
+  * Use machine-readable copyright file
 
  -- Christian Perrier <bubulle@debian.org>  Sat, 11 Oct 2014 12:36:28 +0200
 
