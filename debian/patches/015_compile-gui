@@ -72,3 +72,12 @@ Index: git/gui/Makefile
  
  all:: opt
  
+@@ -35,7 +35,7 @@
+ 	mv .depend.new .depend
+ 
+ %.cmo: %.ml
+-	@$(TEST_DIR)
++#	@$(TEST_DIR)
+ 	ocamlc -pp camlp5r $(OCAMLI) -I +lablgtk2 -c $<
+ 
+ include .depend
