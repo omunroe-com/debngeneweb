@@ -1,3 +1,10 @@
+geneweb (6.08dfsg-2) unstable; urgency=low
+
+  * Drop useless test in gui/Makefile that makes the build fail on
+    some arches. Closes: #775935
+
+ -- Christian Perrier <bubulle@debian.org>  Sun, 01 Feb 2015 08:09:36 +0100
+
 geneweb (6.08dfsg-1) unstable; urgency=low
 
   * New upstream release
