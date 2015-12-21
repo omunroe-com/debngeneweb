@@ -1,3 +1,11 @@
+geneweb (6.08dfsg-3.1) UNRELEASED; urgency=medium
+
+  * Non-maintainer upload.
+  * Apply patch from Dejan Latinovic really fixing FTBFS on some
+    architectures. Closes: #775935
+
+ -- Dominic Hargreaves <dom@earth.li>  Mon, 21 Dec 2015 21:41:08 +0000
+
 geneweb (6.08dfsg-3) unstable; urgency=low
 
   * Really drop useless test in gui/Makefile that makes the build fail on
