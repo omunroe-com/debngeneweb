@@ -11,7 +11,7 @@ Vcs-Browser: http://anonscm.debian.org/gitweb/?p=collab-maint/geneweb.git;a=summ
 Package: geneweb
 Section: misc
 Architecture: any
-Depends: ${shlibs:Depends},perl5-base, lsb-base (>= 3.0-6)
+Depends: ${shlibs:Depends}, perl, lsb-base (>= 3.0-6)
 Pre-Depends: ${misc:Depends}, iso-codes, isoquery, adduser, dpkg (>= 1.15.6~)
 Suggests: gwtp, gwsetup, lynx | www-browser, geneweb-gui
 Priority: optional
