@@ -1,3 +1,11 @@
+geneweb (6.08dfsg-4) UNRELEASED; urgency=medium
+
+  * Update README.source to fit the switch to git. Only mention
+    the use of git-import-orig.
+    Closes: #808705
+
+ -- Christian Perrier <bubulle@debian.org>  Tue, 22 Dec 2015 06:51:54 +0100
+
 geneweb (6.08dfsg-3.1) unstable; urgency=medium
 
   * Non-maintainer upload with maintainer permission.
