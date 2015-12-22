@@ -1,0 +1,23 @@
+diff -uNr geneweb-6.08dfsg.orig/Makefile geneweb-6.08dfsg/Makefile
+--- geneweb-6.08dfsg.orig/Makefile	2015-03-30 13:00:12.000000000 +0000
++++ geneweb-6.08dfsg/Makefile	2015-03-30 13:01:30.000000000 +0000
+@@ -18,7 +18,7 @@
+ 	cd gwb2ged; $(MAKE) all
+ 	cd setup; $(MAKE) all
+ 	cd gwtp; $(MAKE) all
+-	cd gui; $(MAKE) all
++	cd gui; $(MAKE) out
+ 
+ opt::
+ 	cd wserver; $(MAKE) opt
+diff -uNr geneweb-6.08dfsg.orig/gui/Makefile geneweb-6.08dfsg/gui/Makefile
+--- geneweb-6.08dfsg.orig/gui/Makefile	2015-03-30 13:00:12.000000000 +0000
++++ geneweb-6.08dfsg/gui/Makefile	2015-03-30 17:43:50.000000000 +0000
+@@ -4,7 +4,6 @@
+ include ../tools/Makefile.inc
+ 
+ LABLGTK2=+lablgtk2
+-OCAMLC=ocamlc.opt
+ OCAMLOPT=ocamlopt.opt -annot
+ GWB=..
+ OBJS=../src/version.cmo ../src/iovalue.cmo ../src/buff.cmo ../src/name.cmo ../src/mutil.cmo gui.cmo
