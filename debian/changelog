@@ -3,6 +3,10 @@ geneweb (6.08dfsg-4) UNRELEASED; urgency=medium
   * Update README.source to fit the switch to git. Only mention
     the use of git-import-orig.
     Closes: #808705
+  * mktemplates: always treat PO files as text even when grep thinks
+    they're binary data. Closes: #814429
+    Thanks to Peter Gervai for the analysis of this weird cause of FTBFS
+    at full moon time.
 
  -- Christian Perrier <bubulle@debian.org>  Tue, 22 Dec 2015 06:51:54 +0100
 
