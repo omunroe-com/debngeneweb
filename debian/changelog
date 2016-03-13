@@ -16,6 +16,8 @@ geneweb (6.08+git20160228+dfsg-1) unstable; urgency=medium
   [ Christian Perrier ]
   * Bump debhelper compatibility level to 9 (no real change)
   * Bump Standards to 3.9.7 (checked, no change needed)
+  * Do not define GPL-2 twice in debian/copyright
+  * Adapt copyright lines for debian/*
 
  -- Guillaume Brochu (Lévis,Québec,Canada) <guillaume.brochu@gmail.com>  Sun, 13 Mar 2016 11:37:55 -0400
 
