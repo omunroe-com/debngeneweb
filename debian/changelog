@@ -1,6 +1,8 @@
 geneweb (6.08+git20160228+dfsg-1) unstable; urgency=medium
 
   * Team upload
+
+  [ Guillaume Brochu ]
   * New upstream release to fix compatibility problems with OCAML >=4.02
     https://github.com/geneweb/geneweb/archive/f658e5836554624435b9e46b75c9b2ac0ac61029.tar.gz
     https://github.com/geneweb/geneweb/commits/distrib-6-08-ocaml-4-xx
@@ -10,6 +12,9 @@ geneweb (6.08+git20160228+dfsg-1) unstable; urgency=medium
     Closes: #815485
     Closes: #815528
   * Add ocaml-findlib to Build-Depends to benefit from changes in configure
+
+  [ Christian Perrier ]
+  * Bump debhelper compatibility level to 9 (no real change)
 
  -- Guillaume Brochu (Lévis,Québec,Canada) <guillaume.brochu@gmail.com>  Sun, 13 Mar 2016 11:37:55 -0400
 
