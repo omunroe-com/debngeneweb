@@ -1,9 +1,10 @@
-geneweb (6.08+git20160228+dfsg-1.0) unstable; urgency=medium
+geneweb (6.08+git20160228+dfsg-1) unstable; urgency=medium
 
-  * Non-maintainer upload
+  * Team upload
   * New upstream release to fix compatibility problems with OCAML >=4.02
     https://github.com/geneweb/geneweb/archive/f658e5836554624435b9e46b75c9b2ac0ac61029.tar.gz
-    https://github.com/geneweb/geneweb/commits/distrib-6-08-ocaml-4-xx  (Last commit : 2016-02-28)
+    https://github.com/geneweb/geneweb/commits/distrib-6-08-ocaml-4-xx
+    (Last commit : 2016-02-28)
     https://github.com/geneweb/geneweb/issues/9
     Thanks to Fabien/Ipfix for the preparation of this special version.
     Closes: #815485
