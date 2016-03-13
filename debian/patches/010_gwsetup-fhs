@@ -2,10 +2,8 @@ Goal: Allow configuring various paths in gwsetup
 
 Status wrt upstream: Forwarded in the Geneweb ML
 
-Index: b/setup/setup.ml
-===================================================================
---- a/setup/setup.ml	2009-11-08 17:26:10.000000000 +0100
-+++ b/setup/setup.ml	2009-11-08 17:26:27.000000000 +0100
+--- a/setup/setup.ml
++++ b/setup/setup.ml
 @@ -6,6 +6,8 @@
  value port = ref 2316;
  value default_lang = ref "en";
@@ -15,7 +13,7 @@ Index: b/setup/setup.ml
  value bin_dir = ref "";
  value lang_param = ref "";
  value only_file = ref "";
-@@ -319,7 +321,7 @@
+@@ -315,7 +317,7 @@
  ;
  
  value only_file_name () =
@@ -24,7 +22,7 @@ Index: b/setup/setup.ml
    else only_file.val
  ;
  
-@@ -710,7 +712,7 @@
+@@ -706,7 +708,7 @@
  ;
  
  value exec_f comm =
@@ -33,7 +31,7 @@ Index: b/setup/setup.ml
    do {
      eprintf "$ cd \"%s\"\n" (Sys.getcwd ());
      flush stderr;
-@@ -835,7 +837,7 @@
+@@ -929,7 +931,7 @@
  
  value gwc conf =
    let rc =
@@ -42,7 +40,7 @@ Index: b/setup/setup.ml
      exec_f (comm ^ parameters conf.env)
    in
    let rc = IFDEF WIN95 THEN infer_rc conf rc ELSE rc END in
-@@ -1055,7 +1057,7 @@
+@@ -1181,7 +1183,7 @@
        Sys.chdir dir;
        let c =
          Filename.concat bin_dir.val src_to_new ^ " " ^ tmp ^ " -f -o " ^
@@ -51,25 +49,25 @@ Index: b/setup/setup.ml
        in
        eprintf "$ %s\n" c;
        flush stderr;
-@@ -1138,7 +1140,7 @@
+@@ -1274,7 +1276,7 @@
      Sys.rename in_base_dir (Filename.concat "old" in_base_dir);
      let c =
        Filename.concat bin_dir.val "gwc" ^ " tmp.gw -nofail -o " ^ in_base ^
--        " > comm.log "
-+        " > " ^ comm_log.val
+-        " > comm.log 2>&1"
++        " > " ^ comm_log.val ^ " 2>&1"
      in
      eprintf "$ %s\n" c;
      flush stderr;
-@@ -1262,7 +1264,7 @@
+@@ -1398,7 +1400,7 @@
                (fun s b ->
                   if s = "" then " " ^ b ^ ".gw" else s ^ " -sep " ^ b ^ ".gw")
                "" bases ^
--            " -f -o " ^ out_file ^ " > comm.log"
-+            " -f -o " ^ out_file ^ " > " ^ comm_log.val
+-            " -f -o " ^ out_file ^ " > comm.log 2>&1"
++            " -f -o " ^ out_file ^ " > " ^ comm_log.val ^ " 2>&1"
          in
          eprintf "$ %s\n" c;
          flush stderr;
-@@ -1783,8 +1785,12 @@
+@@ -1967,8 +1969,12 @@
        string_of_int port.val ^ "); > 1024 for normal users.");
     ("-only", Arg.String (fun s -> only_file.val := s),
      "<file>: File containing the only authorized address");

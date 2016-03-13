@@ -4,10 +4,8 @@ Date:   Sun Mar 29 14:00:48 2009 +0200
 
     Remove "-warn-error A" to work around FTBFS (Closes: #521674)
 
-Index: trunk/tools/Makefile.inc.opt
-===================================================================
---- trunk.orig/tools/Makefile.inc.opt
-+++ trunk/tools/Makefile.inc.opt
+--- a/tools/Makefile.inc.opt
++++ b/tools/Makefile.inc.opt
 @@ -5,8 +5,8 @@
  CAMLP5F=-DUNIX
  CAMLP5D=+camlp5
@@ -19,10 +17,8 @@ Index: trunk/tools/Makefile.inc.opt
  OCAMLI=
  OCAMLD=
  STRIP=strip
-Index: trunk/tools/Makefile.inc.out
-===================================================================
---- trunk.orig/tools/Makefile.inc.out
-+++ trunk/tools/Makefile.inc.out
+--- a/tools/Makefile.inc.out
++++ b/tools/Makefile.inc.out
 @@ -5,8 +5,8 @@
  CAMLP5F=-DUNIX
  CAMLP5D=+camlp5
@@ -34,11 +30,9 @@ Index: trunk/tools/Makefile.inc.out
  OCAMLI=
  OCAMLD=
  STRIP=strip
-Index: trunk/tools/Makefile.inc.win
-===================================================================
---- trunk.orig/tools/Makefile.inc.win
-+++ trunk/tools/Makefile.inc.win
-@@ -5,8 +5,8 @@
+--- a/tools/Makefile.inc.win
++++ b/tools/Makefile.inc.win
+@@ -6,8 +6,8 @@
  CAMLP5F=-DWIN95
  CAMLP5D=+camlp5
  LIBUNIX=-cclib -lunix
