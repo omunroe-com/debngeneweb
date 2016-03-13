@@ -10,7 +10,7 @@ geneweb (6.08+git20160228+dfsg-1.0) unstable; urgency=medium
     Closes: #815528
   * Add ocaml-findlib to Build-Depends to benefit from changes in configure
 
- -- Guillaume Brochu (Lévis,Québec,Canada) <guillaume.brochu@gmail.com>  Sun, 14 Mar 2016 10:47:00 -0400
+ -- Guillaume Brochu (Lévis,Québec,Canada) <guillaume.brochu@gmail.com>  Sun, 13 Mar 2016 11:37:55 -0400
 
 geneweb (6.08dfsg-5) unstable; urgency=medium
 
