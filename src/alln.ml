@@ -36,7 +36,7 @@ value combine_by_ini ini list =
             else k ^ String.make (String.length ini + 1 - String.length k) '_'
           in
           for i = 0 to String.length ini_k - 1 do {
-            if ini_k.[i] = ' ' then ini_k.[i] := '_' else ()
+            if ini_k.[i] = ' ' then Bytes.set ini_k i '_' else ()
           };
           let new_list =
             if ini_k = "_" then new_list
@@ -321,7 +321,7 @@ value select_names conf base is_surnames ini need_whole_list =
                          else [ip :: l])
                       [] my_list
                   else my_list
-                in 
+                in
                 let cnt = List.length my_list in
                 if cnt = 0 then (list, len)
                 else

@@ -11,13 +11,13 @@ value lang_param = ref "";
 value only_file = ref "";
 
 value slashify s =
-  let s1 = String.copy s in
+  let s1 = Bytes.copy s in
   do {
     for i = 0 to String.length s - 1 do {
-      s1.[i] :=
-        match s.[i] with
-        [ '\\' -> '/'
-        | x -> x ]
+      Bytes.set s1 i
+        (match s.[i] with
+         [ '\\' -> '/'
+         | x -> x ])
     };
     s1
   }
@@ -51,13 +51,13 @@ value quote_escaped s =
         | '&' -> do { String.blit "&amp;" 0 s1 i1 5; i1 + 5 }
         | '<' -> do { String.blit "&lt;" 0 s1 i1 4; i1 + 4 }
         | '>' -> do { String.blit "&gt;" 0 s1 i1 4; i1 + 4 }
-        | c -> do { s1.[i1] := c; succ i1 } ]
+        | c -> do { Bytes.set s1 i1 c; succ i1 } ]
       in
       copy_code_in s1 (succ i) i1
     else s1
   in
   if need_code 0 then
-    let len = compute_len 0 0 in copy_code_in (String.create len) 0 0
+    let len = compute_len 0 0 in copy_code_in (Bytes.create len) 0 0
   else s
 ;
 
@@ -754,8 +754,8 @@ value setup_gen conf =
   | _ -> error conf "request needs \"v\" parameter" ]
 ;
 
-value print_default_gwf_file conf = 
-  let gwf = 
+value print_default_gwf_file conf =
+  let gwf =
     [ "access_by_key=yes";
       "disable_forum=yes";
       "hide_private_names=no";
@@ -1203,10 +1203,10 @@ value rmdir dir =
   (* Récupère tous les fichiers et dossier d'un dossier         *)
   (* et renvoie la liste des dossiers et la liste des fichiers. *)
   let read_files_folders fname =
-    let list = 
-      List.map 
+    let list =
+      List.map
         (fun file -> Filename.concat fname file)
-        (Array.to_list (Sys.readdir fname)) 
+        (Array.to_list (Sys.readdir fname))
     in
     List.partition Sys.is_directory list
   in
@@ -1224,9 +1224,9 @@ value rmdir dir =
   (* Toute l'arborescence de dir *)
   let (folders, files) = loop [dir] [] [] in
   do {
-    List.iter Unix.unlink files;
-    List.iter Unix.rmdir folders;
-    Unix.rmdir dir
+    List.iter (fun f -> try Unix.unlink f with [ _ -> () ]) files;
+    List.iter (fun f -> try Unix.rmdir f with [ _ -> () ]) folders;
+    try Unix.rmdir dir with [ Unix.Unix_error _ _ _ -> () ]
   }
 ;
 
@@ -1274,7 +1274,7 @@ value cleanup_1 conf =
     Sys.rename in_base_dir (Filename.concat "old" in_base_dir);
     let c =
       Filename.concat bin_dir.val "gwc" ^ " tmp.gw -nofail -o " ^ in_base ^
-        " > comm.log "
+        " > comm.log 2>&1"
     in
     eprintf "$ %s\n" c;
     flush stderr;
@@ -1287,7 +1287,7 @@ value cleanup_1 conf =
       print_file conf "bsi_err.htm"
     else print_file conf "clean_ok.htm"
   }
-;  
+;
 
 value rec check_new_names conf l1 l2 =
   match (l1, l2) with
@@ -1398,7 +1398,7 @@ value merge_1 conf =
               (fun s b ->
                  if s = "" then " " ^ b ^ ".gw" else s ^ " -sep " ^ b ^ ".gw")
               "" bases ^
-            " -f -o " ^ out_file ^ " > comm.log"
+            " -f -o " ^ out_file ^ " > comm.log 2>&1"
         in
         eprintf "$ %s\n" c;
         flush stderr;

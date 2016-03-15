@@ -142,7 +142,7 @@ value capitale s =
 type format2 'a 'b = format4 'a unit string 'b;
 
 value fcapitale (a : format4 'a 'b 'c 'd) : format4 'a 'b 'c 'd =
-  Obj.magic capitale a
+  Scanf.format_from_string (capitale (string_of_format a)) a
 ;
 
 value nth_field_abs w n =
@@ -272,7 +272,7 @@ value transl_a_of_gr_eq_gen_lev conf x y =
 ;
 
 value check_format ini_fmt (r : string) =
-  let s : string = Obj.magic (ini_fmt : format4 'a 'b 'c 'd) in
+  let s = string_of_format ini_fmt in
   let rec loop i j =
     if i < String.length s - 1 && j < String.length r - 1 then
       match (s.[i], s.[i + 1], r.[j], r.[j + 1]) with
@@ -286,7 +286,7 @@ value check_format ini_fmt (r : string) =
     else if j < String.length r - 1 then
       if r.[j] = '%' then None else loop i (j + 1)
     else
-      Some (Obj.magic r : format4 'a 'b 'c 'd)
+      Some (Scanf.format_from_string r ini_fmt)
   in
   loop 0 0
 ;
@@ -294,7 +294,7 @@ value check_format ini_fmt (r : string) =
 value valid_format ini_fmt r =
   match check_format ini_fmt r with
   [ Some fmt -> fmt
-  | None -> Obj.magic (tnf (Obj.magic ini_fmt)) ]
+  | None -> Scanf.format_from_string (tnf r) ini_fmt ]
 ;
 
 value cftransl conf fmt =
@@ -317,14 +317,14 @@ value cftransl conf fmt =
   loop 0
 ;
 
-value ftransl conf s = valid_format s (transl conf (Obj.magic s : string));
+value ftransl conf s = valid_format s (transl conf (string_of_format s));
 
 value ftransl_nth conf s p =
-  valid_format s (transl_nth conf (Obj.magic s : string) p)
+  valid_format s (transl_nth conf (string_of_format s) p)
 ;
 
 value fdecline conf w s =
-  valid_format w (gen_decline (Obj.magic w : string) s)
+  valid_format w (gen_decline (string_of_format w) s)
 ;
 
 value translate_eval s = Translate.eval (nominative s);
@@ -481,13 +481,13 @@ value quote_escaped s =
         | '&' -> do { String.blit "&amp;" 0 s1 i1 5; i1 + 5 }
         | '<' -> do { String.blit "&lt;" 0 s1 i1 4; i1 + 4 }
         | '>' -> do { String.blit "&gt;" 0 s1 i1 4; i1 + 4 }
-        | c -> do { s1.[i1] := c; succ i1 } ]
+        | c -> do { Bytes.set s1 i1 c; succ i1 } ]
       in
       copy_code_in s1 (succ i) i1
     else s1
   in
   if need_code 0 then
-    let len = compute_len 0 0 in copy_code_in (String.create len) 0 0
+    let len = compute_len 0 0 in copy_code_in (Bytes.create len) 0 0
   else s
 ;
 
@@ -1207,6 +1207,22 @@ value base_len n =
   | _ -> "?" ]
 ;
 
+value explode s c =
+  let rec loop list i j =
+    if i = 0 then
+      if s.[i] = c then ["" :: list]
+      else
+        let ss = String.sub s 0 j in
+        [ss :: list]
+    else
+      if s.[i] = c then
+        let ss = String.sub s (i + 1) (j - i - 1) in
+        loop [ss :: list] (i - 1) i
+      else loop list (i - 1) j
+  in
+  let len = String.length s in
+  loop [] (len - 1) len
+;
 
 (* ************************************************************************ *)
 (*  [Fonc] etc_file_name : config -> string -> string                       *)
@@ -1220,6 +1236,9 @@ value base_len n =
     [Rem] : Exporté en clair hors de ce module.                             *)
 (* ************************************************************************ *)
 value etc_file_name conf fname =
+  (* On recherche si dans le nom du fichier, on a specifié son *)
+  (* répertoire, i.e. si fname est écrit comme ceci : dir/file *)
+  let fname = List.fold_left (Filename.concat) "" (explode fname '/') in
   (* On cherche le fichier dans cet ordre :
      - dans la base (bases/etc/base_name/name.txt)
      - dans la base (bases/etc/templx/name.txt)
@@ -1670,7 +1689,7 @@ value default_good_tag_list =
   ["a"; "b"; "blockquote"; "br"; "center"; "cite"; "dd"; "dir"; "div"; "dl";
    "dt"; "em"; "font"; "hr"; "h1"; "h2"; "h3"; "h4"; "h5"; "h6"; "i"; "img";
    "li"; "ol"; "p"; "pre"; "span"; "strong"; "sub"; "sup"; "table"; "tbody";
-   "td"; "th"; "tr"; "tt"; "u"; "ul"; "!--"; "area"; "map"]
+   "td"; "tfoot"; "th"; "thead"; "tr"; "tt"; "u"; "ul"; "!--"; "area"; "map"]
 ;
 
 value allowed_tags_file = ref "";
@@ -1689,10 +1708,10 @@ value good_tag_list_fun () =
   else default_good_tag_list
 ;
 
-value good_tags_list = Lazy.lazy_from_fun good_tag_list_fun;
+value good_tags_list = Lazy.from_fun good_tag_list_fun;
 value good_tag s i = List.mem (tag_id s i) (Lazy.force good_tags_list);
 
-module Lbuff = Buff.Make (struct value buff = ref (String.create 80); end);
+module Lbuff = Buff.Make (struct value buff = ref (Bytes.create 80); end);
 
 value filter_html_tags s =
   loop 0 0 where rec loop len i =
@@ -2057,11 +2076,11 @@ value is_number t =
 ;
 
 value hexa_string s =
-  let s' = String.create (2 * String.length s) in
+  let s' = Bytes.create (2 * String.length s) in
   do {
     for i = 0 to String.length s - 1 do {
-      s'.[2*i] := "0123456789ABCDEF".[Char.code s.[i] / 16];
-      s'.[2*i+1] := "0123456789ABCDEF".[Char.code s.[i] mod 16];
+      Bytes.set s' (2*i) "0123456789ABCDEF".[Char.code s.[i] / 16];
+      Bytes.set s' (2*i+1) "0123456789ABCDEF".[Char.code s.[i] mod 16];
     };
     s'
   }
@@ -2356,7 +2375,7 @@ value image_file_name str =
 ;
 
 value png_image_size ic =
-  let magic = let s = String.create 4 in do { really_input ic s 0 4; s } in
+  let magic = let s = Bytes.create 4 in do { really_input ic s 0 4; s } in
   if magic = "\137PNG" then do {
     seek_in ic 16;
     let wid = input_binary_int ic in
@@ -2367,7 +2386,7 @@ value png_image_size ic =
 ;
 
 value gif_image_size ic =
-  let magic = let s = String.create 4 in do { really_input ic s 0 4; s } in
+  let magic = let s = Bytes.create 4 in do { really_input ic s 0 4; s } in
   if magic = "GIF8" then do {
     seek_in ic 6;
     let wid = let x = input_byte ic in input_byte ic * 256 + x in
@@ -2379,7 +2398,7 @@ value gif_image_size ic =
 
 value jpeg_image_size ic =
   let magic =
-    let str = String.create 10 in do { really_input ic str 0 10; str }
+    let str = Bytes.create 10 in do { really_input ic str 0 10; str }
   in
   if Char.code magic.[0] = 0xff && Char.code magic.[1] = 0xd8 &&
      (let m = String.sub magic 6 4 in m = "JFIF" || m = "Exif") then
@@ -2554,7 +2573,7 @@ value create_topological_sort conf base =
       let () = load_ascends_array base in
       let () = load_couples_array base in
       Consang.topological_sort base (pget conf)
-  | Some "no_tstab" -> Array.create (nb_of_persons base) 0
+  | Some "no_tstab" -> Array.make (nb_of_persons base) 0
   | _ ->
       let bfile = base_path [] (conf.bname ^ ".gwb") in
       lock (Mutil.lock_file bfile) with
@@ -2751,16 +2770,16 @@ value has_image conf base p =
 ;
 
 value gen_only_printable or_nl s =
-  let s' = String.create (String.length s) in
+  let s' = Bytes.create (String.length s) in
   do {
     for i = 0 to String.length s - 1 do {
-      s'.[i] :=
-        if Mutil.utf_8_db.val && Char.code s.[i] > 127 then s.[i]
-        else
-          match s.[i] with
-          [ ' '..'~' | '\160'..'\255' -> s.[i]
-          | '\n' -> if or_nl then '\n' else ' '
-          | _ -> ' ' ]
+      Bytes.set s' i
+        (if Mutil.utf_8_db.val && Char.code s.[i] > 127 then s.[i]
+         else
+           match s.[i] with
+           [ ' '..'~' | '\160'..'\255' -> s.[i]
+           | '\n' -> if or_nl then '\n' else ' '
+           | _ -> ' ' ])
     };
     strip_spaces s'
   }

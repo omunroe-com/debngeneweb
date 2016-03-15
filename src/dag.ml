@@ -863,7 +863,7 @@ value make_tree_hts conf base elem_txt vbar_txt invert set spl d =
     match n.valu with
     [ Left ip ->
         let p = pget conf base ip in
-        let txt = 
+        let txt =
           string_of_item conf base (elem_txt p) ^ image_txt conf base p
         in
         let txt =
@@ -903,7 +903,7 @@ value make_tree_hts conf base elem_txt vbar_txt invert set spl d =
                    | None -> "" ]
                  in
                  txt ^ "<br" ^ conf.xhs ^ ">\n&amp;" ^ d ^ " " ^
-                   string_of_item conf base (elem_txt ps) ^ 
+                   string_of_item conf base (elem_txt ps) ^
                      image_txt conf base ps)
             txt spouses
         in
@@ -1308,7 +1308,7 @@ value print_slices_menu_or_dag_page conf base page_title hts next_txt =
         Vdag (tmincol, tcol, colminsz, colsz, ncol)
       }
     in
-    [("dag", Vlazy (Lazy.lazy_from_fun table_pre_dim))]
+    [("dag", Vlazy (Lazy.from_fun table_pre_dim))]
   in
   Hutil.interp conf base "dag"
     {Templ.eval_var = eval_var conf page_title next_txt;

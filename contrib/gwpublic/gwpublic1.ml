@@ -79,13 +79,14 @@ value mark_descendants base scanned old lim_year =
   else ()
 ;
 
-value mark_ancestors base scanned lim_year is_quest_string =
+value mark_ancestors base scanned lim_year titled is_quest_string =
   loop where rec loop p =
     if not scanned.(Adef.int_of_iper (get_key_index p)) then do {
       scanned.(Adef.int_of_iper (get_key_index p)) := True;
       (* si pas de date ou date > lim_year *)
       if not (is_old lim_year p) && get_access p <> Public &&
-         get_titles p = [] && not (is_quest_string (get_first_name p)) &&
+         (titled || get_titles p = []) &&
+         not (is_quest_string (get_first_name p)) &&
          not (is_quest_string (get_surname p))
       then do {
         match year_of p with
@@ -93,7 +94,7 @@ value mark_ancestors base scanned lim_year is_quest_string =
        	    if y >= lim_year then do {
                      eprintf "Problem of date ! %s %d\n" (Gutil.designation base p) y;
                      flush stderr;
-                   } 
+                   }
        	    else ()
        	| None -> () ];
         let p = {(gen_person_of_person p) with access = Public} in
@@ -127,7 +128,7 @@ value public_everybody bname =
   }
 ;
 
-value public_all bname lim_year = do {
+value public_all bname lim_year titled = do {
   let base = Gwdb.open_base bname in
   let () = load_ascends_array base in
   let () = load_couples_array base in
@@ -140,9 +141,9 @@ value public_all bname lim_year = do {
              exit 2
            }
          | _ -> assert False ]);
-  let old = Array.create (nb_of_persons base) False in
+  let old = Array.make (nb_of_persons base) False in
   do {
-    let scanned = Array.create (nb_of_persons base) False in
+    let scanned = Array.make (nb_of_persons base) False in
     for i = 0 to nb_of_persons base - 1 do {
       if not scanned.(i) then do {
         let p = poi base (Adef.iper_of_int i) in
@@ -150,11 +151,11 @@ value public_all bname lim_year = do {
       }
       else ();
     };
-    let scanned = Array.create (nb_of_persons base) False in
+    let scanned = Array.make (nb_of_persons base) False in
     for i = 0 to nb_of_persons base - 1 do {
       if old.(i) && not scanned.(i) then do {
         let p = poi base (Adef.iper_of_int i) in
-        mark_ancestors base scanned lim_year is_quest_string p
+        mark_ancestors base scanned lim_year titled is_quest_string p
       }
       else ();
     };
@@ -162,16 +163,16 @@ value public_all bname lim_year = do {
   }
 };
 
-value public_some bname lim_year key =
+value public_some bname lim_year titled key =
   let base = Gwdb.open_base bname in
   match Gutil.person_ht_find_all base key with
   [ [ip] ->
       let p = poi base ip in
-      let scanned = Array.create (nb_of_persons base) False in
+      let scanned = Array.make (nb_of_persons base) False in
       let () = load_ascends_array base in
       let () = load_couples_array base in
       do {
-        mark_ancestors base scanned lim_year is_quest_string p;
+        mark_ancestors base scanned lim_year titled is_quest_string p;
         if changes.val then commit_patches base else ();
       }
   | _ ->
@@ -186,10 +187,13 @@ value lim_year = ref 1900;
 value ind = ref "";
 value bname = ref "";
 value everybody = ref False;
+value titled = ref True;
 
 value speclist =
   [("-y", Arg.Int (fun i -> lim_year.val := i),
     "limit year (default = " ^ string_of_int lim_year.val ^ ")");
+   ("-ct", Arg.Clear titled,
+    "check if the person has a title (default = don't check)");
    ("-everybody", Arg.Set everybody, "set flag public to everybody");
    ("-ind", Arg.String (fun x -> ind.val := x),
     "individual key")]
@@ -205,8 +209,8 @@ value main () =
     gcc.Gc.max_overhead := 100;
     Gc.set gcc;
     if everybody.val then public_everybody bname.val
-    else if ind.val = "" then public_all bname.val lim_year.val
-    else public_some bname.val lim_year.val ind.val
+    else if ind.val = "" then public_all bname.val lim_year.val titled.val
+    else public_some bname.val lim_year.val titled.val ind.val
   }
 ;
 

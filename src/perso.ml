@@ -197,7 +197,7 @@ value find_sosa_aux conf base a p =
     try Util.create_topological_sort conf base with
     [ Consang.TopologicalSortError p -> print_base_loop conf base p ]
   in
-  let mark = Array.create (nb_of_persons base) False in
+  let mark = Array.make (nb_of_persons base) False in
   let rec gene_find =
     fun
     [ [] -> Left []
@@ -234,7 +234,7 @@ value find_sosa_aux conf base a p =
 ;
 (* Male version
 value find_sosa_aux conf base a p =
-  let mark = Array.create base.data.persons.len False in
+  let mark = Array.make base.data.persons.len False in
   let rec find z ip =
     if ip = a.key_index then Some z
     else if mark.(Adef.int_of_iper ip) then None
@@ -427,12 +427,12 @@ value build_sosa_ht conf base =
   match Util.find_sosa_ref conf base with
   [ Some sosa_ref ->
       let nb_persons = nb_of_persons base in
-      let mark = Array.create nb_persons False in
+      let mark = Array.make nb_persons False in
       (* Tableau qui va socker au fur et à mesure les ancêtres du sosa_ref. *)
       (* Attention, on créé un tableau de la longueur de la base + 1 car on *)
       (* commence à l'indice 1 !                                            *)
       let sosa_accu =
-        Array.create (nb_persons + 1) (Num.zero, Adef.iper_of_int 0)
+        Array.make (nb_persons + 1) (Num.zero, Adef.iper_of_int 0)
       in
       let () = Array.set sosa_accu 1 (Num.one, get_key_index sosa_ref) in
       let rec loop i len =
@@ -511,7 +511,7 @@ value get_single_sosa conf base p =
   [ Some p_sosa ->
       let sosa_ref_l =
         let sosa_ref () = sosa_ref in
-        Lazy.lazy_from_fun sosa_ref
+        Lazy.from_fun sosa_ref
       in
       let t_sosa = init_sosa_t conf base p_sosa in
       match find_sosa conf base p sosa_ref_l t_sosa with
@@ -553,16 +553,21 @@ value print_sosa conf base p link =
             in
             Wserver.wprint "<a href=\"%s%s\" style=\"text-decoration:none\">"
               (commd conf) sosa_link;
-          Wserver.wprint "<img src=\"%s/%s\" alt=\"sosa\" title=\""
-            (image_prefix conf) "sosa.png";
-          let direct_ancestor =
-            Name.strip_c (p_first_name base ref) '"' ^ " "
-            ^ Name.strip_c (p_surname base ref) '"'
+          let title =
+            if (is_hide_names conf ref) && not (fast_auth_age conf ref) then ""
+            else
+              let direct_ancestor =
+                Name.strip_c (p_first_name base ref) '"' ^ " "
+                ^ Name.strip_c (p_surname base ref) '"'
+              in
+              Printf.sprintf
+                (fcapitale
+                   (ftransl conf "direct ancestor of %s")) direct_ancestor ^
+                Printf.sprintf ", Sosa: %s"
+                  (string_of_num (transl conf "(thousand separator)") sosa_num)
           in
-          Wserver.wprint
-            (fcapitale (ftransl conf "direct ancestor of %s")) direct_ancestor;
-          Wserver.wprint ", Sosa: %s\"/> "
-            (string_of_num (transl conf "(thousand separator)") sosa_num);
+          Wserver.wprint "<img src=\"%s/sosa.png\" alt=\"sosa\" title=\"%s\"/>"
+            (image_prefix conf) title;
           if conf.cancel_links || not link then ()
           else  Wserver.wprint "</a> ";
         }
@@ -573,7 +578,7 @@ value print_sosa conf base p link =
 
 value max_ancestor_level conf base ip max_lev =
   let x = ref 0 in
-  let mark = Array.create (nb_of_persons base) False in
+  let mark = Array.make (nb_of_persons base) False in
   let rec loop level ip =
     if mark.(Adef.int_of_iper ip) then ()
     else do {
@@ -627,8 +632,8 @@ value make_desc_level_table conf base max_level p = do {
   in
   (* the table 'levt' may be not necessary, since I added 'flevt'; kept
      because '%max_desc_level;' is still used... *)
-  let levt = Array.create (nb_of_persons base) infinite in
-  let flevt = Array.create (nb_of_families base) infinite in
+  let levt = Array.make (nb_of_persons base) infinite in
+  let flevt = Array.make (nb_of_families base) infinite in
   let get = pget conf base in
   let ini_ip = get_key_index p in
   let rec fill lev =
@@ -813,7 +818,7 @@ value get_all_generations conf base p =
     [ Some v -> v (* + 1 *)
     | None -> 0 ]
   in
-  let mark = Array.create (nb_of_persons base) Num.zero in
+  let mark = Array.make (nb_of_persons base) Num.zero in
   let rec get_generations level gpll gpl =
     let gpll = [gpl :: gpll] in
     if level < max_level then
@@ -1113,7 +1118,7 @@ value merge_date_place conf base surn ((d1, d2, pl), auth) p =
 
 value build_surnames_list conf base v p =
   let ht = Hashtbl.create 701 in
-  let mark = Array.create (nb_of_persons base) 5 in
+  let mark = Array.make (nb_of_persons base) 5 in
   let auth = conf.wizard || conf.friend in
   let add_surname sosa p surn dp =
     let r =
@@ -1196,7 +1201,7 @@ value build_surnames_list conf base v p =
 (* ************************************************************************* *)
 value build_list_eclair conf base v p =
   let ht = Hashtbl.create 701 in
-  let mark = Array.create (nb_of_persons base) False in
+  let mark = Array.make (nb_of_persons base) False in
   (* Fonction d'ajout dans la Hashtbl. A la clé (surname, place) on associe *)
   (* la personne (pour l'interprétation dans le template), la possible date *)
   (* de début, la possible date de fin, la liste des personnes/évènements.  *)
@@ -1548,6 +1553,7 @@ value gen_string_of_img_sz max_wid max_hei conf base env (p, p_auth) =
   else ""
 ;
 value string_of_image_size = gen_string_of_img_sz max_im_wid max_im_wid;
+value string_of_image_medium_size = gen_string_of_img_sz 160 120;
 value string_of_image_small_size = gen_string_of_img_sz 100 75;
 
 value get_sosa conf base env r p =
@@ -2538,25 +2544,26 @@ and eval_bool_person_field conf base env (p, p_auth) =
       [ Some ifam -> Array.length (get_children (foi base ifam)) > 1
       | None -> False ]
   | "has_sources" ->
-      if (is_hide_names conf p) && not p_auth then False
-      else if sou base (get_psources p) <> "" then True
-      else if
-        p_auth &&
-        (sou base (get_birth_src p) <> "" ||
-         sou base (get_baptism_src p) <> "" ||
-         sou base (get_death_src p) <> "" ||
-         sou base (get_burial_src p) <> "") then
-        True
-      else
-        List.exists
-          (fun ifam ->
-             let fam = foi base ifam in
-             p_auth && sou base (get_marriage_src fam) <> "" ||
-             sou base (get_fsources fam) <> "")
-          (Array.to_list (get_family p))
+      p_auth &&
+      (sou base (get_psources p) <> "" ||
+       sou base (get_birth_src p) <> "" ||
+       sou base (get_baptism_src p) <> "" ||
+       sou base (get_death_src p) <> "" ||
+       sou base (get_burial_src p) <> "" ||
+       List.exists
+         (fun ifam ->
+           let fam = foi base ifam in
+           let isp = Gutil.spouse (get_key_index p) fam in
+           let sp = poi base isp in
+           (* On sait que p_auth vaut vrai. *)
+           let m_auth = authorized_age conf base sp in
+           m_auth &&
+           (sou base (get_marriage_src fam) <> "" ||
+           sou base (get_fsources fam) <> ""))
+         (Array.to_list (get_family p)))
   | "has_surnames_aliases" ->
       if not p_auth && (is_hide_names conf p) then False
-      else get_qualifiers p <> []
+      else get_surnames_aliases p <> []
   | "is_buried" ->
       match get_burial p with
       [ Buried _ -> p_auth
@@ -2678,6 +2685,7 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
   | "image" -> if not p_auth then "" else sou base (get_image p)
   | "image_html_url" -> string_of_image_url conf base env ep True
   | "image_size" -> string_of_image_size conf base env ep
+  | "image_medium_size" -> string_of_image_medium_size conf base env ep
   | "image_small_size" -> string_of_image_small_size conf base env ep
   | "image_url" -> string_of_image_url conf base env ep False
   | "ind_access" ->
@@ -2687,7 +2695,7 @@ and eval_str_person_field conf base env ((p, p_auth) as ep) =
   | "mark_descendants" ->
       match get_env "desc_mark" env with
       [ Vdmark r ->
-          let tab = Array.create (nb_of_persons base) False in
+          let tab = Array.make (nb_of_persons base) False in
           let rec mark_descendants len p =
             let i = Adef.int_of_iper (get_key_index p) in
             if tab.(i) then ()
@@ -3219,7 +3227,7 @@ value print_foreach conf base print_ast eval_expr =
           | _ -> 0 ]
       | _ -> raise Not_found ]
     in
-    let mark = Array.create (nb_of_persons base) Num.zero in
+    let mark = Array.make (nb_of_persons base) Num.zero in
     loop [GP_person Num.one (get_key_index p) None] 1 0 where rec loop gpl i n =
       if i > max_level then ()
       else
@@ -3246,7 +3254,7 @@ value print_foreach conf base print_ast eval_expr =
       [ Vint n -> n
       | _ -> 0 ]
     in
-    let mark = Array.create (nb_of_persons base) Num.zero in
+    let mark = Array.make (nb_of_persons base) Num.zero in
     loop [GP_person Num.one (get_key_index p) None] 1 where rec loop gpl i =
       if i > max_level then ()
       else
@@ -3544,19 +3552,15 @@ value print_foreach conf base print_ast eval_expr =
       if src = "" then srcl
       else insert_loop (Util.translate_eval typ) src srcl
     in
-    (* On brise la logique interne de GeneWeb en constituant les     *)
-    (* sources de la personne sans ses informations de décès, puis   *)
-    (* les sources de sa famille et enfin ses informations de décès. *)
-    (* Ce qui évite : naissance, baptême, décès, mariage.            *)
-    let srcl = [] in
-    let srcl =
-      if not (is_hide_names conf p) || p_auth then
-        insert
-          (transl_nth conf "person/persons" 0) (sou base (get_psources p)) srcl
-      else srcl
-    in
     let srcl =
       if p_auth then
+        (* On ajoute les source dans cet ordre :                             *)
+        (* psource, naissance, baptême, mariage, fsource, décès, inhumation. *)
+        let srcl = [] in
+        let srcl =
+          insert (transl_nth conf "person/persons" 0)
+            (sou base (get_psources p)) srcl
+        in
         let srcl =
           insert (transl_nth conf "birth" 0) (sou base (get_birth_src p)) srcl
         in
@@ -3564,29 +3568,28 @@ value print_foreach conf base print_ast eval_expr =
           insert
             (transl_nth conf "baptism" 0) (sou base (get_baptism_src p)) srcl
         in
-        srcl
-      else srcl
-    in
-    let (srcl, _) =
-      Array.fold_left
-        (fun (srcl, i) ifam ->
-           let fam = foi base ifam in
-           let lab =
-             if Array.length (get_family p) = 1 then ""
-             else " " ^ string_of_int i
-           in
-           let srcl =
-             if p_auth then
-               let src_typ = transl_nth conf "marriage/marriages" 0 in
-               insert (src_typ ^ lab) (sou base (get_marriage_src fam)) srcl
-             else srcl
-           in
-           let src_typ = transl_nth conf "family/families" 0 in
-           (insert (src_typ ^ lab) (sou base (get_fsources fam)) srcl, i + 1))
-        (srcl, 1) (get_family p)
-    in
-    let srcl =
-      if p_auth then
+        let (srcl, _) =
+          Array.fold_left
+            (fun (srcl, i) ifam ->
+               let fam = foi base ifam in
+               let isp = Gutil.spouse (get_key_index p) fam in
+               let sp = poi base isp in
+               (* On sait que p_auth vaut vrai. *)
+               let m_auth = authorized_age conf base sp in
+               if m_auth then
+                 let lab =
+                   if Array.length (get_family p) = 1 then ""
+                   else " " ^ string_of_int i
+                 in
+                 let srcl =
+                   let src_typ = transl_nth conf "marriage/marriages" 0 in
+                   insert (src_typ ^ lab) (sou base (get_marriage_src fam)) srcl
+                 in
+                 let src_typ = transl_nth conf "family/families" 0 in
+                 (insert (src_typ ^ lab) (sou base (get_fsources fam)) srcl, i + 1)
+               else (srcl, i + 1))
+            (srcl, 1) (get_family p)
+        in
         let srcl =
           insert (transl_nth conf "death" 0) (sou base (get_death_src p)) srcl
         in
@@ -3594,7 +3597,7 @@ value print_foreach conf base print_ast eval_expr =
           insert (transl_nth conf "burial" 0) (sou base (get_burial_src p)) srcl
         in
         srcl
-      else srcl
+      else []
     in
     (* Affiche les sources et met à jour les variables "first" et "last". *)
     let rec loop first =
@@ -3730,7 +3733,7 @@ value gen_interp_templ menu title templ_fname conf base p = do {
     let sosa_ref = Util.find_sosa_ref conf base in
     let sosa_ref_l =
       let sosa_ref () = sosa_ref in
-      Lazy.lazy_from_fun sosa_ref
+      Lazy.from_fun sosa_ref
     in
     let t_sosa =
       match sosa_ref with
@@ -3743,11 +3746,11 @@ value gen_interp_templ menu title templ_fname conf base p = do {
     in
     let desc_level_table_l =
       let dlt () = make_desc_level_table conf base emal p in
-      Lazy.lazy_from_fun dlt
+      Lazy.from_fun dlt
     in
     let desc_level_table_l_save =
       let dlt () = make_desc_level_table conf base emal p in
-      Lazy.lazy_from_fun dlt
+      Lazy.from_fun dlt
     in
     let mal () =
       Vint (max_ancestor_level conf base (get_key_index p) emal + 1)
@@ -3771,13 +3774,13 @@ value gen_interp_templ menu title templ_fname conf base p = do {
      ("sosa",  Vsosa (ref []));
      ("sosa_ref", Vsosa_ref sosa_ref_l);
      ("t_sosa", Vt_sosa t_sosa);
-     ("max_anc_level", Vlazy (Lazy.lazy_from_fun mal));
-     ("max_cous_level", Vlazy (Lazy.lazy_from_fun mcl));
-     ("max_desc_level", Vlazy (Lazy.lazy_from_fun mdl));
+     ("max_anc_level", Vlazy (Lazy.from_fun mal));
+     ("max_cous_level", Vlazy (Lazy.from_fun mcl));
+     ("max_desc_level", Vlazy (Lazy.from_fun mdl));
      ("desc_level_table", Vdesclevtab desc_level_table_l);
      ("desc_level_table_save", Vdesclevtab desc_level_table_l_save);
-     ("nldb", Vlazy (Lazy.lazy_from_fun nldb));
-     ("all_gp", Vlazy (Lazy.lazy_from_fun all_gp))]
+     ("nldb", Vlazy (Lazy.from_fun nldb));
+     ("all_gp", Vlazy (Lazy.from_fun all_gp))]
   in
   if menu then
     (* Petit calcul pour voir si le fichier est vide => on   *)

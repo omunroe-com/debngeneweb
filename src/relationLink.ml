@@ -56,7 +56,7 @@ value make_dist_tab conf base ia maxlev =
         (struct type t = int; value leq x y = not (tsort_leq tstab x y); end)
     in
     let default = {dmin = infinity; dmax = 0; mark = False} in
-    let dist = Array.create (nb_of_persons base) default in
+    let dist = Array.make (nb_of_persons base) default in
     let q = ref Pq.empty in
     let add_children ip =
       let u = pget conf base ip in
@@ -219,7 +219,7 @@ value print_someone_and_spouse conf base info in_tab ip n ipl =
   let (s, d, spo) = spouse_text conf base n ip ipl in
   do {
     if in_tab && (info.bd > 0 || info.td_prop <> "") then
-      Wserver.wprint "<table style=\"border:%dpx solid\"><tr><td align=\"center\"%s>" 
+      Wserver.wprint "<table style=\"border:%dpx solid\"><tr><td align=\"center\"%s>"
         info.bd info.td_prop
     else ();
     Wserver.wprint "%s\n" (someone_text conf base ip);
