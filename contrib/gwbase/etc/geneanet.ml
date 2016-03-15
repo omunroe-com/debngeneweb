@@ -137,7 +137,7 @@ value country_of_person base p =
       | "de Roumanie" -> "ROM"
       | "de Suède" -> "SWE"
       | "" -> ""
-      | x -> (* do Printf.eprintf "%s\n" x; flush stderr; return *) 
+      | x -> (* do Printf.eprintf "%s\n" x; flush stderr; return *)
           "" ]
   | _ -> "" ]
 ;
@@ -262,7 +262,7 @@ value order_lines l1 l2 =
 ;
 
 value geneanet base =
-  let mark = Array.create (nb_of_persons base) False in
+  let mark = Array.make (nb_of_persons base) False in
   let lines = ref Line.empty in
   do {
     load_ascends_array base;

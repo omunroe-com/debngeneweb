@@ -134,7 +134,7 @@ value div x n =
           loop (i - 1) [d :: l] r
     in
     Array.of_list (normalize l)
-;    
+;
 value modl x n =
   let r = sub x (mul0 (div x n) n) in
   if Array.length r = 0 then 0 else r.(0)
@@ -180,12 +180,12 @@ value to_string_sep_base sep base x =
   let digits = if digits = [] then [0] else digits in
   let len = List.length digits in
   let slen = String.length sep in
-  let s = String.create (len + (len - 1) / 3 * slen) in
+  let s = Bytes.create (len + (len - 1) / 3 * slen) in
   let _ =
     List.fold_left
        (fun (i, j) d ->
           do {
-            s.[j] := Char.chr (code_of_digit d);
+            Bytes.set s j (Char.chr (code_of_digit d));
             if i < len - 1 && (len - 1 - i) mod 3 = 0 then do {
               String.blit sep 0 s (j + 1) slen;
               (i + 1, j + 1 + slen)

@@ -168,7 +168,7 @@ value rec get_token =
   | [: s = get_ident 0 :] ep -> Tok (bp, ep) (IDENT s) ]
 ;
 
-module Buff2 = Buff.Make (struct value buff = ref (String.create 80); end);
+module Buff2 = Buff.Make (struct value buff = ref (Bytes.create 80); end);
 
 value rec parse_var =
   parser
@@ -335,7 +335,8 @@ value strip_newlines_after_variables =
         let s =
           loop 0 where rec loop i =
             if i = String.length s then s
-            else if s.[i] = ' ' || s.[i] = '\t' then loop (i + 1)
+            else if s.[i] = ' ' || s.[i] = '\t' || s.[i] = '\r' then
+              loop (i + 1)
             else if s.[i] = '\n' then
               String.sub s (i + 1) (String.length s - i - 1)
             else s
@@ -353,9 +354,13 @@ value strip_newlines_after_variables =
         [Afor i min max (loop al) :: loop astl]
     | [(Atransl _ _ _ _ | Awid_hei _ as ast1); (Atext _ _ as ast2) :: astl] ->
         [ast1; ast2 :: loop astl]
+    | [Aimport file al :: astl] ->
+        [Aimport file (loop al) :: loop astl]
     | [ast :: astl] -> [ast :: loop astl]
     | [] -> [] ]
 ;
+
+value imported_files = ref [];
 
 value parse_templ conf strm =
   let rec parse_astl astl bol len end_list strm =
@@ -451,22 +456,26 @@ value parse_templ conf strm =
       [ Stream.Failure | Stream.Error _ ->
           let bp = Stream.count strm - 1 in
           (Atext (bp, bp + 1) "let syntax error", "") ]
-    in        
+    in
     (List.rev [ast :: astl], tok)
   and parse_import astl end_list strm =
     let ast =
-      try 
-        let file = get_ident 0 strm in
-        let al = 
-          match Util.open_templ conf file with
-          [ Some ic ->
-              let strm2 = (Stream.of_channel ic) in
-              let (al, _) = parse_astl [] True 0 [] strm2 in
-              Some (Aimport file al)
-          | None -> None ]
-        in
-        al
-      with 
+      try
+        let file = get_value 0 strm in
+        (* Protection pour ne pas inclure plusieurs fois un même template ? *)
+        if not (List.mem file imported_files.val) then
+          let al =
+            match Util.open_templ conf file with
+            [ Some ic ->
+                let () = imported_files.val := [ file :: imported_files.val] in
+                let strm2 = (Stream.of_channel ic) in
+                let (al, _) = parse_astl [] False 0 [] strm2 in
+                do { close_in ic; Some (Aimport file al) }
+            | None -> None ]
+          in
+          al
+        else None
+      with
       [ Stream.Failure | Stream.Error _ -> None ]
     in
     let (alk, tok) = parse_astl [] False 0 end_list strm in
@@ -517,7 +526,7 @@ value parse_templ conf strm =
     in
     Aif e al1 al2
   and parse_for strm =
-    try 
+    try
       let iterator = get_ident 0 strm in
         match strm with parser
         [ [: `';' :] ->
@@ -599,13 +608,13 @@ value rec subst sf =
       let s1 = sf s in
       let strm = Stream.of_string s1 in
       let (_, s2, sl2) = get_compound_var strm in
-      let (s, sl) = 
+      let (s, sl) =
         if Stream.peek strm <> None then (s, sl)
         else (s2, sl2 @ sl)
       in
       Aforeach (loc, sf s, List.map sf sl) (List.map (substl sf) pl)
         (substl sf al)
-  | Afor i min max al -> 
+  | Afor i min max al ->
       Afor (sf i) (subst sf min) (subst sf max) (substl sf al)
   | Adefine f xl al alk ->
       Adefine (sf f) (List.map sf xl) (substl sf al) (substl sf alk)
@@ -692,7 +701,7 @@ and eval_time_var conf =
       sprintf "%02d:%02d:%02d" hh mm ss
 | _ -> raise Not_found ]
 and eval_simple_variable conf =
-  fun 
+  fun
   [ "action" -> conf.command
   | "border" -> string_of_int conf.border
   | "charset" -> conf.charset
@@ -766,10 +775,10 @@ and eval_simple_variable conf =
           (fun accu (k, v) -> List.remove_assoc k accu)
           conf.env (conf.henv @ conf.senv)
       in
-      List.fold_left 
-        (fun c (k, v) -> c ^ k ^ "=" ^ v ^ ";") 
+      List.fold_left
+        (fun c (k, v) -> c ^ k ^ "=" ^ v ^ ";")
         "" l
-  | "url" -> 
+  | "url" ->
       let c = Util.commd conf in
       (* On supprime de env toutes les paires qui sont dans (henv @ senv) *)
       let l =
@@ -777,8 +786,8 @@ and eval_simple_variable conf =
           (fun accu (k, v) -> List.remove_assoc k accu)
           conf.env (conf.henv @ conf.senv)
       in
-      List.fold_left 
-        (fun c (k, v) -> c ^ k ^ "=" ^ v ^ ";") 
+      List.fold_left
+        (fun c (k, v) -> c ^ k ^ "=" ^ v ^ ";")
         c l
   | "version" -> Version.txt
   | "/" -> conf.xhs
@@ -915,7 +924,7 @@ value templ_eval_var conf =
   [ ["cancel_links"] -> VVbool conf.cancel_links
   | ["cgi"] -> VVbool conf.cgi
   | ["false"] -> VVbool False
-  | ["has_referer"] -> (* deprecated since version 5.00 *) 
+  | ["has_referer"] -> (* deprecated since version 5.00 *)
       VVbool (Wserver.extract_param "referer: " '\n' conf.request <> "")
   | ["just_friend_wizard"] -> VVbool conf.just_friend_wizard
   | ["friend"] -> VVbool conf.friend
@@ -1111,7 +1120,7 @@ type interp_fun 'a 'b =
     eval_predefined_apply : env 'a -> string -> list (expr_val 'b) -> string;
     get_vother : 'a -> option (vother 'b);
     set_vother : vother 'b -> 'a;
-    print_foreach : 
+    print_foreach :
       (env 'a -> 'b -> ast -> unit) ->
          (env 'a -> 'b -> ast -> string) ->
          env 'a -> 'b -> loc -> string -> list string ->
@@ -1348,9 +1357,6 @@ value include_hed_trl conf base_opt name =
   | None -> old_include_hed_trl conf base_opt ("." ^ name) ]
 ;
 
-value import = ref 0;
-value imported_files = ref [];
-
 value rec interp_ast conf base ifun env =
   let m_env = ref env in
   let rec eval_ast env ep a =
@@ -1445,21 +1451,21 @@ value rec interp_ast conf base ifun env =
       if eval_bool_expr conf (eval_var, eval_apply) e then alt else ale
     in
     String.concat "" (List.map eval_ast al)
-  and eval_for env ep iterator min max al = 
+  and eval_for env ep iterator min max al =
     let rec loop env min max accu =
       let new_env = env in
       let v = eval_ast_expr_list new_env ep [min] in
-      let new_env = set_val ifun.set_vother iterator v new_env in 
+      let new_env = set_val ifun.set_vother iterator v new_env in
       let eval_var = eval_var conf ifun new_env ep in
       let eval_apply = eval_apply new_env ep in
       let eval_ast = eval_ast new_env ep in
-      let int_min = 
-        int_of_string (eval_string_expr conf (eval_var, eval_apply) min) 
+      let int_min =
+        int_of_string (eval_string_expr conf (eval_var, eval_apply) min)
       in
-      let int_max = 
-        int_of_string (eval_string_expr conf (eval_var, eval_apply) max) 
+      let int_max =
+        int_of_string (eval_string_expr conf (eval_var, eval_apply) max)
       in
-      if int_min < int_max then 
+      if int_min < int_max then
         let instr = (String.concat "" (List.map eval_ast al)) in
         let accu = accu ^ instr in
         loop new_env (Aop2 (0, 0) "+" min (Aint (0, 0) "1")) max accu
@@ -1489,15 +1495,10 @@ value rec interp_ast conf base ifun env =
     | [Avar _ "sq" []; Atext loc s :: al] ->
         let s = squeeze_spaces s in
         print_ast_list env ep [Atext loc s :: al]
-    | [Aimport templ astl :: al] -> 
-        (* Protection pour ne pas inclure plusieurs fois un même template ? *)
-        if not (List.mem templ imported_files.val) then do {
-          (*incr import;*)
-          print_ast_list env ep astl;
-          (*decr import;*)
-          print_ast_list m_env.val ep al;
-        }
-        else ()
+    | [Aimport templ astl :: al] -> do {
+        print_ast_list env ep astl;
+        print_ast_list m_env.val ep al;
+      }
     | [a] -> print_ast env ep a
     | [a :: al] -> do {
         print_ast env ep a;
@@ -1528,16 +1529,16 @@ value rec interp_ast conf base ifun env =
     let rec loop env min max =
       let new_env = env in
       let v = eval_ast_expr_list new_env ep [min] in
-      let new_env = set_val ifun.set_vother i v new_env in 
+      let new_env = set_val ifun.set_vother i v new_env in
       let eval_var = eval_var conf ifun new_env ep in
       let eval_apply = eval_apply new_env ep in
-      let int_min = 
-        int_of_string (eval_string_expr conf (eval_var, eval_apply) min) 
+      let int_min =
+        int_of_string (eval_string_expr conf (eval_var, eval_apply) min)
       in
-      let int_max = 
-        int_of_string (eval_string_expr conf (eval_var, eval_apply) max) 
+      let int_max =
+        int_of_string (eval_string_expr conf (eval_var, eval_apply) max)
       in
-      if int_min < int_max then 
+      if int_min < int_max then
         let _ = print_ast_list new_env ep al in
         loop new_env (Aop2 (0, 0) "+" min (Aint (0, 0) "1")) max
       else ()

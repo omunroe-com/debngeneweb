@@ -37,7 +37,7 @@ value print_anniversary_day conf base dead_people liste =
 ;
 
 value gen_print conf base mois f_scan dead_people =
-  let tab = Array.create 31 [] in
+  let tab = Array.make 31 [] in
   let title _ =
     let lab =
       if dead_people then transl conf "anniversaries"
@@ -99,6 +99,11 @@ value gen_print conf base mois f_scan dead_people =
     [ Not_found -> () ];
     header conf title;
     print_link_to_welcome conf True;
+    if List.for_all (fun l -> List.length l = 0) (Array.to_list tab) then
+      tag "p" begin
+        Wserver.wprint "%s.\n" (capitale (transl conf "no anniversary"));
+      end
+    else ();
     Wserver.wprint "<ul>\n";
     for j = 1 to 31 do {
       if tab.(pred j) <> [] then do {
@@ -203,7 +208,7 @@ value propose_months conf mode =
   do {
     begin_centered conf;
     stag "span" begin
-      Wserver.wprint "%s" 
+      Wserver.wprint "%s"
         (capitale (transl conf "select a month to see all the anniversaries"));
     end;
     tag "table" "border=\"%d\"" conf.border begin
@@ -276,7 +281,7 @@ value print_marriage conf base month =
       (transl_decline conf "in (month year)"
          (transl_nth conf "(month)" (month - 1)))
   in
-  let tab = Array.create 31 [] in
+  let tab = Array.make 31 [] in
   do {
     header conf title;
     print_link_to_welcome conf True;
@@ -393,7 +398,9 @@ value gen_print_menu_birth conf base f_scan mode =
   let list_aft = ref [] in
   do {
     match Util.find_person_in_env conf base "" with
-    [ Some p -> Perso.interp_notempl_with_menu title "perso_header" conf base p
+    [ Some p -> do {
+        Perso.interp_notempl_with_menu title "perso_header" conf base p;
+        tag "h2" begin title False; end; }
     | None -> header conf title ];
     print_link_to_welcome conf True;
     try

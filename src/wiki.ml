@@ -36,8 +36,8 @@ open Util;
    __SHORT_TOC__ : short summary (unnumbered)
    __NOTOC__ : no (automatic) numbered summary *)
 
-module Buff2 = Buff.Make (struct value buff = ref (String.create 80); end);
-module Buff = Buff.Make (struct value buff = ref (String.create 80); end);
+module Buff2 = Buff.Make (struct value buff = ref (Bytes.create 80); end);
+module Buff = Buff.Make (struct value buff = ref (Bytes.create 80); end);
 
 value first_cnt = 1;
 
@@ -478,7 +478,7 @@ value rec hotl conf wlo cnt edit_opt sections_nums list =
                loop2 [s] sl
               else loop1 [s :: parag] sl
           | [] -> Some (parag, [], True) ]
-        and loop2 parag = 
+        and loop2 parag =
           fun
           [ ["" :: sl] -> Some (parag, sl, False)
           | [s :: sl] ->

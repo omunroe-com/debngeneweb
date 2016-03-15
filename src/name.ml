@@ -72,8 +72,13 @@ value unaccent_utf_8 lower s i =
           | 0xBD | 0xBF -> "y"
           | 0xBE -> "th"
           | _ ->
-              let c = Char.lowercase (Char.chr (Char.code s.[i+1] + 0x40)) in
-              String.make 1 c ]
+              (* Si le caractère est en dehors de la table ASCII,
+                 alors on ignore le caratère. Cela peut se produire
+                 si l'entrée est mauvaise, ex: JÃ©rÃÃ¶me /FOO/ *)
+              try
+                let c = Char.lowercase (Char.chr (Char.code s.[i+1] + 0x40)) in
+                String.make 1 c
+              with Invalid_argument "Char.chr" -> "" ]
       | 0xC4 ->
           match Char.code s.[i+1] with
           [ 0x80 | 0x82 | 0x84 -> f "A"
@@ -340,7 +345,7 @@ value unaccent_utf_8 lower s i =
           match Char.code s.[i+1] with
           [ 0x80 ->
             match Char.code s.[i+2] with
-            [ 0x99 -> " " 
+            [ 0x99 -> " "
             | _ -> String.sub s i nbc ]
           | _ -> String.sub s i nbc]
       *)
@@ -440,7 +445,7 @@ value strip s = strip_c s ' ' ;
 (* ******************************************************************** *)
 (*  [Fonc] purge : string -> string                                     *)
 (** [Description] : Supprime tous les caractères interdits (défini par
-                    forbidden_char) présents dans la chaine passée en 
+                    forbidden_char) présents dans la chaine passée en
                     argument.
     [Args] :
       - s : string que l'on veut purger

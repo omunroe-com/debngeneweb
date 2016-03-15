@@ -264,10 +264,10 @@ value surnames_pieces surname =
 value tr c1 c2 s =
   match rindex s c1 with
   [ Some _ ->
-      let s' = String.create (String.length s) in
+      let s' = Bytes.create (String.length s) in
       do {
         for i = 0 to String.length s - 1 do {
-          s'.[i] := if s.[i] = c1 then c2 else s.[i]
+          Bytes.set s' i (if s.[i] = c1 then c2 else s.[i])
         };
         s'
       }
@@ -283,7 +283,7 @@ value utf_8_of_iso_8859_1 str =
       else if Char.code c < 0xC0 then
         let len = Buff.store len (Char.chr 0xC2) in
         loop (i + 1) (Buff.store len c)
-      else 
+      else
         let len = Buff.store len (Char.chr 0xC3) in
         loop (i + 1) (Buff.store len (Char.chr (Char.code c - 0x40)))
 ;
