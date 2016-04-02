@@ -1,7 +1,5 @@
-Index: git/Makefile
-===================================================================
---- git.orig/Makefile
-+++ git/Makefile
+--- a/Makefile
++++ b/Makefile
 @@ -18,6 +18,7 @@
  	cd gwb2ged; $(MAKE) all
  	cd setup; $(MAKE) all
@@ -59,25 +57,48 @@ Index: git/Makefile
  	cd setup; $(MAKE) depend
  	cd gwtp; $(MAKE) depend
 +	cd gui; $(MAKE) depend
-Index: git/gui/Makefile
-===================================================================
---- git.orig/gui/Makefile
-+++ git/gui/Makefile
-@@ -9,7 +9,7 @@
+--- a/gui/Makefile
++++ b/gui/Makefile
+@@ -2,16 +2,13 @@
+ # Copyright (c) 2006-2007 INRIA
+ 
+ include ../tools/Makefile.inc
+-
+-LABLGTK2=+lablgtk2
+-OCAMLC=ocamlc.opt
+-OCAMLOPT=ocamlopt.opt -annot
++LABLGTK2=`ocamlfind query lablgtk2`/
  GWB=..
  OBJS=../src/version.cmo ../src/iovalue.cmo ../src/buff.cmo ../src/name.cmo ../src/mutil.cmo gui.cmo
  OCAMLI=-I ../src -I $(LABLGTK2)
 -TEST_DIR=test $$(basename "$<") = "$<" || { echo "Please run 'make' in directory '$$(dirname "$<")' first"; exit 1; }
 +# TEST_DIR=test $$(basename "$<") = "$<" || { echo "Please run 'make' in directory '$$(dirname "$<")' first"; exit 1; }
  
- all:: opt
+-all:: opt
++all:: out
  
-@@ -35,7 +35,7 @@
+ out:: gui.out
+ 	$(RM) gui
+@@ -20,6 +17,7 @@
+ opt:: gui.opt
+ 	$(RM) gui
+ 	cp gui.opt gui
++	$(STRIP) gui
+ 
+ gui.out: $(OBJS)
+ 	$(OCAMLC) -I $(LABLGTK2) lablgtk.cma unix.cma $(OBJS) -o gui.out
+@@ -31,11 +29,11 @@
+ 	$(RM) gui
+ 
+ depend:
+-	export LC_ALL=C; TOP=$(GWB) $(GWB)/tools/camlp5_depend.sh $(OCAMLI) $$(ls *.mli *.ml) | sed -e 's|\.\.|$$(GWB)|g' > .depend.new
++	$(ROOT)/tools/camlp5_depend.sh $(CAMLP5F) $(OCAMLI) -- *.ml* > .depend
  	mv .depend.new .depend
  
  %.cmo: %.ml
 -	@$(TEST_DIR)
+-	ocamlc -pp camlp5r $(OCAMLI) -I +lablgtk2 -c $<
 +#	@$(TEST_DIR)
- 	ocamlc -pp camlp5r $(OCAMLI) -I +lablgtk2 -c $<
++	$(OCAMLC) -pp camlp5r $(OCAMLI) -I $(LABLGTK2) -c $<
  
  include .depend

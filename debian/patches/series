@@ -3,8 +3,7 @@
 004_gwd.ml-readauth
 010_gwsetup-fhs
 012_gwc.1-syntax
-015_compile-gui
-016_fix-ocaml
+015_compile-gui-fix-makefile
 018_fix_templates_jquery
 019_fix_minor_bugs_templx
 020_ReproducibleBuilds
