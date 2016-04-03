@@ -40,6 +40,15 @@ Status wrt upstream: Forwarded in the Geneweb ML
      exec_f (comm ^ parameters conf.env)
    in
    let rc = IFDEF WIN95 THEN infer_rc conf rc ELSE rc END in
+@@ -948,7 +950,7 @@
+ 
+ value gwc2 conf =
+   let rc =
+-    let comm = stringify (Filename.concat bin_dir.val "gwc2") in
++    let comm = "gwc2" in
+     exec_f (comm ^ parameters conf.env)
+   in
+   let rc = IFDEF WIN95 THEN infer_rc conf rc ELSE rc END in
 @@ -1181,7 +1183,7 @@
        Sys.chdir dir;
        let c =
