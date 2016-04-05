@@ -1,3 +1,27 @@
+geneweb (6.08+git20160228+dfsg-2) unstable; urgency=medium
+
+  * Team upload
+
+  [ Guillaume Brochu ]
+  * Add libjs-jquery and libjs-jquery-placeholder to geneweb Depends
+  * Fix templates to use these two Debian packages instead of the
+    two jquery*.js files provided in the upstream tarball and removed
+    previously to meet Debian Free Software Guidelines
+    Closes: #819271
+  * Fix minor bugs in templx (broken links and male/female
+    lines limited to 7 generations)
+  * Remove obsolete patches and clean makefile patches
+  * As an attempt to make geneweb package reproducible: do not include
+    the compilation time in source file src/compilation.ml
+  * Small fix to patch 010_gwsetup-fhs (to have similar command lines
+    for gwc and gwc2)
+  * Fix the geneweb-gui binary package to work properly with the
+    specific directory structure of the geneweb package
+  * Remove perl from geneweb Depends (nobody remembers why it is there...)
+  * Remove obsolete paragraph in README.debian
+
+ -- Guillaume Brochu (Lévis,Québec,Canada) <guillaume.brochu@gmail.com>  Mon, 04 Apr 2016 22:42:50 -0400
+
 geneweb (6.08+git20160228+dfsg-1) unstable; urgency=medium
 
   * Team upload
