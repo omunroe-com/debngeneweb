@@ -63,25 +63,6 @@ post-removal script. Most Debian package maintainers agree that such a
 maintenance task of groups and users has to be left to the local
 system administrator.
 
-About *.update.gw files
------------------------
-
-In the past (mostly versions earlier to 3.x versions), Geneweb
-sometimes changed the database format. Thus, when upgrading, it was
-required to first dump the database to a .gw file, using the old gwu
-utility...then upgrade....then rebuild the .gwb database using gwc
-from the new version.
-
-So, when the Debian package was in it searly stages, I tried to find a way to
-preserve user data when upgrading.
-
-This is why the prerm script exports all database it may find (first
-in /var/lib/geneweb, but also all those which may be found by the
-locate database).
-
-All the *.update.gw files you may find, mostly in /var/lib/geneweb are
-database exports made during package upgrades.
-
 About permissions
 -----------------
 
