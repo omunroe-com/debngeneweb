@@ -46,7 +46,7 @@ Package: gwsetup
 Section: misc
 Architecture: any
 Pre-Depends: adduser, dpkg (>= 1.15.6~)
-Depends: ${misc:Depends}, ${shlibs:Depends}, geneweb
+Depends: ${misc:Depends}, ${shlibs:Depends}, geneweb, lsb-base (>= 3.0-6)
 Priority: optional
 Description: utilities to configure and manipulate Geneweb databases
  Geneweb allows keeping track of ancestral data. It is a powerful
