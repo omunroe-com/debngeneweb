@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Christian Perrier <bubulle@debian.org>
 Standards-Version: 3.9.7
 Build-Depends: debhelper (>= 9~), ocaml-best-compilers, ocaml (>= 4.02), camlp5, doc-base, dh-buildinfo, iso-codes, isoquery, po-debconf, liblablgtk2-ocaml-dev, ocaml-findlib
-Homepage: http://www.geneweb.org/
+Homepage: https://geneweb.tuxfamily.org/wiki/GeneWeb
 Vcs-Git: git://anonscm.debian.org/collab-maint/geneweb.git
 Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/geneweb.git/
 
