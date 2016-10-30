@@ -4,6 +4,8 @@ geneweb: hardening-no-relro usr/bin/consang
 geneweb: hardening-no-fortify-functions usr/bin/consang
 geneweb: hardening-no-relro usr/bin/ged2gwb
 geneweb: hardening-no-fortify-functions usr/bin/ged2gwb
+geneweb: hardening-no-relro usr/bin/ged2gwb2
+geneweb: hardening-no-fortify-functions usr/bin/ged2gwb2
 geneweb: hardening-no-relro usr/bin/gwb2ged
 geneweb: hardening-no-fortify-functions usr/bin/gwb2ged
 geneweb: hardening-no-relro usr/bin/gwc
