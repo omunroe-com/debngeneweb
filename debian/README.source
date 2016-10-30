@@ -3,6 +3,5 @@ Merging upstream releases
 
 New upstream releases should be merged with git-import-orig (the git repository layout is theoretically OK to allow this to be straightforward).
 Upstream source first needs to be repacked without sourceless Javascript files:
-hd/etc/jquery_1_9_1_min.js
-hd/etc/jquery_placeholder_min.js
+hd/etc/jquery*.js
 
