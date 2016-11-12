@@ -1,2 +1,3 @@
 distribution/gw/geneweb-gui usr/bin
 distribution/gw/gui_lex.txt usr/share/geneweb/lang
+debian/geneweb-gui.desktop usr/share/applications

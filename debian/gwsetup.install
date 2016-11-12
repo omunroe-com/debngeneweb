@@ -3,3 +3,4 @@ setup/intro.txt /usr/share/geneweb/setup
 setup/lang/* /usr/share/geneweb/setup/lang
 debian/gwsetup_only.txt /etc/geneweb
 debian/add-on/gwsetup.wrapper usr/lib/geneweb
+debian/gwsetup.desktop usr/share/applications

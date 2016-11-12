@@ -10,5 +10,4 @@ distribution/gw/gwu usr/bin
 distribution/gw/lang/* usr/share/geneweb/lang
 distribution/gw/etc/* usr/share/geneweb/etc
 distribution/gw/images/* usr/share/geneweb/images
-debian/geneweb.xpm usr/share/pixmaps
-
+debian/geneweb.desktop usr/share/applications

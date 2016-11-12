@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=GWSetup
+Comment=Geneweb genealogy software - configuration
+Comment[fr]=Logiciel de généalogie Geneweb - configuration
+Exec=/usr/bin/x-www-browser http://localhost:2316
+Icon=/usr/share/geneweb/images/favicon_gwsetup.png
+Terminal=false
+MultipleArgs=false
+Type=Application
+Categories=Office;Database;
