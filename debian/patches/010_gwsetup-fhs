@@ -4,25 +4,15 @@ Status wrt upstream: Forwarded in the Geneweb ML
 
 --- a/setup/setup.ml
 +++ b/setup/setup.ml
-@@ -6,6 +6,8 @@
+@@ -6,6 +6,7 @@
  value port = ref 2316;
  value default_lang = ref "en";
  value setup_dir = ref ".";
-+value only_dir = ref ".";
 +value comm_log = ref ".";
  value bin_dir = ref "";
  value lang_param = ref "";
  value only_file = ref "";
-@@ -315,7 +317,7 @@
- ;
- 
- value only_file_name () =
--  if only_file.val = "" then Filename.concat setup_dir.val "only.txt"
-+  if only_file.val = "" then Filename.concat only_dir.val "only.txt"
-   else only_file.val
- ;
- 
-@@ -706,7 +708,7 @@
+@@ -706,7 +707,7 @@
  ;
  
  value exec_f comm =
@@ -31,7 +21,7 @@ Status wrt upstream: Forwarded in the Geneweb ML
    do {
      eprintf "$ cd \"%s\"\n" (Sys.getcwd ());
      flush stderr;
-@@ -929,7 +931,7 @@
+@@ -929,7 +930,7 @@
  
  value gwc conf =
    let rc =
@@ -40,7 +30,7 @@ Status wrt upstream: Forwarded in the Geneweb ML
      exec_f (comm ^ parameters conf.env)
    in
    let rc = IFDEF WIN95 THEN infer_rc conf rc ELSE rc END in
-@@ -948,7 +950,7 @@
+@@ -948,7 +949,7 @@
  
  value gwc2 conf =
    let rc =
@@ -49,7 +39,7 @@ Status wrt upstream: Forwarded in the Geneweb ML
      exec_f (comm ^ parameters conf.env)
    in
    let rc = IFDEF WIN95 THEN infer_rc conf rc ELSE rc END in
-@@ -1181,7 +1183,7 @@
+@@ -1181,7 +1182,7 @@
        Sys.chdir dir;
        let c =
          Filename.concat bin_dir.val src_to_new ^ " " ^ tmp ^ " -f -o " ^
@@ -58,7 +48,7 @@ Status wrt upstream: Forwarded in the Geneweb ML
        in
        eprintf "$ %s\n" c;
        flush stderr;
-@@ -1274,7 +1276,7 @@
+@@ -1274,7 +1275,7 @@
      Sys.rename in_base_dir (Filename.concat "old" in_base_dir);
      let c =
        Filename.concat bin_dir.val "gwc" ^ " tmp.gw -nofail -o " ^ in_base ^
@@ -67,7 +57,7 @@ Status wrt upstream: Forwarded in the Geneweb ML
      in
      eprintf "$ %s\n" c;
      flush stderr;
-@@ -1398,7 +1400,7 @@
+@@ -1398,7 +1399,7 @@
                (fun s b ->
                   if s = "" then " " ^ b ^ ".gw" else s ^ " -sep " ^ b ^ ".gw")
                "" bases ^
@@ -76,12 +66,10 @@ Status wrt upstream: Forwarded in the Geneweb ML
          in
          eprintf "$ %s\n" c;
          flush stderr;
-@@ -1967,8 +1969,12 @@
+@@ -1967,8 +1968,10 @@
        string_of_int port.val ^ "); > 1024 for normal users.");
     ("-only", Arg.String (fun s -> only_file.val := s),
      "<file>: File containing the only authorized address");
-+   ("-only", Arg.String (fun x -> only_dir.val := x),
-+    "<string>: directory for gwsetup_only.txt file") ;
 +   ("-log", Arg.String (fun x -> comm_log.val := x),
 +    "<string>: full path for last command log file") ;
     ("-gd", Arg.String (fun x -> setup_dir.val := x),
