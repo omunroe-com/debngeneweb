@@ -21,6 +21,7 @@ DAEMON=/usr/bin/gwsetup
 WRAPPER=/usr/lib/geneweb/gwsetup.wrapper
 NAME=gwsetup
 LOGFILE=/var/log/$NAME.log
+GWSETUPONLYFILE=/etc/geneweb/gwsetup_only.txt
 
 # Defaults
 # The port which the daemon listens to
@@ -40,7 +41,7 @@ OPTIONS=""
 [ -r /etc/default/gwsetup ] && . /etc/default/gwsetup
 
 # Export variables so that they may be used by the wrapper script
-export LNG GWSETUP_PORT LOGFILE NAME DAEMON GENEWEBDB GENEWEBDOC GENEWEBSHARE OPTIONS
+export LNG GWSETUP_PORT LOGFILE NAME DAEMON GENEWEBDB GENEWEBDOC GENEWEBSHARE GWSETUPONLYFILE OPTIONS
 
 trap "" 1
 
@@ -69,7 +70,7 @@ start_stop()
         stop)
             log_begin_msg "Stopping gwsetup server" "gwsetup"
             start-stop-daemon --stop --quiet --exec $DAEMON -- \
-	        -gd$GENEWEBSHARE -only /etc/geneweb \
+	        -gd $GENEWEBSHARE -only $GWSETUPONLYFILE \
 		-lang$LANG -daemon
 	    log_end_msg 0
             ;;
