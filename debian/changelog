@@ -1,3 +1,25 @@
+geneweb (6.08+git20160228+dfsg-3) unstable; urgency=medium
+
+  * Team upload
+
+  [ Guillaume Brochu ]
+  * Standards-Version: 3.9.8
+  * Update .desktop files and icons
+  * Remove .menu files
+  * Add ged2gwb2 to usr/bin (was previously missing)
+  * Update README.docs-6.x, README.source, copyright, Homepage link,
+    and Vcs-Browser link
+  * Update the required ocaml version in Build-Depends (>= 4.02)
+  * Add lsb-base (>= 3.0-6) to gwsetup dependencies
+  * Fix patch 010_gwsetup-fhs to use upstream code for the -only argument
+  * Supply the '-only' argument to gwsetup in gwsetup.wrapper
+    Closes: #844120
+  * Improve the packaging of geneweb-gui. It is now possible to browse/edit bases
+    in /home folder (alternative to geneweb and gwsetup daemons that work with
+    bases in /var/lib/geneweb).
+
+ -- Guillaume Brochu (Lévis,Québec,Canada) <guillaume.brochu@gmail.com>  Fri, 18 Nov 2016 23:40:00 -0500
+
 geneweb (6.08+git20160228+dfsg-2) unstable; urgency=medium
 
   * Team upload
