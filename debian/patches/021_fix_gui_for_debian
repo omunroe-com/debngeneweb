@@ -210,7 +210,7 @@
 +
 +    It is also not recommended to use ports 2316 or 2317 that are already used by the geneweb and gwsetup daemons.
 +en: It is also not recommended to use ports 2316 or 2317 that are already used by the geneweb and gwsetup daemons.
-+fr: Il est également déconseillé d'utiliser les ports 2316 ou 2317 qui sont déjà utilisés par les services geneweb and gwsetup.
++fr: Il est également déconseillé d'utiliser les ports 2316 ou 2317 qui sont déjà utilisés par les services geneweb et gwsetup.
 +
 +    Your configuration file is:
 +en: Your configuration file is:
