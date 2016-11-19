@@ -1,8 +1,12 @@
-geneweb (6.08+git20160228+dfsg-3) unstable; urgency=medium
+geneweb (6.08+git20161106+dfsg-1) unstable; urgency=medium
 
   * Team upload
 
   [ Guillaume Brochu ]
+  * New upstream release to fix links and other minor bugs
+    https://github.com/geneweb/geneweb/archive/13c850a0cc3973daf7ae3e0772a1621f84052041.tar.gz
+    https://github.com/geneweb/geneweb/commits/distrib-6-08-ocaml-4-xx
+    (Last commit : 2016-11-06)
   * Standards-Version: 3.9.8
   * Update .desktop files and icons
   * Remove .menu files
@@ -18,7 +22,7 @@ geneweb (6.08+git20160228+dfsg-3) unstable; urgency=medium
     in /home folder (alternative to geneweb and gwsetup daemons that work with
     bases in /var/lib/geneweb).
 
- -- Guillaume Brochu (Lévis,Québec,Canada) <guillaume.brochu@gmail.com>  Fri, 18 Nov 2016 23:40:00 -0500
+ -- Guillaume Brochu (Lévis,Québec,Canada) <guillaume.brochu@gmail.com>  Sat, 19 Nov 2016 00:12:00 -0500
 
 geneweb (6.08+git20160228+dfsg-2) unstable; urgency=medium
 
