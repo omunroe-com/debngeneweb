@@ -1,7 +1,9 @@
 [Desktop Entry]
-Name=Geneweb
-Comment=Geneweb genealogy software
-Comment[fr]=Logiciel de généalogie Geneweb
+Name=geneweb
+Comment=Geneweb genealogy software - page d'accueil
+Comment[fr]=Logiciel de généalogie Geneweb - page d'accueil
+GenericName=Geneweb genealogy software - page d'accueil
+GenericName[fr]=Logiciel de généalogie Geneweb - page d'accueil
 Exec=/usr/bin/x-www-browser http://localhost:2317
 Icon=/usr/share/geneweb/images/favicon_gwd.png
 Terminal=false

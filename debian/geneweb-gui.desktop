@@ -1,7 +1,9 @@
 [Desktop Entry]
-Name=Geneweb GUI
+Name=geneweb-gui
 Comment=Geneweb genealogy software - graphical interface
 Comment[fr]=Logiciel de généalogie Geneweb - interface graphique
+GenericName=Geneweb genealogy software - graphical interface
+GenericName[fr]=Logiciel de généalogie Geneweb - interface graphique
 Exec=/usr/bin/geneweb-gui
 Icon=/usr/share/geneweb/images/favicon_gwd.png
 Terminal=false
