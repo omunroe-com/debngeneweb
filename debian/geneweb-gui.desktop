@@ -7,6 +7,5 @@ GenericName[fr]=Logiciel de généalogie Geneweb - interface graphique
 Exec=/usr/bin/geneweb-gui
 Icon=/usr/share/geneweb/images/favicon_gwd.png
 Terminal=false
-MultipleArgs=false
 Type=Application
 Categories=Office;Database;
