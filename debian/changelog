@@ -18,9 +18,9 @@ geneweb (6.08+git20161106+dfsg-1) unstable; urgency=medium
   * Fix patch 010_gwsetup-fhs to use upstream code for the -only argument
   * Supply the '-only' argument to gwsetup in gwsetup.wrapper
     Closes: #844120
-  * Improve the packaging of geneweb-gui. It is now possible to browse/edit bases
-    in /home folder (alternative to geneweb and gwsetup daemons that work with
-    bases in /var/lib/geneweb).
+  * Improve the packaging of geneweb-gui. It is now possible to browse/edit
+    bases in /home folder (alternative to geneweb and gwsetup daemons that
+    work with bases in /var/lib/geneweb).
 
  -- Guillaume Brochu (Lévis,Québec,Canada) <guillaume.brochu@gmail.com>  Sat, 19 Nov 2016 00:12:00 -0500
 
