@@ -67,5 +67,3 @@ override_dh_installdebconf:
 	debian/mktemplates
 	dh_installdebconf
 
-override_dh_builddeb:
-	dh_builddeb -- -Zxz -Sextreme -z9
