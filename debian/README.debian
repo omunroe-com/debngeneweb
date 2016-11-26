@@ -95,6 +95,18 @@ A complicated scheme with two groups should however be possible, but
 this design change won't occur until Debian "sarge" is released as
 this would compromise the package stability.
 
+About geneweb-gui
+-----------------------
+
+The new graphical user interface in geneweb-gui package is a simplified way
+to use geneweb locally. Geneweb-gui launches its own instance of gwd. Unlike
+geneweb and gwsetup packages, geneweb-gui is designed to work with bases
+stored in your /home/user folder. It is not recommended to use the bases
+stored in /var/lib/geneweb with geneweb-gui, as this can cause permission
+conflicts. It is also not recommended to use ports 2316 or 2317 that are
+already used by the geneweb and gwsetup daemons (geneweb-gui is proposing
+2315 as its default port).
+
 About LISEZMOI.txt file
 -----------------------
 
