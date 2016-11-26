@@ -1,3 +1,15 @@
+geneweb (6.08+git20161106+dfsg-2) unstable; urgency=medium
+
+  * Team upload
+
+  [ Guillaume Brochu ]
+  * Use default compression for dh_builddeb in debian/rules
+    Closes: #845757
+  * Add a paragraph about geneweb-gui in README.debian
+  * Remove MultipleArgs in .desktop files to clear a Lintian warning
+
+ -- Guillaume Brochu (Lévis,Québec,Canada) <guillaume.brochu@gmail.com>  Sat, 26 Nov 2016 18:10:00 -0500
+
 geneweb (6.08+git20161106+dfsg-1) unstable; urgency=medium
 
   * Team upload
