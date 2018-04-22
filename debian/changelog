@@ -1,3 +1,14 @@
+geneweb (6.08+git20180420+dfsg-1) unstable; urgency=medium
+
+  * Team upload
+
+  [ Guillaume Brochu ]
+  * New upstream release to be ready for OCAML 4.06
+    https://github.com/geneweb/geneweb/archive/4c0c79a27f87e817168215c078aca27387a463fb.tar.gz
+    https://github.com/geneweb/geneweb/commits/distrib-6-08-ocaml-4-xx
+
+ -- Guillaume Brochu (Lévis,Québec,Canada) <guillaume.brochu@gmail.com>  Sat, 21 Apr 2018 21:45:00 -0500
+ 
 geneweb (6.08+git20161106+dfsg-2) unstable; urgency=medium
 
   * Team upload
