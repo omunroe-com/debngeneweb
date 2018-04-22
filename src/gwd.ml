@@ -1599,9 +1599,9 @@ value print_misc_file cgi misc_fname =
             let rec loop len =
               if len = 0 then ()
               else do {
-                let olen = min (String.length buf) len in
+                let olen = min (Bytes.length buf) len in
                 really_input ic buf 0 olen;
-                Wserver.wprint "%s" (String.sub buf 0 olen);
+                Wserver.wprint "%s" (Bytes.sub_string buf 0 olen);
                 loop (len - olen)
               }
             in
@@ -1799,10 +1799,9 @@ Type %s to stop the service
 
 IFDEF UNIX THEN
 value cgi_timeout tmout _ =
-  let nl () = Wserver.wprint "\013\010" in
   do {
     Wserver.wprint "Content-type: text/html; charset=iso-8859-1";
-    nl (); nl ();
+    Wserver.nl (); Wserver.nl ();
     Wserver.wprint "<head><title>Time out</title></head>\n";
     Wserver.wprint "<body><h1>Time out</h1>\n";
     Wserver.wprint "Computation time > %d second(s)\n" tmout;
@@ -1845,16 +1844,15 @@ value geneweb_cgi addr script_name contents =
 ;
 
 value read_input len =
-  if len >= 0 then do {
-    let buff = Bytes.create len in really_input stdin buff 0 len; buff
-  }
+  if len >= 0 then
+    really_input_string stdin len
   else do {
-    let buff = ref "" in
+    let buff = Buffer.create 0 in
     try
-      while True do { let l = input_line stdin in buff.val := buff.val ^ l }
+      while True do { let l = input_line stdin in Buffer.add_string buff l }
     with
     [ End_of_file -> () ];
-    buff.val
+    Buffer.contents buff
   }
 ;
 
@@ -1911,16 +1909,11 @@ value robot_exclude_arg s =
 ;
 
 value slashify s =
-  let s1 = Bytes.copy s in
-  do {
-    for i = 0 to String.length s - 1 do {
-      Bytes.set s1 i
-        (match s.[i] with
-         [ '\\' -> '/'
-         | x -> x ])
-    };
-    s1
-  }
+  String.init (String.length s) conv_char
+    where conv_char i =
+      match s.[i] with
+      [ '\\' -> '/'
+      | x -> x ]
 ;
 
 value make_cnt_dir x =

@@ -4,8 +4,7 @@
 value input : in_channel -> 'a;
 value output : out_channel -> 'a -> unit;
 
-value size : 'a -> int;
-value digest : 'a -> Digest.t;
+value digest : 'a -> string;
 
 value sizeof_long : int;
 value sign_extend : int -> int;
@@ -22,10 +21,9 @@ value patch_output_value_header : out_channel -> header_pos -> int;
 type in_funs 'a =
   { input_byte : 'a -> int;
     input_binary_int : 'a -> int;
-    input : 'a -> string -> int -> int -> unit }
+    input : 'a -> bytes -> int -> int -> unit }
 ;
 value gen_input : in_funs 'a -> 'a -> 'b;
-value in_channel_funs : in_funs in_channel;
 
 type out_funs 'a =
   { output_byte : 'a -> int -> unit;
@@ -33,7 +31,6 @@ type out_funs 'a =
     output : 'a -> string -> int -> int -> unit }
 ;
 value gen_output : out_funs 'a -> 'a -> 'b -> unit;
-value out_channel_funs : out_funs out_channel;
 
 value output_block_header : out_channel -> int -> int -> unit;
 value size_32 : ref int;
