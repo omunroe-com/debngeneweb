@@ -17,8 +17,8 @@ Goal: Add differentiated Makefile.inc files for optimized and non
  CAMLP5F=-DUNIX
  CAMLP5D=+camlp5
  LIBUNIX=-cclib -lunix
--OCAMLC=ocamlc.opt -w -3 -warn-error +a-52
--OCAMLOPT=ocamlopt.opt -w -3 -warn-error +a-52
+-OCAMLC=ocamlc.opt -w -3 -warn-error +a-52 -safe-string
+-OCAMLOPT=ocamlopt.opt -w -3 -warn-error +a-52 -safe-string
 +include $(GW_DIR)/tools/Makefile.debian
  OCAMLI=
  OCAMLD=
