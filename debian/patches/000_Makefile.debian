@@ -9,8 +9,8 @@ Goal: Add differentiated Makefile.inc files for optimized and non
 --- /dev/null
 +++ b/tools/Makefile.debian.out
 @@ -0,0 +1,2 @@
-+OCAMLC=ocamlc -safe-string
-+OCAMLOPT=ocamlopt -safe-string
++OCAMLC=ocamlc -unsafe-string
++OCAMLOPT=ocamlopt -unsafe-string
 --- a/tools/Makefile.inc.unix
 +++ b/tools/Makefile.inc.unix
 @@ -6,8 +6,7 @@
