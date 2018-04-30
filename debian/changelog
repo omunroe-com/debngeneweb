@@ -1,3 +1,13 @@
+geneweb (6.08+git20180420+dfsg-2) unstable; urgency=medium
+
+  * Team upload
+
+  [ Guillaume Brochu ]
+  * Correction of an error left in the previous release:
+    Use -unsafe-string for both compiler options
+
+ -- Guillaume Brochu (Lévis,Québec,Canada) <guillaume.brochu@gmail.com>  Mon, 30 Apr 2018 19:20:00 -0400
+
 geneweb (6.08+git20180420+dfsg-1) unstable; urgency=medium
 
   * Team upload
