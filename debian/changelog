@@ -13,7 +13,8 @@ geneweb (6.08+git20180420+dfsg-1) unstable; urgency=medium
   * Team upload
 
   [ Guillaume Brochu ]
-  * New upstream release to be ready for OCAML 4.06 and for future use of -safe-string
+  * New upstream release to be ready for OCAML 4.06
+    and for future use of -safe-string
     https://github.com/geneweb/geneweb/archive/4c0c79a27f87e817168215c078aca27387a463fb.tar.gz
     https://github.com/geneweb/geneweb/commits/distrib-6-08-ocaml-4-xx
     (Last commit : 2018-04-20)
