@@ -11,7 +11,7 @@ fi)
 ifeq ($(WAY),out)
 override_dh_strip:
 	# Don't strip ocaml bytecode executables
-endif   
+endif
 
 
 override_dh_installdeb:

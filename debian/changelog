@@ -21,7 +21,7 @@ geneweb (6.08+git20180420+dfsg-1) unstable; urgency=medium
   * Standards-Version: 4.1.4
 
  -- Guillaume Brochu (Lévis,Québec,Canada) <guillaume.brochu@gmail.com>  Sat, 28 Apr 2018 19:05:00 -0400
- 
+
 geneweb (6.08+git20161106+dfsg-2) unstable; urgency=medium
 
   * Team upload
@@ -286,7 +286,7 @@ geneweb (5.02~cvs20091031-6) unstable; urgency=low
   * Add $remote_fs to Required-Stop in geneweb and gwsetup init scripts
   * Bump Standards to 3.9.0 (checked, no change)
   * Force 4-byte, big endian in input_binary_int/output_binary_int
-    Closes: #557553 
+    Closes: #557553
   * Use dh_lintian to install lintian overrides
 
  -- Christian Perrier <bubulle@debian.org>  Sat, 17 Jul 2010 19:43:20 +0200
@@ -793,7 +793,7 @@ geneweb (4.10-3) unstable; urgency=low
 
 geneweb (4.10-2) unstable; urgency=low
 
-  * Rework the dag2html.1 man page removal code. 
+  * Rework the dag2html.1 man page removal code.
     Closes: #286144
 
  -- Christian Perrier <bubulle@debian.org>  Sat, 18 Dec 2004 11:53:25 +0100
@@ -837,7 +837,7 @@ geneweb (4.09+cvs20040827-1) unstable; urgency=medium
 
   * Urgency set to medium because fixing a bug with severity=important
     affecting the package usability
-  * New "upstream version" (CVS checkout). 
+  * New "upstream version" (CVS checkout).
   * Fixed Sys_error("Bad file descriptor") error. Closes: #268131
 
  -- Christian Perrier <bubulle@debian.org>  Fri, 27 Aug 2004 14:44:20 +0200
@@ -852,7 +852,7 @@ geneweb (4.09+cvs20040815-1) unstable; urgency=high
     - Updated to Standards: 3.6.1.1
   * [bubulle] debian/gwtp.conffiles
     - Added lexicon.txt
-  * Rebuilt with ocaml 3.08. 
+  * Rebuilt with ocaml 3.08.
 
  -- Christian Perrier <bubulle@debian.org>  Mon, 16 Aug 2004 09:13:15 +0200
 
@@ -1020,7 +1020,7 @@ geneweb (4.09-12) unstable; urgency=low
 
 geneweb (4.09-11) unstable; urgency=low
 
-  * Portuguese debconf templates translation. Thanks 
+  * Portuguese debconf templates translation. Thanks
     to Bruno Rodrigues <bruno.rodrigues@litux.org>.
   * Spelling erros corrected in Brazilian portuguese debconf templates.
     Thanks again to Bruno.
@@ -1106,7 +1106,7 @@ geneweb (4.09-5) unstable; urgency=low
 geneweb (4.09-4) unstable; urgency=low
 
   * Force database directories in /var/lib/geneweb and images directories
-    in /var/lib/geneweb/images to be group-writable by geneweb group. 
+    in /var/lib/geneweb/images to be group-writable by geneweb group.
     Needed now as the daemon runs unprivileged. Closes: 179918
 
  -- Christian Perrier <bubulle@debian.org>  Wed,  5 Feb 2003 18:32:33 +0100
@@ -1270,7 +1270,7 @@ geneweb (4.07-1) unstable; urgency=low
 geneweb (4.06-2) unstable; urgency=low
 
   * Fixed init script so that log file has the correct name (Closes: #146748)
-  * Modified README.Debian, gwc.1 and ged2gwb.1 for more accurately warning 
+  * Modified README.Debian, gwc.1 and ged2gwb.1 for more accurately warning
     users about the correct location of databases (Closes: #146747)
 
  -- Christian Perrier <bubulle@debian.org>  Mon, 13 May 2002 09:41:38 +0200
@@ -1279,7 +1279,7 @@ geneweb (4.06-1) unstable; urgency=low
 
   * New upstream release. Should prevent problems with images
     and documentation links for the CGI version (no opened bug yet for
-    the Debian package as it defaults to use the daemon version).    
+    the Debian package as it defaults to use the daemon version).
 
  -- Christian Perrier <bubulle@debian.org>  Mon, 11 Mar 2002 08:12:26 +0100
 
@@ -1312,7 +1312,7 @@ geneweb (4.05-1) unstable; urgency=low
 
 geneweb (4.04-4) unstable; urgency=low
 
-  * Use the appropriate way to handle translation of debconf 
+  * Use the appropriate way to handle translation of debconf
     templates after reading http://www.debian.org/intl/l10n/templates/hints
     as suggested in debian-devel-french.
 
@@ -1405,8 +1405,8 @@ geneweb (4.03-1) unstable; urgency=low
     used by the package for system-wide/database-wide customisations.
   * Images are now in /usr/share/geneweb/images with an horrible link
     from /etc/geneweb/images..:-(
-  * When removing package, properly remove files created in 
-    /usr/share/doc/geneweb by the "registering documentation for $LANG" 
+  * When removing package, properly remove files created in
+    /usr/share/doc/geneweb by the "registering documentation for $LANG"
     function of the daemon when it starts
 
  -- Christian Perrier <bubulle@debian.org>  Thu, 30 Aug 2001 09:14:21 +0200
@@ -1419,8 +1419,8 @@ geneweb (4.02-1) unstable; urgency=low
 
 geneweb (4.01-6) unstable; urgency=low
 
-  * Added chown root.geneweb for logfile in postinst so that upgrade from 
-    systems where permissions are incorrect will not prevent geneweb from 
+  * Added chown root.geneweb for logfile in postinst so that upgrade from
+    systems where permissions are incorrect will not prevent geneweb from
     working.
 
  -- Christian Perrier <bubulle@debian.org>  Mon, 27 Aug 2001 15:39:17 +0200
@@ -1496,7 +1496,7 @@ geneweb (4.00-2) unstable; urgency=low
 
 geneweb (4.00-1) unstable; urgency=low
 
-  * New upstream release.  See changelog for details. 
+  * New upstream release.  See changelog for details.
 
  -- Brent A. Fulgham <bfulgham@debian.org>  Tue, 13 Mar 2001 18:35:50 -0800
 
@@ -1571,7 +1571,7 @@ geneweb (3.06-2) unstable; urgency=low
 
 geneweb (3.06-1) unstable; urgency=low
 
-  * Initial Release. 
+  * Initial Release.
 
  -- Brent A. Fulgham <bfulgham@debian.org>  Sat, 22 Jul 2000 19:49:02 -0700
 
@@ -1604,7 +1604,7 @@ geneweb (3.06-2) unstable; urgency=low
 
 geneweb (3.06-1) unstable; urgency=low
 
-  * Initial Release. 
+  * Initial Release.
 
  -- Brent A. Fulgham <bfulgham@debian.org>  Sat, 22 Jul 2000 19:49:02 -0700
 
@@ -1912,7 +1912,7 @@ geneweb (4.10-3) unstable; urgency=low
 
 geneweb (4.10-2) unstable; urgency=low
 
-  * Rework the dag2html.1 man page removal code. 
+  * Rework the dag2html.1 man page removal code.
     Closes: #286144
 
  -- Christian Perrier <bubulle@debian.org>  Sat, 18 Dec 2004 11:53:25 +0100
@@ -1956,7 +1956,7 @@ geneweb (4.09+cvs20040827-1) unstable; urgency=medium
 
   * Urgency set to medium because fixing a bug with severity=important
     affecting the package usability
-  * New "upstream version" (CVS checkout). 
+  * New "upstream version" (CVS checkout).
   * Fixed Sys_error("Bad file descriptor") error. Closes: #268131
 
  -- Christian Perrier <bubulle@debian.org>  Fri, 27 Aug 2004 14:44:20 +0200
@@ -1971,7 +1971,7 @@ geneweb (4.09+cvs20040815-1) unstable; urgency=high
     - Updated to Standards: 3.6.1.1
   * [bubulle] debian/gwtp.conffiles
     - Added lexicon.txt
-  * Rebuilt with ocaml 3.08. 
+  * Rebuilt with ocaml 3.08.
 
  -- Christian Perrier <bubulle@debian.org>  Mon, 16 Aug 2004 09:13:15 +0200
 
@@ -2139,7 +2139,7 @@ geneweb (4.09-12) unstable; urgency=low
 
 geneweb (4.09-11) unstable; urgency=low
 
-  * Portuguese debconf templates translation. Thanks 
+  * Portuguese debconf templates translation. Thanks
     to Bruno Rodrigues <bruno.rodrigues@litux.org>.
   * Spelling erros corrected in Brazilian portuguese debconf templates.
     Thanks again to Bruno.
@@ -2225,7 +2225,7 @@ geneweb (4.09-5) unstable; urgency=low
 geneweb (4.09-4) unstable; urgency=low
 
   * Force database directories in /var/lib/geneweb and images directories
-    in /var/lib/geneweb/images to be group-writable by geneweb group. 
+    in /var/lib/geneweb/images to be group-writable by geneweb group.
     Needed now as the daemon runs unprivileged. Closes: 179918
 
  -- Christian Perrier <bubulle@debian.org>  Wed,  5 Feb 2003 18:32:33 +0100
@@ -2389,7 +2389,7 @@ geneweb (4.07-1) unstable; urgency=low
 geneweb (4.06-2) unstable; urgency=low
 
   * Fixed init script so that log file has the correct name (Closes: #146748)
-  * Modified README.Debian, gwc.1 and ged2gwb.1 for more accurately warning 
+  * Modified README.Debian, gwc.1 and ged2gwb.1 for more accurately warning
     users about the correct location of databases (Closes: #146747)
 
  -- Christian Perrier <bubulle@debian.org>  Mon, 13 May 2002 09:41:38 +0200
@@ -2398,7 +2398,7 @@ geneweb (4.06-1) unstable; urgency=low
 
   * New upstream release. Should prevent problems with images
     and documentation links for the CGI version (no opened bug yet for
-    the Debian package as it defaults to use the daemon version).    
+    the Debian package as it defaults to use the daemon version).
 
  -- Christian Perrier <bubulle@debian.org>  Mon, 11 Mar 2002 08:12:26 +0100
 
@@ -2431,7 +2431,7 @@ geneweb (4.05-1) unstable; urgency=low
 
 geneweb (4.04-4) unstable; urgency=low
 
-  * Use the appropriate way to handle translation of debconf 
+  * Use the appropriate way to handle translation of debconf
     templates after reading http://www.debian.org/intl/l10n/templates/hints
     as suggested in debian-devel-french.
 
@@ -2524,8 +2524,8 @@ geneweb (4.03-1) unstable; urgency=low
     used by the package for system-wide/database-wide customisations.
   * Images are now in /usr/share/geneweb/images with an horrible link
     from /etc/geneweb/images..:-(
-  * When removing package, properly remove files created in 
-    /usr/share/doc/geneweb by the "registering documentation for $LANG" 
+  * When removing package, properly remove files created in
+    /usr/share/doc/geneweb by the "registering documentation for $LANG"
     function of the daemon when it starts
 
  -- Christian Perrier <bubulle@debian.org>  Thu, 30 Aug 2001 09:14:21 +0200
@@ -2538,8 +2538,8 @@ geneweb (4.02-1) unstable; urgency=low
 
 geneweb (4.01-6) unstable; urgency=low
 
-  * Added chown root.geneweb for logfile in postinst so that upgrade from 
-    systems where permissions are incorrect will not prevent geneweb from 
+  * Added chown root.geneweb for logfile in postinst so that upgrade from
+    systems where permissions are incorrect will not prevent geneweb from
     working.
 
  -- Christian Perrier <bubulle@debian.org>  Mon, 27 Aug 2001 15:39:17 +0200
@@ -2615,7 +2615,7 @@ geneweb (4.00-2) unstable; urgency=low
 
 geneweb (4.00-1) unstable; urgency=low
 
-  * New upstream release.  See changelog for details. 
+  * New upstream release.  See changelog for details.
 
  -- Brent A. Fulgham <bfulgham@debian.org>  Tue, 13 Mar 2001 18:35:50 -0800
 
@@ -2690,7 +2690,7 @@ geneweb (3.06-2) unstable; urgency=low
 
 geneweb (3.06-1) unstable; urgency=low
 
-  * Initial Release. 
+  * Initial Release.
 
  -- Brent A. Fulgham <bfulgham@debian.org>  Sat, 22 Jul 2000 19:49:02 -0700
 
@@ -2723,6 +2723,6 @@ geneweb (3.06-2) unstable; urgency=low
 
 geneweb (3.06-1) unstable; urgency=low
 
-  * Initial Release. 
+  * Initial Release.
 
  -- Brent A. Fulgham <bfulgham@debian.org>  Sat, 22 Jul 2000 19:49:02 -0700
