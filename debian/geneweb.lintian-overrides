@@ -1,5 +1,5 @@
 geneweb: select-with-translated-default-field
-geneweb: menu-command-not-in-package
+geneweb: desktop-command-not-in-package
 geneweb: hardening-no-relro usr/bin/consang
 geneweb: hardening-no-fortify-functions usr/bin/consang
 geneweb: hardening-no-relro usr/bin/ged2gwb
