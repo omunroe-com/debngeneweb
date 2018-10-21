@@ -23,7 +23,7 @@
 +	  echo -ne 'start ..\\gw\\gui' > $(DESTDIR)/geneweb_gui.bat; \
  	else \
  	  (echo '#!/bin/sh'; \
- 	   echo 'cd `dirname $$0`'; \
+ 	   echo 'cd `dirname "$$0"`'; \
 @@ -88,7 +91,9 @@
  	   echo 'mkdir -p bases'; \
  	   echo 'cd bases'; \
