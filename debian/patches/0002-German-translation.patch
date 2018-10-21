@@ -1,0 +1,33 @@
+From: Guillaume Brochu <guillaume.brochu@gmail.com>
+Date: Sun, 21 Oct 2018 15:02:09 -0400
+Subject: German-translation
+
+Better German translation (attempt)
+Fixes: #176408
+Status wrt upstream: Not applied and not proposed
+---
+ hd/lang/lexicon.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/hd/lang/lexicon.txt b/hd/lang/lexicon.txt
+index b6310d9..5d1107b 100644
+--- a/hd/lang/lexicon.txt
++++ b/hd/lang/lexicon.txt
+@@ -1489,7 +1489,7 @@ br: goude
+ ca: després de
+ cs: po
+ da: efter
+-de: nach
++de: nachher
+ en: after
+ eo: post
+ es: después de
+@@ -2108,7 +2108,7 @@ br: a-raok
+ ca: abans de
+ cs: pøed
+ da: før
+-de: vor
++de: vorher
+ en: before
+ eo: antaù
+ es: antes

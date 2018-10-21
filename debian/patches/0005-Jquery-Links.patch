@@ -1,3 +1,18 @@
+From: Guillaume Brochu <guillaume.brochu@gmail.com>
+Date: Sun, 21 Oct 2018 15:02:09 -0400
+Subject: Jquery-Links
+
+Edit links to jquery.min.js and jquery.placeholder.js to use the corresponding
+Debian packages instead of .js files that are included in upstream release
+
+See : debian/geneweb.links
+---
+ hd/etc/js.txt      | 5 ++++-
+ hd/etc/welcome.txt | 1 -
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/hd/etc/js.txt b/hd/etc/js.txt
+index ce2324d..2c08d4e 100644
 --- a/hd/etc/js.txt
 +++ b/hd/etc/js.txt
 @@ -1 +1,4 @@
@@ -6,6 +21,8 @@
 +src="/javascript/jquery/jquery.min.js"></script>
 +<script language="javascript" type="text/javascript"
 +src="/javascript/jquery-placeholder/jquery.placeholder.js"></script>
+diff --git a/hd/etc/welcome.txt b/hd/etc/welcome.txt
+index a0dae82..f6aabab 100644
 --- a/hd/etc/welcome.txt
 +++ b/hd/etc/welcome.txt
 @@ -9,7 +9,6 @@
