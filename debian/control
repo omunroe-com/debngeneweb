@@ -13,7 +13,7 @@ Package: geneweb
 Architecture: any
 Depends: ${shlibs:Depends}, lsb-base (>= 3.0-6), libjs-jquery, libjs-jquery-placeholder
 Pre-Depends: ${misc:Depends}, iso-codes, isoquery, adduser, dpkg (>= 1.15.6~)
-Suggests: gwtp, gwsetup, lynx | www-browser, geneweb-gui
+Suggests: gwtp, gwsetup, www-browser, geneweb-gui
 Description: genealogy software with web interface
  Geneweb allows keeping track of ancestral data. It is a powerful
  system for maintaining a set of data about your family history. It
