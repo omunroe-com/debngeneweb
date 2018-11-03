@@ -1,0 +1,43 @@
+From: Guillaume Brochu <guillaume.brochu@gmail.com>
+Date: Sat, 3 Nov 2018 07:42:06 -0400
+Subject: gui-Correct-English-Error
+
+Finnish -> Completed
+
+Already corrected upstream for geneweb 7
+https://github.com/geneweb/geneweb/commit/5a5637772ec3a11380f83a62b98d6d82fc5e3028
+---
+ gui/gui.ml         | 2 +-
+ gui/gw/gui_lex.txt | 6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/gui/gui.ml b/gui/gui.ml
+index 4e9308a..e6c569b 100644
+--- a/gui/gui.ml
++++ b/gui/gui.ml
+@@ -1390,7 +1390,7 @@ value launch_config () =
+          page_3#as_widget);
+     ignore
+       (assistant#append_page
+-         ~title:(transl "Finnish")
++         ~title:(transl "Completed")
+          ~page_type: `CONFIRM
+          ~complete:True
+          page_4#as_widget);
+diff --git a/gui/gw/gui_lex.txt b/gui/gw/gui_lex.txt
+index 3fa16ac..922c678 100644
+--- a/gui/gw/gui_lex.txt
++++ b/gui/gw/gui_lex.txt
+@@ -145,9 +145,9 @@ fr: Configuration du port
+ en: Setup browser
+ fr: Configuration du navigateur
+ 
+-    Finnish
+-en: Finnish
+-fr: Terminer
++    Completed
++en: Completed!
++fr: Terminé!
+ 
+     Home
+ en: Home

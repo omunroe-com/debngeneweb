@@ -5,4 +5,7 @@
 0005-Jquery-Links.patch
 0006-Reproducible-Builds.patch
 0007-compile-gui.patch
-0008-fix-gui-for-debian.patch
+0008-gui-Correct-English-Error.patch
+0009-gui-General-Improvements.patch
+0010-gui-close_server.patch
+0011-gui-Debian-specific-changes.patch
