@@ -1,2 +1,1 @@
-gwtp: hardening-no-relro usr/lib/geneweb/gwtp
 gwtp: hardening-no-fortify-functions usr/lib/geneweb/gwtp

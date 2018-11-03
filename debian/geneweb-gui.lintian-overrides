@@ -1,2 +1,1 @@
-geneweb-gui: hardening-no-relro usr/bin/geneweb-gui
 geneweb-gui: hardening-no-fortify-functions usr/bin/geneweb-gui

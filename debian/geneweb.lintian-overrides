@@ -1,20 +1,11 @@
 geneweb: select-with-translated-default-field
 geneweb: desktop-command-not-in-package
-geneweb: hardening-no-relro usr/bin/consang
 geneweb: hardening-no-fortify-functions usr/bin/consang
-geneweb: hardening-no-relro usr/bin/ged2gwb
 geneweb: hardening-no-fortify-functions usr/bin/ged2gwb
-geneweb: hardening-no-relro usr/bin/ged2gwb2
 geneweb: hardening-no-fortify-functions usr/bin/ged2gwb2
-geneweb: hardening-no-relro usr/bin/gwb2ged
 geneweb: hardening-no-fortify-functions usr/bin/gwb2ged
-geneweb: hardening-no-relro usr/bin/gwc
 geneweb: hardening-no-fortify-functions usr/bin/gwc
-geneweb: hardening-no-relro usr/bin/gwc2
 geneweb: hardening-no-fortify-functions usr/bin/gwc2
-geneweb: hardening-no-relro usr/bin/gwd
 geneweb: hardening-no-fortify-functions usr/bin/gwd
-geneweb: hardening-no-relro usr/bin/gwu
 geneweb: hardening-no-fortify-functions usr/bin/gwu
-geneweb: hardening-no-relro usr/bin/update_nldb
 geneweb: hardening-no-fortify-functions usr/bin/update_nldb
