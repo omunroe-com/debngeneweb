@@ -66,4 +66,3 @@ override_dh_installdebconf:
 	chmod u+x debian/mktemplates
 	debian/mktemplates
 	dh_installdebconf
-
