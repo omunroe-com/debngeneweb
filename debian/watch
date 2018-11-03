@@ -1,0 +1,4 @@
+# Upstream does not provide tags for geneweb 6 following 6.08.
+# The maintenance branch (bug fixes and ocaml compatibility):
+# https://github.com/geneweb/geneweb/tree/distrib-6-08-ocaml-4-xx
+# should be used until geneweb 7 is officially released.
