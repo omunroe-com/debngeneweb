@@ -12,12 +12,12 @@ ISOQUERY=/usr/bin/isoquery
 # Translations location (relative to the build root directory)
 ISO639TRANSLATIONS=debian/iso-codes
 #
-# This file will have all wanted languages, one ISO-639 code per line
+# This file will have all wanted languages, one ISO-639-2 code per line
 LANGUAGELIST=debian/languages
 
-# For each supported language, get the language name from ISO 639 list
+# For each supported language, get the language name from ISO 639-2 list
 (for lang in `cat debian/languages | grep -v "^#"` ; do
-  $ISOQUERY --iso=639 $lang | cut -f4
+  $ISOQUERY --iso=639-2 $lang | cut -f4
 done) | \
 (read a; echo -n "$a"; while read b; do echo -n ", $b"; done; echo) \
 >debian/languagelist
@@ -52,7 +52,7 @@ debconf-updatepo --podir debian/pobuild
 
 # The following takes place for each language
 # (each existing file in debian/po
-echo "Compiling in ISO-639 languages translations:"
+echo "Compiling in ISO-639-2 languages translations:"
 for pofile in debian/po/*.po ; do
     pofilename=`basename $pofile`
     echo -n "$pofilename "|sed 's/\.po//g'

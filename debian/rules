@@ -65,7 +65,7 @@ override_dh_installdocs:
 	rm `pwd`/debian/geneweb/usr/share/doc/geneweb/LICENSE.htm || true
 
 override_dh_installdebconf:
-	# Grab ISO 639 language code translations
+	# Grab ISO 639-2 language code translations
 	chmod u+x debian/get-iso-codes
 	debian/get-iso-codes
 	# Build templates

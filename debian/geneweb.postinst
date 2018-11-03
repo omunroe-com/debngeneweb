@@ -84,7 +84,7 @@ get_debconf() {
     fi
     # Find the two letter code for language
     # LNG=`echo $FULLLNG | cut -f 2 -d "(" | cut -f 1 -d ")"`
-    LNG=`$ISOQUERY --iso=639 | grep "${FULLLNG}\$" | cut -f3`
+    LNG=`$ISOQUERY --iso=639-2 | grep "${FULLLNG}\$" | cut -f3`
 
 
     db_get geneweb/run_mode

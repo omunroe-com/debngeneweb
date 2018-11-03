@@ -5,8 +5,8 @@
 rm -rf debian/iso-codes || true
 mkdir debian/iso-codes
 
-echo "Grabbing ISO-639 languages names:"
-for i in `find /usr/share/locale/ -name iso_639.mo` ; do
+echo "Grabbing ISO-639-2 languages names:"
+for i in `find /usr/share/locale/ -name iso_639-2.mo` ; do
   language=`echo $i | cut -f5 -d/`
   echo -n "$language"...
   # If a file exists in iso-codes.updated, then use it
