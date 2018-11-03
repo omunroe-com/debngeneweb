@@ -10,12 +10,10 @@ Vcs-Git: git@salsa.debian.org:GuillaumeBrochu-guest/geneweb.git
 Vcs-Browser: https://salsa.debian.org/GuillaumeBrochu-guest/geneweb.git
 
 Package: geneweb
-Section: misc
 Architecture: any
 Depends: ${shlibs:Depends}, lsb-base (>= 3.0-6), libjs-jquery, libjs-jquery-placeholder
 Pre-Depends: ${misc:Depends}, iso-codes, isoquery, adduser, dpkg (>= 1.15.6~)
 Suggests: gwtp, gwsetup, lynx | www-browser, geneweb-gui
-Priority: optional
 Description: genealogy software with web interface
  Geneweb allows keeping track of ancestral data. It is a powerful
  system for maintaining a set of data about your family history. It
@@ -25,12 +23,10 @@ Description: genealogy software with web interface
  data for others to use.
 
 Package: gwtp
-Section: misc
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, geneweb
 Pre-Depends: dpkg (>= 1.15.6~)
 Suggests: httpd
-Priority: optional
 Description: web interface interacting with Geneweb databases
  Geneweb allows keeping track of ancestral data. It is a powerful
  system for maintaining a set of data about your family history. It
@@ -44,11 +40,9 @@ Description: web interface interacting with Geneweb databases
  change their configuration parameters.
 
 Package: gwsetup
-Section: misc
 Architecture: any
 Pre-Depends: adduser, dpkg (>= 1.15.6~)
 Depends: ${misc:Depends}, ${shlibs:Depends}, geneweb, lsb-base (>= 3.0-6)
-Priority: optional
 Description: utilities to configure and manipulate Geneweb databases
  Geneweb allows keeping track of ancestral data. It is a powerful
  system for maintaining a set of data about your family history. It
@@ -62,11 +56,9 @@ Description: utilities to configure and manipulate Geneweb databases
  to be used with the main Geneweb program.
 
 Package: geneweb-gui
-Section: misc
 Architecture: any
 Pre-Depends: adduser, dpkg (>= 1.15.6~)
 Depends: ${misc:Depends}, ${shlibs:Depends}, geneweb
-Priority: optional
 Description: graphical user interface to Geneweb genealogy software
  Geneweb allows keeping track of ancestral data. It is a powerful
  system for maintaining a set of data about your family history. It
