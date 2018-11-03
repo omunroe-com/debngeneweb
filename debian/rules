@@ -29,6 +29,8 @@ override_dh_auto_build:
 	chmod a+x tools/*.sh
 	$(MAKE) $(WAY)
 	$(MAKE) distrib
+	cp `pwd`/distribution/gw/images/favicon_gwd.png `pwd`/distribution/geneweb.png
+	cp `pwd`/distribution/gw/images/favicon_gwsetup.png `pwd`/distribution/gwsetup.png
 
 override_dh_clean:
 	rm -rf debian/iso-codes
