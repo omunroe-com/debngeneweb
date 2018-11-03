@@ -1,2 +1,2 @@
 gwsetup: hardening-no-fortify-functions usr/bin/gwsetup
-gwsetup: desktop-command-not-in-package
+gwsetup: desktop-command-not-in-package usr/share/applications/gwsetup.desktop usr/bin/x-www-browser
