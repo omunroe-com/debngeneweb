@@ -1,6 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: Geneweb
-Source: https://github.com/geneweb/geneweb
+Source: https://github.com/geneweb/geneweb/tree/distrib-6-08-ocaml-4-xx
+Files-Excluded: hd/etc/jquery*.js
 
 Files: *
 Copyright: Copyright © 1998-2008 INRIA

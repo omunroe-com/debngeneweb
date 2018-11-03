@@ -1,7 +1,5 @@
 Merging upstream releases
 =========================
 
-New upstream releases should be merged with git-import-orig (the git repository layout is theoretically OK to allow this to be straightforward).
-Upstream source first needs to be repacked without sourceless Javascript files:
-hd/etc/jquery*.js
-
+New upstream releases should be merged with gbp import-orig (the git repository layout is theoretically OK to allow this to be straightforward).
+Upstream source first needs to be repacked without sourceless Javascript files. See debian/gbp.conf.
