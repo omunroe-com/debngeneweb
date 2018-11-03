@@ -23,6 +23,10 @@ override_dh_auto_clean:
 
 override_dh_auto_install:
 
+override_dh_auto_configure:
+	chmod a+x ./configure
+	./configure
+
 override_dh_auto_build:
 	# Move the proper makefile into place	
 	cp -f `pwd`/tools/Makefile.debian.$(WAY) `pwd`/tools/Makefile.debian
