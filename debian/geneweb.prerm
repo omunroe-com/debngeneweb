@@ -7,12 +7,6 @@ set -e
 
 #DEBHELPER#
 
-# Properly remove the ugly link created in postinst
-if [ -L /etc/geneweb/images ]
-then
-    rm /etc/geneweb/images
-fi
-
 # Remove files created by the "registering documentation" function of Geneweb
 if [ -L /usr/share/doc/geneweb/doc_choice ]
 then
