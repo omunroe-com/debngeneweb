@@ -7,12 +7,6 @@ set -e
 
 #DEBHELPER#
 
-# Remove files created by the "registering documentation" function of Geneweb
-if [ -L /usr/share/doc/geneweb/doc_choice ]
-then
-    rm /usr/share/doc/geneweb/doc_choice
-fi
-
 # OK, lintian : you won't whine anymore...:-)
 if ( test "$1" = "upgrade" || test "$1" = "remove" ) && test -L /usr/doc/geneweb ; then
     rm -f /usr/doc/geneweb

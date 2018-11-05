@@ -35,6 +35,8 @@ override_dh_auto_build:
 	$(MAKE) distrib
 	cp `pwd`/distribution/gw/images/favicon_gwd.png `pwd`/distribution/geneweb.png
 	cp `pwd`/distribution/gw/images/favicon_gwsetup.png `pwd`/distribution/gwsetup.png
+	mv `pwd`/distribution/gw/gui `pwd`/distribution/gw/geneweb-gui
+	mv `pwd`/distribution/CHANGES.txt `pwd`/distribution/changelog
 
 override_dh_clean:
 	rm -rf debian/iso-codes
@@ -49,20 +51,11 @@ override_dh_clean:
 	dh_clean
 
 override_dh_install:
-	mv distribution/gw/gui distribution/gw/geneweb-gui
 	dh_install
-	# Doc files go to the appropriate directory
-	install -m 644 `pwd`/CHANGES \
-	        `pwd`/debian/geneweb/usr/share/doc/geneweb/changelog
 	# The CGI script
 	chmod 755 `pwd`/debian/gwtp/usr/lib/cgi-bin/gwtp/gwtp.cgi
 	# The wrappers
 	chmod 755 `pwd`/debian/gwsetup/usr/lib/geneweb/gwsetup.wrapper
-
-override_dh_installdocs:
-	dh_installdocs
-	# License files should not be duplicated
-	rm `pwd`/debian/geneweb/usr/share/doc/geneweb/LICENSE.htm || true
 
 override_dh_installdebconf:
 	# Grab ISO 639-2 language code translations

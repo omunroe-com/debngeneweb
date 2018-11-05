@@ -107,12 +107,6 @@ case "$1" in
 
 	[ -f $INITFILE ] && chmod a+rx $INITFILE
 
-	if [ -d "/usr/share/doc/geneweb/$LNG" ]; then
-		ln -sf /usr/share/doc/geneweb/$LNG /usr/share/doc/geneweb/doc_choice
-	else
-		ln -sf /usr/share/doc/geneweb/en /usr/share/doc/geneweb/doc_choice
-	fi
-
 	if [ ! -x `which addgroup` ]; then
 	    echo "addgroup(8) from the \'adduser\' package is needed...";
 	    exit 1;
