@@ -1,3 +1,37 @@
+geneweb (6.08+git20181019+dfsg-1) unstable; urgency=medium
+
+  * New upstream release:
+    https://github.com/geneweb/geneweb/archive/9641e494cd85fb1b7baba32412d120da38234ba2.tar.gz
+    https://github.com/geneweb/geneweb/commits/distrib-6-08-ocaml-4-xx
+    (Last commit : 2018-10-19)
+    Fixes a bug in /hd/etc/templ502/updfam.txt:
+    https://github.com/geneweb/geneweb/issues/642
+    Fixes ocaml warnings and correct English errors
+  * New maintainer (Guillaume Brochu), Christian Perrier now in uploaders
+  * New git repository to replace Alioth:
+    https://salsa.debian.org/GuillaumeBrochu-guest/geneweb
+  * Build and add connex to geneweb package (renamed geneweb-connex)
+    Closes: #912915
+  * Use upstream a.gwf as default.gwf for gwtp
+    Also put default.gwf in var/lib/geneweb
+  * Patches updated using gbp pq, cleaning of compile-gui patch
+  * Remove duplicate entries in changelog (that were there since May 2007)
+  * Add override_dh_auto_configure to fix a problem
+    that appeared with debhelper 11.5
+  * Standards-Version: 4.2.1
+  * Debhelper Build-Depends 9 -> 10
+  * Build-Depends: Replace ocaml-best-compilers and ocaml by ocaml-nox
+  * Remove lynx in Suggests of geneweb
+  * Add Keywords entry to .desktop files, correct translation mistake
+  * Put icons in usr/share/pixmaps
+  * Update isoquery standard : use 639-2 instead of 639
+  * Add Documentation.desktop in usr/share/doc/geneweb
+  * Use https for homepage https://geneweb.org
+  * Cleaning of .docs, .dirs, .links, .prerm, and rules
+  * Other minor changes (lintian warnings, gbp.conf, etc.)
+
+ -- Guillaume Brochu <guillaume.brochu@gmail.com>  Sun, 11 Nov 2018 09:09:00 -0500
+
 geneweb (6.08+git20180420+dfsg-2) unstable; urgency=medium
 
   * Team upload
