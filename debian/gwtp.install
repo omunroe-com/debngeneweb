@@ -1,5 +1,5 @@
 distribution/gw/gwtp_tmp/lang/* etc/geneweb/gwtp/lang
 distribution/gw/gwtp_tmp/gwtp usr/lib/geneweb
 debian/add-on/gwtp/cgi/gwtp.cgi usr/lib/cgi-bin/gwtp
-debian/add-on/gwtp/default.gwf etc/geneweb/gwtp
+distribution/default.gwf etc/geneweb/gwtp
 debian/add-on/gwtp/passwd etc/geneweb/gwtp

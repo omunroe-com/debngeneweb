@@ -12,3 +12,4 @@ distribution/gw/etc/* usr/share/geneweb/etc
 distribution/gw/images/* usr/share/geneweb/images
 debian/geneweb.desktop usr/share/applications
 distribution/geneweb.png usr/share/pixmaps
+distribution/default.gwf var/lib/geneweb
