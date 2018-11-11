@@ -1,0 +1,85 @@
+From: Guillaume Brochu <guillaume.brochu@gmail.com>
+Date: Sat, 10 Nov 2018 21:15:18 -0500
+Subject: Make Connex
+
+---
+ Makefile                        | 4 ++++
+ contrib/gwbase/etc/Makefile     | 6 +++---
+ contrib/gwbase/etc/Makefile.inc | 4 +---
+ 3 files changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 29ccbed..371af8f 100644
+--- a/Makefile
++++ b/Makefile
+@@ -19,6 +19,7 @@ out::
+ 	cd setup; $(MAKE) all
+ 	cd gwtp; $(MAKE) all
+ 	cd gui; $(MAKE) all
++	cd contrib/gwbase/etc; $(MAKE) connex.out; mv connex.out connex
+ 
+ opt::
+ 	cd wserver; $(MAKE) opt
+@@ -29,6 +30,7 @@ opt::
+ 	cd setup; $(MAKE) opt
+ 	cd gwtp; $(MAKE) opt
+ 	cd gui; $(MAKE) opt
++	cd contrib/gwbase/etc; $(MAKE) connex.opt; mv connex.opt connex; $(STRIP) connex
+ 
+ install:
+ 	mkdir -p $(PREFIX)/bin
+@@ -114,6 +116,7 @@ new_distrib: classical_distrib
+ 	cp setup/gwsetup $(DESTDIR)/gw/gwsetup$(EXE)
+ 	cp gui/gw/gui_lex.txt $(DESTDIR)/gw/.
+ 	cp gui/gui $(DESTDIR)/gw/gui$(EXE)
++	cp contrib/gwbase/etc/connex $(DESTDIR)/gw/connex$(EXE)
+ 	cp LICENSE $(DESTDIR)/LICENSE.txt
+ 	cp etc/START.htm $(DESTDIR)/.
+ 	cp CHANGES $(DESTDIR)/CHANGES.txt
+@@ -183,3 +186,4 @@ depend:
+ 	cd setup; $(MAKE) depend
+ 	cd gwtp; $(MAKE) depend
+ 	cd gui; $(MAKE) depend
++	cp contrib/gwbase/etc; $(MAKE) depend
+diff --git a/contrib/gwbase/etc/Makefile b/contrib/gwbase/etc/Makefile
+index 88e4622..c0e0e3c 100644
+--- a/contrib/gwbase/etc/Makefile
++++ b/contrib/gwbase/etc/Makefile
+@@ -1,8 +1,9 @@
+ # $Id: Makefile,v 4.36 2009-03-11 10:58:50 deraugla Exp $
+ 
++GWB=../../..
++
+ include Makefile.inc
+ 
+-GWB=../../..
+ OCAMLI=-I $(GWB)/src
+ STD_OBJS=$(GWB)/src/adef.cmo $(GWB)/src/buff.cmo $(GWB)/src/name.cmo $(GWB)/src/iovalue.cmo $(GWB)/src/mutil.cmo $(GWB)/src/futil.cmo $(GWB)/src/dutil.cmo $(GWB)/src/btree.cmo $(GWB)/src/secure.cmo $(GWB)/src/database.cmo $(GWB)/src/db2.cmo $(GWB)/src/db2disk.cmo $(GWB)/src/diff.cmo $(GWB)/src/gwdb.cmo $(GWB)/src/checkItem.cmo $(GWB)/src/gutil.cmo
+ GENEANET_OBJS=$(GWB)/src/adef.cmo $(GWB)/src/iovalue.cmo $(GWB)/src/buff.cmo $(GWB)/src/name.cmo $(GWB)/src/ansel.cmo $(GWB)/src/mutil.cmo $(GWB)/src/futil.cmo $(GWB)/src/dutil.cmo $(GWB)/src/btree.cmo $(GWB)/src/secure.cmo $(GWB)/src/database.cmo $(GWB)/src/db2.cmo $(GWB)/src/db2disk.cmo $(GWB)/src/diff.cmo $(GWB)/src/gwdb.cmo $(GWB)/src/checkItem.cmo $(GWB)/src/gutil.cmo $(GWB)/src/argl.cmo geneanet.cmo
+@@ -118,7 +119,6 @@ clavier.out: $(CLAVIER_OBJS)
+ 	$(OCAMLC) -custom $(CLAVIER_OBJS) -o clavier.out
+ 
+ depend:
+-	export LC_ALL=C; TOP=$(GWB) $(GWB)/tools/camlp5_depend.sh $(OCAMLI) $$(ls *.ml) | sed -e 's|$(GWB)|$$(GWB)|g' > .depend.new
+-	mv .depend.new .depend
++	$(GWB)/tools/camlp5_depend.sh $(CAMLP5F) $(OCAMLI) -- *.ml* > .depend
+ 
+ include .depend
+diff --git a/contrib/gwbase/etc/Makefile.inc b/contrib/gwbase/etc/Makefile.inc
+index b72435c..240a878 100644
+--- a/contrib/gwbase/etc/Makefile.inc
++++ b/contrib/gwbase/etc/Makefile.inc
+@@ -5,12 +5,10 @@ CAMLP5_COMM=$D/camlp5_comm.sh -I $(GWB)/src pa_macro.cmo
+ CAMLP5F=-DUNIX
+ CAMLP5D=`camlp5 -where`
+ LIBUNIX=-cclib -lunix
+-OCAMLC=ocamlc.opt
+-OCAMLOPT=ocamlopt.opt
++include $(GWB)/tools/Makefile.debian
+ OCAMLI=
+ RM=/bin/rm -f
+ EXE=
+-TEST_DIR=test $$(basename "$<") = "$<" || { echo "*** cannot make '$@'"; echo "*** please run 'make' in directory '$$(dirname "$<")' first"; exit 1; }
+ 
+ all::
+ opt::

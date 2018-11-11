@@ -31,6 +31,7 @@ override_dh_auto_build:
 	# Move the proper makefile into place	
 	cp -f `pwd`/tools/Makefile.debian.$(WAY) `pwd`/tools/Makefile.debian
 	chmod a+x tools/*.sh
+	chmod a+x contrib/gwbase/etc/*.sh
 	$(MAKE) $(WAY)
 	$(MAKE) distrib
 	cp `pwd`/distribution/gw/images/favicon_gwd.png `pwd`/distribution/geneweb.png
@@ -38,6 +39,7 @@ override_dh_auto_build:
 	mv `pwd`/distribution/gw/gui `pwd`/distribution/gw/geneweb-gui
 	mv `pwd`/distribution/CHANGES.txt `pwd`/distribution/changelog
 	cp `pwd`/distribution/gw/a.gwf `pwd`/distribution/default.gwf
+	cp `pwd`/distribution/gw/connex `pwd`/distribution/geneweb-connex
 
 override_dh_clean:
 	rm -rf debian/iso-codes

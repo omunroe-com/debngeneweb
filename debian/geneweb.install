@@ -7,6 +7,7 @@ distribution/gw/gwc usr/bin
 distribution/gw/gwc2 usr/bin
 distribution/gw/gwd usr/bin
 distribution/gw/gwu usr/bin
+distribution/geneweb-connex usr/bin
 distribution/gw/lang/* usr/share/geneweb/lang
 distribution/gw/etc/* usr/share/geneweb/etc
 distribution/gw/images/* usr/share/geneweb/images
