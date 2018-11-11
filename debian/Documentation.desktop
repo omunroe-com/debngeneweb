@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=geneweb
+Comment=Geneweb genealogy software - documentation
+Comment[fr]=Logiciel de généalogie Geneweb - documentation
+GenericName=Geneweb genealogy software - documentation
+GenericName[fr]=Logiciel de généalogie Geneweb - documentation
+Icon=/usr/share/pixmaps/geneweb.png
+Type=Link
+URL=https://geneweb.org
+Categories=Office;Database;
+Keywords=Genealogy;Web;Database;Family tree;Consanguinity;gedcom;ged;gw;
